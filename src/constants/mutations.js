@@ -1,0 +1,1 @@
+export const APPEND_NOTES = 'APPEND_NOTES'
