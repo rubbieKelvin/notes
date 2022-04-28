@@ -1,0 +1,63 @@
+@font-face {
+  font-family: "Inter UI";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/src/assets/fonts/InterUI/Inter-UI-Regular.woff?v=3.2) format("woff");
+}
+
+@font-face {
+  font-family: "Inter UI";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(/src/assets/fonts/InterUI/Inter-UI-Medium.woff2) format("woff2");
+}
+
+@font-face {
+  font-family: "Inter UI";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(/src/assets/fonts/InterUI/Inter-UI-SemiBold.woff?v=3.2) format("woff");
+}
+
+@font-face {
+  font-family: "Inter UI";
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url(/src/assets/fonts/InterUI/Inter-UI-ExtraBold.woff2) format("woff2");
+}
+
+@font-face {
+	font-family: Mulish;
+	font-style: normal;
+	font-weight: normal;
+	font-display: swap;
+	src: url(/src/assets/fonts/Mulish/static/Mulish-Regular.ttf);
+}
+
+@font-face {
+	font-family: Mulish;
+	font-style: normal;
+	font-weight: 500;
+	font-display: swap;
+	src: url(/src/assets/fonts/Mulish/static/Mulish-Medium.ttf);
+}
+
+@font-face {
+	font-family: Mulish;
+	font-style: normal;
+	font-weight: 600;
+	font-display: swap;
+	src: url(/src/assets/fonts/Mulish/static/Mulish-SemiBold.ttf);
+}
+
+@font-face {
+	font-family: Mulish;
+	font-style: normal;
+	font-weight: 700;
+	font-display: swap;
+	src: url(/src/assets/fonts/Mulish/static/Mulish-Bold.ttf);
+}
