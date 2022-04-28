@@ -1,5 +1,5 @@
 <template>
-  <div class="view-pad flex flex-col gap-4">
+  <div class="view-pad flex flex-col gap-4 flex-grow h-[90%]">
     <h1 class="subject-heading">{{ data.name }}</h1>
 
     <div class="pb-4">
@@ -29,13 +29,14 @@
     </div>
 
     <div v-if="data.description" class=" border-b border-gray-200 pb-3">
-        <h2 class="font-medium text-2xl">{{ data.description }}</h2>
+        <h2 class="font-medium text-xl">{{ data.description }}</h2>
     </div>
 
     <!-- content -->
-    <div>
-        <template v-for="i in 5" :key="i">
-            <p>Hello</p>
+    <div class="flex flex-col gap-3 flex-grow overflow-y-scroll">
+        <template v-for="item in data.content">
+            <TextSr v-if="item._type=='text'" :data="item" :key="item.id"/>
+            <ImageSr v-if="item._type=='image'" :data="item" :key="item.id"/>
         </template>
     </div>
   </div>
@@ -46,6 +47,8 @@ import DetailItem from "@/components/DetailItem.vue";
 import useNotes from "@/composables/useNotes";
 import { computed } from "@vue/runtime-core";
 import FuzzyDate from "@/components/FuzzyDate.vue";
+import TextSr from "@/components/sr/TextSr.vue";
+import ImageSr from "@/components/sr/ImageSr.vue";
 
 export default {
   name: "ViewPad",
@@ -55,7 +58,7 @@ export default {
       required: true,
     },
   },
-  components: { DetailItem, FuzzyDate },
+  components: { DetailItem, FuzzyDate, TextSr, ImageSr },
   setup(props) {
     const { $getAuthor } = useNotes();
     const author = computed(() => $getAuthor(props.data));

@@ -1,11 +1,13 @@
 <template>
-  <div>
+  <div class="">
     <div
       tabindex="0"
       @focus="closeOnClickOutside ? close() : null"
       class="modal"
       :class="{
-        'bg-black bg-opacity-20': dim,
+        'bg-black': dim,
+        'bg-opacity-20': dim && !dark,
+        'bg-opacity-80': dim && dark,
         'hidden pointer-events-none': !modelValue,
         flex: modelValue,
       }"
@@ -20,7 +22,7 @@
 <style scoped>
 .modal {
   @apply items-center justify-center;
-  @apply fixed top-0 left-0 right-0 bottom-0;
+  @apply fixed top-0 left-0 right-0 bottom-0 z-[9999];
 }
 </style>
 
@@ -46,6 +48,10 @@ export default {
       type: Boolean,
       default: false,
     },
+    dark: {
+      type: Boolean,
+      default: false,
+    }
   },
   emits: ["update:modelValue"],
   setup(props, ctx) {

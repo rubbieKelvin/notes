@@ -3,42 +3,8 @@ import { v4 as uuid4 } from "uuid";
 import { computed } from "vue";
 import { useStore } from "vuex";
 import slug from "slug";
+import { Note } from "@/lib/note";
 
-// templates
-import note_template from "@/templates/note.json";
-import text_template from "@/templates/text.json";
-import author_template from "@/templates/author.json";
-
-export const Note = (_note) => {
-  const _wrapper = {
-    __type__: "Note",
-    value: { ...note_template, ...(_note || {}) },
-    update,
-    addText,
-    updateAuthor,
-  };
-
-  // add some updates
-  updateAuthor();
-
-  function update(options) {
-    _wrapper.value = { ..._wrapper.value, ...options };
-  }
-
-  function addText(options) {
-    _wrapper.value.content?.append({ ...text_template, ...options });
-  }
-
-  function updateAuthor(author) {
-    author = author || {};
-    _wrapper.value.author = {
-      ...author_template,
-      ...author,
-    };
-  }
-
-  return _wrapper;
-};
 
 export const _buildWelcomeDocument = () => {
   const note = Note({
@@ -48,7 +14,7 @@ export const _buildWelcomeDocument = () => {
     name: "🥳 Welcome to Notes",
     description: "With love from rubbie",
     created_at: new Date().toISOString(),
-    last_edited: new Date().toISOString()
+    last_edited: new Date().toISOString(),
   });
 
   note.updateAuthor({
@@ -57,6 +23,17 @@ export const _buildWelcomeDocument = () => {
     last_name: "kelvin",
     email: "dev.rubbie@gmail.com",
   });
+
+  note.addText({
+    value: "Hello World, i'm rubbie kelvin. I'm a UI/UX Designer and Software developer, i easily adapt to any tech i get my hands on. Super hyped when working impossible tasks and solving complex problems.",
+    links: {
+      "rubbie kelvin": "https://rubbiekelvin.netlify.app/",
+    },
+  });
+
+  note.addImage({
+    value: "https://images.unsplash.com/photo-1618828665011-0abd973f7bb8?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MXx8bGFnb3N8ZW58MHx8MHx8&auto=format&fit=crop&w=900&q=60"
+  })
 
   return note;
 };
