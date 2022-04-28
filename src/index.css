@@ -6,3 +6,13 @@ button {
     user-select: none;
     cursor: default;
 }
+
+* {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+}
+
+.input-text{
+    @apply bg-slate-100 rounded-md px-4 py-2;
+    @apply outline-primary-basic outline-2 focus:outline;
+}

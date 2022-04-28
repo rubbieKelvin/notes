@@ -1,10 +1,9 @@
 <template>
   <div
-    class="min-h-[100vh] bg-gray-100 w-full flex items-center justify-center"
+    class="min-h-[100vh] bg-gray-50 w-full flex items-center justify-center"
   >
-    <div
-      class="app-body"
-    >
+    <div class="app-body">
+      <!-- side bar -->
       <div class="side">
         <div class="text-white">
           <h1 class="text-xl">Notes</h1>
@@ -14,7 +13,7 @@
         <div class="flex-grow" />
 
         <div>
-          <SideMenuButton label="Create New" @click="addNote">
+          <SideMenuButton label="Create New" @click="newNoteModal = true">
             <svg
               width="19"
               height="18"
@@ -34,6 +33,7 @@
       </div>
 
       <div class="bg-white flex-grow flex flex-col relative">
+        <!-- top bar -->
         <div class="flex py-2 px-3 gap-5">
           <div class="flex-grow flex items-center gap-3">
             <svg
@@ -51,7 +51,11 @@
                 stroke-linejoin="round"
               />
             </svg>
-            <input type="text" placeholder="Search Notes..." class="flex-grow outline-none border-0"/>
+            <input
+              type="text"
+              placeholder="Search Notes..."
+              class="flex-grow outline-none border-0"
+            />
           </div>
 
           <IconButton class="w-[34px] h-[34px] text-gray-400">
@@ -74,28 +78,51 @@
 
         <!-- list -->
         <div class="flex-grow h-0 overflow-y-scroll">
-            <NoteItemDelegate v-for="i in 20" :key="i" class=" even:bg-slate-50"/>
+          <NoteItemDelegate
+            v-for="note in notes"
+            :key="note.ld"
+            class="even:bg-slate-50"
+            :data="note"
+          />
         </div>
 
         <!-- fab -->
-        <IconButton @click="addNote" class="hover:bg-primary-basic md:hidden rounded-full hover:shadow-lg absolute right-8 bottom-8 w-12 h-12 bg-primary-basic text-white">
-            <svg
-              width="19"
-              height="18"
-              viewBox="0 0 19 18"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                fill-rule="evenodd"
-                clip-rule="evenodd"
-                d="M9.50001 2.7C9.73871 2.7 9.96763 2.79482 10.1364 2.9636C10.3052 3.13238 10.4 3.3613 10.4 3.6V8.1H14.9C15.1387 8.1 15.3676 8.19482 15.5364 8.3636C15.7052 8.53238 15.8 8.7613 15.8 9C15.8 9.23869 15.7052 9.46761 15.5364 9.63639C15.3676 9.80518 15.1387 9.9 14.9 9.9H10.4V14.4C10.4 14.6387 10.3052 14.8676 10.1364 15.0364C9.96763 15.2052 9.73871 15.3 9.50001 15.3C9.26132 15.3 9.0324 15.2052 8.86362 15.0364C8.69483 14.8676 8.60001 14.6387 8.60001 14.4V9.9H4.10001C3.86132 9.9 3.6324 9.80518 3.46362 9.63639C3.29483 9.46761 3.20001 9.23869 3.20001 9C3.20001 8.7613 3.29483 8.53238 3.46362 8.3636C3.6324 8.19482 3.86132 8.1 4.10001 8.1H8.60001V3.6C8.60001 3.3613 8.69483 3.13238 8.86362 2.9636C9.0324 2.79482 9.26132 2.7 9.50001 2.7Z"
-                fill="currentColor"
-              />
-            </svg>
+        <IconButton
+          @click="newNoteModal = true"
+          class="hover:bg-primary-basic md:hidden rounded-full hover:shadow-lg absolute right-8 bottom-8 w-12 h-12 bg-primary-basic text-white"
+        >
+          <svg
+            width="19"
+            height="18"
+            viewBox="0 0 19 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              fill-rule="evenodd"
+              clip-rule="evenodd"
+              d="M9.50001 2.7C9.73871 2.7 9.96763 2.79482 10.1364 2.9636C10.3052 3.13238 10.4 3.3613 10.4 3.6V8.1H14.9C15.1387 8.1 15.3676 8.19482 15.5364 8.3636C15.7052 8.53238 15.8 8.7613 15.8 9C15.8 9.23869 15.7052 9.46761 15.5364 9.63639C15.3676 9.80518 15.1387 9.9 14.9 9.9H10.4V14.4C10.4 14.6387 10.3052 14.8676 10.1364 15.0364C9.96763 15.2052 9.73871 15.3 9.50001 15.3C9.26132 15.3 9.0324 15.2052 8.86362 15.0364C8.69483 14.8676 8.60001 14.6387 8.60001 14.4V9.9H4.10001C3.86132 9.9 3.6324 9.80518 3.46362 9.63639C3.29483 9.46761 3.20001 9.23869 3.20001 9C3.20001 8.7613 3.29483 8.53238 3.46362 8.3636C3.6324 8.19482 3.86132 8.1 4.10001 8.1H8.60001V3.6C8.60001 3.3613 8.69483 3.13238 8.86362 2.9636C9.0324 2.79482 9.26132 2.7 9.50001 2.7Z"
+              fill="currentColor"
+            />
+          </svg>
         </IconButton>
       </div>
     </div>
+
+    <!-- modal -->
+    <Modal v-model="newNoteModal" dim closeOnClickOutside closeOnEsc>
+      <div class="bg-white rounded-md w-[300px] p-3 flex flex-col gap-6">
+        <div>
+          <p>New Note</p>
+        </div>
+
+        <div class="flex flex-col gap-4">
+          <input v-model="newNoteForm.title" class="input-text" type="text" placeholder="title">
+          <input v-model="newNoteForm.description" class="input-text" type="text" placeholder="descripton">
+          <button @click="addNote" class=" bg-primary-basic px-4 py-2 rounded-md text-white hover:bg-primary-vibrant">Create</button>
+        </div>
+      </div>
+    </Modal>
   </div>
 </template>
 
@@ -103,40 +130,51 @@
 import SideMenuButton from "@/components/SideMenuButton.vue";
 import IconButton from "@/components/IconButton.vue";
 import NoteItemDelegate from "@/components/NoteItemDelegate.vue";
-import useNote from '@/composables/Notes'
+import useNote from "@/composables/useNotes";
+import Modal from "@/components/Modal.vue";
+import { ref } from "@vue/reactivity";
 
 export default {
-  components: { SideMenuButton, IconButton, NoteItemDelegate },
-  setup(){
-    const { $createNote, notes } = useNote()
+  components: { SideMenuButton, IconButton, NoteItemDelegate, Modal },
+  setup() {
+    const { $createNote, notes } = useNote();
+    const newNoteModal = ref(false);
+    const newNoteForm = ref({
+      title: '',
+      description: ''
+    })
+
     const addNote = () => {
       $createNote({
-        name: 'test'
-      })
-    }
+        name: newNoteForm.value.title,
+        description: newNoteForm.value.description
+      });
+      newNoteForm.value.description = ""
+      newNoteForm.value.title = ""
+      newNoteModal.value = false
+    };
 
-    return { addNote, notes }
-  }
+    return { addNote, notes, newNoteModal, newNoteForm };
+  },
 };
 </script>
 
-
 <style scoped>
-.app-body{
-    @apply h-screen w-full overflow-clip flex shadow-lg;
+.app-body {
+  @apply h-screen w-full overflow-clip flex shadow-lg;
 }
 
 .side {
-    display: none;
+  display: none;
 }
 
-@screen md{
-    .app-body {
-        @apply h-[400px] w-[700px] rounded-md;
-    }
+@screen md {
+  .app-body {
+    @apply h-[400px] w-[700px] rounded-md;
+  }
 
-    .side {
-        @apply w-[35%] px-6 py-4 bg-primary-basic flex flex-col;
-    }
+  .side {
+    @apply w-[35%] px-6 py-4 bg-primary-basic flex flex-col;
+  }
 }
 </style>
