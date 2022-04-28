@@ -35,6 +35,18 @@ export const _buildWelcomeDocument = () => {
     value: "https://images.unsplash.com/photo-1618828665011-0abd973f7bb8?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MXx8bGFnb3N8ZW58MHx8MHx8&auto=format&fit=crop&w=900&q=60"
   })
 
+  const l1 = note.addList()
+
+  l1.items.push(note.createListItem({
+    value: "This is the first item..."
+  }))
+
+  l1.items.push(note.createListItem({
+    value: "This is the Second item...",
+    checked: true,
+    can_check: true
+  }))
+
   return note;
 };
 

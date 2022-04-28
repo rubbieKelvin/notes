@@ -1,7 +1,8 @@
 <template>
   <div>
-    <div class="relative bg-gray-200 h-max rounded-md" @click="opened = true">
+    <div class="relative bg-gray-200 h-max rounded-md">
       <img
+        @click="opened = true"
         loading="lazy"
         @error="$refs[`${data.id}_img_error`].style.display = 'inline'"
         @load="$refs[`${data.id}_img_load`].style.display = 'none'"

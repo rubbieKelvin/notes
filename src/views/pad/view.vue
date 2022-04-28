@@ -37,6 +37,7 @@
         <template v-for="item in data.content">
             <TextSr v-if="item._type=='text'" :data="item" :key="item.id"/>
             <ImageSr v-if="item._type=='image'" :data="item" :key="item.id"/>
+            <ListSr v-if="item._type=='list'" :data="item" :key="item.id"/>
         </template>
     </div>
   </div>
@@ -49,6 +50,7 @@ import { computed } from "@vue/runtime-core";
 import FuzzyDate from "@/components/FuzzyDate.vue";
 import TextSr from "@/components/sr/TextSr.vue";
 import ImageSr from "@/components/sr/ImageSr.vue";
+import ListSr from "@/components/sr/ListSr.vue";
 
 export default {
   name: "ViewPad",
@@ -58,7 +60,7 @@ export default {
       required: true,
     },
   },
-  components: { DetailItem, FuzzyDate, TextSr, ImageSr },
+  components: { DetailItem, FuzzyDate, TextSr, ImageSr, ListSr },
   setup(props) {
     const { $getAuthor } = useNotes();
     const author = computed(() => $getAuthor(props.data));
