@@ -33,7 +33,7 @@
     </div>
 
     <!-- content -->
-    <div class="flex flex-col gap-3 flex-grow overflow-y-scroll">
+    <div class="flex flex-col gap-3 flex-grow overflow-y-hidden hover:overflow-y-auto custom-scrollbar">
         <template v-for="item in content">
             <TextSr v-if="item._type==types.TYPE_PARAGRAPH" :data="item" :parent="data" :key="item.ld"/>
             <ImageSr v-if="item._type==types.TYPE_IMAGE" :data="item" :parent="data" :key="item.ld"/>

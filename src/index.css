@@ -2,17 +2,52 @@
 @tailwind components;
 @tailwind utilities;
 
+
 button {
-    user-select: none;
-    cursor: default;
+  user-select: none;
+  cursor: default;
 }
 
 * {
-    -webkit-tap-highlight-color: transparent;
-    -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
 }
 
-.input-text{
-    @apply bg-slate-100 rounded-md px-4 py-2;
-    @apply outline-primary-basic outline-2 focus:outline;
+@layer components{
+    .input-text {
+      @apply bg-slate-100 rounded-md px-4 py-2;
+      @apply outline-primary-basic outline-2 focus:outline;
+    }
+}
+
+@layer utilities {
+  .custom-scrollbar{
+    position: relative;
+    scrollbar-gutter: stable both-edges;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-gray-200;
+    border-radius: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-gray-400;
+    border-radius: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgb(100, 100, 100);
+    border-radius: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:active {
+    /* background: rgb(68, 68, 68); */
+    @apply bg-primary-basic;
+    border-radius: 6px;
+  }
 }
