@@ -100,7 +100,7 @@ import ImageModal from "@/components/ImageModal.vue";
 export default {
   props: {
     data: {
-      type: String,
+      type: Object,
       required: true,
     },
   },

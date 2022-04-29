@@ -87,7 +87,19 @@
         <!-- fab -->
         <IconButton
           @click="newNoteModal = true"
-          class="hover:bg-primary-basic md:hidden rounded-full hover:shadow-lg absolute right-8 bottom-8 w-12 h-12 bg-primary-basic text-white"
+          class="
+            hover:bg-primary-basic
+            md:hidden
+            rounded-full
+            hover:shadow-lg
+            absolute
+            right-8
+            bottom-8
+            w-12
+            h-12
+            bg-primary-basic
+            text-white
+          "
         >
           <svg
             width="19"
@@ -116,12 +128,16 @@
 
         <div class="flex flex-col gap-4">
           <input
+            ref="modalTitleInput"
             v-model="newNoteForm.title"
             class="input-text"
             type="text"
             placeholder="title"
+            @keypress.enter="$refs.modalDescrInput.focus()"
           />
           <input
+          ref="modalDescrInput"
+          @keypress.enter="addNote"
             v-model="newNoteForm.description"
             class="input-text"
             type="text"
@@ -129,7 +145,14 @@
           />
           <button
             @click="addNote"
-            class="bg-primary-basic px-4 py-2 rounded-md text-white hover:bg-primary-vibrant"
+            class="
+              bg-primary-basic
+              px-4
+              py-2
+              rounded-md
+              text-white
+              hover:bg-primary-vibrant
+            "
           >
             Create
           </button>
@@ -147,8 +170,9 @@ import useNote from "@/composables/useNotes";
 import Modal from "@/components/Modal.vue";
 import { ref } from "@vue/reactivity";
 import { NotePad } from "@/utils/datamodel";
-import { useStore } from 'vuex';
-import { ADD_ITEM } from '@/constants/mutations';
+import { useStore } from "vuex";
+import { ADD_ITEM } from "@/constants/mutations";
+import { watch } from "@vue/runtime-core";
 
 export default {
   components: { SideMenuButton, IconButton, NoteItemDelegate, Modal },
@@ -156,27 +180,34 @@ export default {
     const store = useStore();
     const { notes } = useNote();
     const newNoteModal = ref(false);
+    const modalTitleInput = ref(null);
     const newNoteForm = ref({
       title: "",
       description: "",
     });
 
+    watch(newNoteModal, (oldValue, newValue) => {
+      if (oldValue) {
+        window.requestAnimationFrame(() => modalTitleInput.value.focus());
+      }
+    });
+
     const addNote = () => {
-      const notepad = NotePad()
+      const notepad = NotePad();
 
       const note = notepad.createNote({
         name: newNoteForm.value.title,
         description: newNoteForm.value.description,
       });
 
-      store.commit(ADD_ITEM, note)
-      
+      store.commit(ADD_ITEM, note);
+
       newNoteForm.value.description = "";
       newNoteForm.value.title = "";
       newNoteModal.value = false;
     };
 
-    return { addNote, notes, newNoteModal, newNoteForm };
+    return { addNote, notes, newNoteModal, newNoteForm, modalTitleInput };
   },
 };
 </script>

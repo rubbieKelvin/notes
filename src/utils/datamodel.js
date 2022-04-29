@@ -9,12 +9,11 @@ export const NotePad = () => {
     id: null,
     ld: uuid4(),
     _type: null,
-    value: null,
-    note: null, // note id here
   });
 
   const createNote = ({ name = "Untitled", description = null }) => {
     const obj = {
+      ...baseObject(),
       _type: types.TYPE_NOTE,
       name,
       description,
@@ -24,8 +23,6 @@ export const NotePad = () => {
       last_backup: null,
       tag: null, // pass the tag id here
       author: null, // pass the author id here
-      ld: uuid4(),
-      id: null,
     };
     session.push(obj);
     return obj;
@@ -39,15 +36,16 @@ export const NotePad = () => {
     website = null,
     twitter = null,
   }) => {
-    const _id = id || uuid4();
+    const ld = id || uuid4();
     const obj = {
+      ...baseObject(),
       _type: types.TYPE_AUTHOR,
       first_name,
       last_name,
       email,
       website,
       twitter,
-      ld: _id,
+      ld,
     };
     session.push(obj);
     return obj;
@@ -59,7 +57,6 @@ export const NotePad = () => {
       _type: types.TYPE_TAG,
       value,
       color,
-      ld: uuid4(),
     };
     session.push(obj);
     return obj;
@@ -118,6 +115,7 @@ export const NotePad = () => {
     checked = false,
   }) => {
     const obj = {
+      ...baseObject(),
       _type: types.TYPE_LIST_ITEM,
       ld: uuid4(),
       value,
