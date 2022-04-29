@@ -146,7 +146,7 @@ import NoteItemDelegate from "@/components/NoteItemDelegate.vue";
 import useNote from "@/composables/useNotes";
 import Modal from "@/components/Modal.vue";
 import { ref } from "@vue/reactivity";
-import { createNote } from "@/utils/datamodel";
+import { NotePad } from "@/utils/datamodel";
 import { useStore } from 'vuex';
 import { ADD_ITEM } from '@/constants/mutations';
 
@@ -162,7 +162,9 @@ export default {
     });
 
     const addNote = () => {
-      const note = createNote({
+      const notepad = NotePad()
+
+      const note = notepad.createNote({
         name: newNoteForm.value.title,
         description: newNoteForm.value.description,
       });
