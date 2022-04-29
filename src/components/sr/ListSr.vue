@@ -1,29 +1,15 @@
 <template>
   <div v-if="data" class="">
-    <p
-      v-for="item in data.items"
-      class="flex cursor-default gap-2 items-center py-1 hover:bg-gray-50 px-2"
-      :key="item"
-    >
-      <span
-        @click="doCheck(item)"
-        :class="{
-          bullet: !item.can_check,
-          checkbox: item.can_check,
-          checked,
-          'un-checked': !checked,
-        }"
-      >
-        <span v-if="item.can_check && item.checked"></span>
-      </span>
-      <span>{{ item.value }}</span>
-    </p>
+    <ListItem v-for="item in items" :key="item.ld" :item="item" />
   </div>
 </template>
 
 <script>
 import useNotes from "@/composables/useNotes";
-// import { Note } from '@/lib/note';
+import { computed } from "@vue/runtime-core";
+
+import ListItem from "./ListItem.vue";
+
 export default {
   props: {
     data: {
@@ -31,37 +17,16 @@ export default {
       required: true,
     },
     parent: {
-        type: Object,
-        default: () => ({})
-    }
+      type: Object,
+      default: () => ({}),
+    },
   },
   setup(props) {
-      const note = Note(props.parent)
-    const { $updateNote } = useNotes();
+    const { getListContent } = useNotes();
+    const items = computed(() => getListContent(props.data));
 
-    const doCheck = (item, value) => {
-      if (!item.can_check) return;
-      $updateNote()
-    };
+    return { items };
   },
+  components: { ListItem },
 };
 </script>
-
-<style scoped>
-.bullet {
-  @apply w-1 h-1 bg-black rounded-full;
-}
-
-.checkbox {
-  @apply w-3 h-3 rounded;
-}
-
-.checked {
-  @apply bg-blue-500;
-}
-
-.un-checked {
-  @apply border border-gray-400;
-  @apply hover:bg-gray-200;
-}
-</style>

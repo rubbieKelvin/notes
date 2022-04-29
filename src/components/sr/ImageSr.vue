@@ -4,14 +4,14 @@
       <img
         @click="opened = true"
         loading="lazy"
-        @error="$refs[`${data.id}_img_error`].style.display = 'inline'"
-        @load="$refs[`${data.id}_img_load`].style.display = 'none'"
+        @error="$refs[`${data.ld}_img_error`].style.display = 'inline'"
+        @load="$refs[`${data.ld}_img_load`].style.display = 'none'"
         class="w-full object-cover object-center rounded-md min-h-[100px] max-h-[500px]"
         :src="src"
       />
       <!-- load -->
       <div
-        :ref="`${data.id}_img_load`"
+        :ref="`${data.ld}_img_load`"
         class="transition delay-200 absolute top-0 left-0 right-0 bottom-0"
       >
         <div class="w-full h-full flex items-center justify-center">
@@ -44,7 +44,7 @@
       </div>
       <!-- error -->
       <div
-        :ref="`${data.id}_img_error`"
+        :ref="`${data.ld}_img_error`"
         class="transition delay-200 hidden absolute top-0 left-0 right-0 bottom-0"
       >
         <div class="w-full h-full flex items-center justify-center">

@@ -6,7 +6,8 @@ export const NotePad = () => {
   let session = [];
 
   const baseObject = () => ({
-    id: uuid4(),
+    id: null,
+    ld: uuid4(),
     _type: null,
     value: null,
     note: null, // note id here
@@ -46,58 +47,64 @@ export const NotePad = () => {
       email,
       website,
       twitter,
-      id: _id,
+      ld: _id,
     };
     session.push(obj);
     return obj;
   };
 
-  const createTag = ({ name, color = NO_COLOR }) => {
+  const createTag = ({ value, color = NO_COLOR }) => {
     const obj = {
+      ...baseObject(),
       _type: types.TYPE_TAG,
-      name,
+      value,
       color,
-      id: uuid4(),
+      ld: uuid4(),
     };
     session.push(obj);
     return obj;
   };
 
-  const createText = ({ value, links = {} }) => {
+  const createText = ({ value, note, links = {} }) => {
     const obj = {
       ...baseObject(),
       _type: types.TYPE_PARAGRAPH,
       links,
       value,
+      note,
     };
     session.push(obj);
     return obj;
   };
 
-  const createImage = ({ value, alt = "image" }) => {
+  const createImage = ({ value, note, alt = "image" }) => {
     const obj = {
       ...baseObject(),
       _type: types.TYPE_IMAGE,
       alt,
       value,
+      note,
     };
     session.push(obj);
     return obj;
   };
 
-  const createList = () => {
+  const createList = ({ note }) => {
     const obj = {
       ...baseObject(),
       _type: types.TYPE_LIST,
+      note,
     };
     session.push(obj);
     return obj;
   };
 
-  const createHeading = () => {
+  const createHeading = ({ note, value }) => {
     const obj = {
       ...baseObject(),
       _type: types.TYPE_HEADING,
+      value,
+      note,
     };
     session.push(obj);
     return obj;
@@ -106,15 +113,17 @@ export const NotePad = () => {
   const createListItem = ({
     value,
     list,
+    note,
     checkable = false,
     checked = false,
   }) => {
     const obj = {
       _type: types.TYPE_LIST_ITEM,
-      id: uuid4(),
+      ld: uuid4(),
       value,
       list,
       checked,
+      note,
       checkable,
     };
     session.push(obj);

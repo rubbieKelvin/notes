@@ -7,9 +7,8 @@ export default createStore({
   }),
   mutations: {
     [ADD_ITEM](state, payload){
-      const identifier = payload.ld || payload.id
-      if (!identifier) return
-      state.kvdb[identifier] = payload
-    }
+      if (!payload.ld) return
+      state.kvdb[payload.ld] = payload
+    },
   },
 });
