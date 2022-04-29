@@ -46,12 +46,12 @@
 <script>
 import DetailItem from "@/components/DetailItem.vue";
 import useNotes from "@/composables/useNotes";
-import { computed, ref } from "@vue/runtime-core";
+import { computed } from "@vue/runtime-core";
 import FuzzyDate from "@/components/FuzzyDate.vue";
 import TextSr from "@/components/sr/TextSr.vue";
 import ImageSr from "@/components/sr/ImageSr.vue";
 import ListSr from "@/components/sr/ListSr.vue";
-import { TYPE_HEADING, TYPE_IMAGE, TYPE_LIST, TYPE_LIST_ITEM, TYPE_PARAGRAPH } from '@/constants/datamodel';
+import * as types from '@/constants/types';
 
 export default {
   name: "ViewPad",
@@ -72,13 +72,6 @@ export default {
       }
     });
 
-    const types = ref({
-      TYPE_IMAGE,
-      TYPE_PARAGRAPH,
-      TYPE_HEADING,
-      TYPE_LIST,
-      TYPE_LIST_ITEM
-    })
     const content = computed(() => getNoteContent(props.data))
 
     return { author, content, types };

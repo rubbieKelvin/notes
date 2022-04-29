@@ -63,7 +63,7 @@
 <script>
 import IconButton from "@/components/IconButton.vue";
 import useNote from "@/composables/useNotes";
-import { computed, ref } from "@vue/runtime-core";
+import { computed } from "@vue/runtime-core";
 import Emptystate_note from "@/assets/svgs/emptystate_note.vue";
 import ViewPad from "./pad/view.vue";
 

@@ -1,15 +1,6 @@
 import { v4 as uuid4 } from "uuid";
-import { NO_COLOR } from "./colors";
-
-export const TYPE_NOTE = "NOTE";
-export const TYPE_AUTHOR = "AUTHOR";
-export const TYPE_TAG = "TAG";
-// ...
-export const TYPE_IMAGE = "IMAGE";
-export const TYPE_HEADING = "HEADING";
-export const TYPE_PARAGRAPH = "PARAGRAPH";
-export const TYPE_LIST = "LIST";
-export const TYPE_LIST_ITEM = "LIST_ITEM";
+import { NO_COLOR } from "@/constants/colors";
+import * as types from '@/constants/types'
 
 const baseObject = () => ({
   id: uuid4(),
@@ -19,7 +10,7 @@ const baseObject = () => ({
 });
 
 export const createNote = ({ name = "Untitled", description = null }) => ({
-  _type: TYPE_NOTE,
+  _type: types.TYPE_NOTE,
   name,
   description,
   version: "0.0.0",
@@ -42,7 +33,7 @@ export const createAuthor = ({
 }) => {
   const _id = id || uuid4();
   return {
-    _type: TYPE_AUTHOR,
+    _type: types.TYPE_AUTHOR,
     first_name,
     last_name,
     email,
@@ -53,7 +44,7 @@ export const createAuthor = ({
 };
 
 export const createTag = ({ name, color = NO_COLOR }) => ({
-  _type: TYPE_TAG,
+  _type: types.TYPE_TAG,
   name,
   color,
   id: uuid4(),
@@ -61,26 +52,26 @@ export const createTag = ({ name, color = NO_COLOR }) => ({
 
 export const createText = ({ value, links={} }) => ({
   ...baseObject(),
-  _type: TYPE_PARAGRAPH,
+  _type: types.TYPE_PARAGRAPH,
   links,
   value,
 });
 
 export const createImage = ({ value, alt = "image" }) => ({
   ...baseObject(),
-  _type: TYPE_IMAGE,
+  _type: types.TYPE_IMAGE,
   alt,
   value,
 });
 
 export const createList = () => ({
   ...baseObject(),
-  _type: TYPE_LIST,
+  _type: types.TYPE_LIST,
 });
 
 export const createHeading = () => ({
   ...baseObject(),
-  _type: TYPE_HEADING,
+  _type: types.TYPE_HEADING,
 });
 
 export const createListItem = ({
@@ -89,7 +80,7 @@ export const createListItem = ({
   checkable = false,
   checked = false,
 }) => ({
-  _type: TYPE_LIST_ITEM,
+  _type: types.TYPE_LIST_ITEM,
   id: uuid4(),
   value,
   list,

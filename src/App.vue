@@ -3,11 +3,10 @@
 </template>
 
 <script>
-import useNotes from '@/composables/useNotes'
+import { _buildWelcomeDocument } from "./utils"
 
 export default {
   setup(){
-    const { _buildWelcomeDocument } = useNotes()
     _buildWelcomeDocument()
     return {}
   }
