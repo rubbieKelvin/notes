@@ -69,7 +69,7 @@ import ViewPad from "./pad/view.vue";
 
 export default {
   props: {
-    slug: {
+    ld: {
       type: String,
       default: null,
     }

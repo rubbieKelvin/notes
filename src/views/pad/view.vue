@@ -35,9 +35,9 @@
     <!-- content -->
     <div class="flex flex-col gap-3 flex-grow overflow-y-scroll">
         <template v-for="item in data.content">
-            <TextSr v-if="item._type=='text'" :data="item" :key="item.id"/>
-            <ImageSr v-if="item._type=='image'" :data="item" :key="item.id"/>
-            <ListSr v-if="item._type=='list'" :data="item" :key="item.id"/>
+            <TextSr v-if="item._type=='text'" :data="item" :parent="data" :key="item.id"/>
+            <ImageSr v-if="item._type=='image'" :data="item" :parent="data" :key="item.id"/>
+            <ListSr v-if="item._type=='list'" :data="item" :parent="data" :key="item.id"/>
         </template>
     </div>
   </div>

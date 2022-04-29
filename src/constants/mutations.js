@@ -1,1 +1,1 @@
-export const APPEND_NOTES = 'APPEND_NOTES'
+export const ADD_ITEM = 'ADD_ITEM'

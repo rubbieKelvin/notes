@@ -1,7 +1,5 @@
 <template>
-  <div
-    class="min-h-[100vh] bg-gray-50 w-full flex items-center justify-center"
-  >
+  <div class="min-h-[100vh] bg-gray-50 w-full flex items-center justify-center">
     <div class="app-body">
       <!-- side bar -->
       <div class="side">
@@ -117,9 +115,24 @@
         </div>
 
         <div class="flex flex-col gap-4">
-          <input v-model="newNoteForm.title" class="input-text" type="text" placeholder="title">
-          <input v-model="newNoteForm.description" class="input-text" type="text" placeholder="descripton">
-          <button @click="addNote" class=" bg-primary-basic px-4 py-2 rounded-md text-white hover:bg-primary-vibrant">Create</button>
+          <input
+            v-model="newNoteForm.title"
+            class="input-text"
+            type="text"
+            placeholder="title"
+          />
+          <input
+            v-model="newNoteForm.description"
+            class="input-text"
+            type="text"
+            placeholder="descripton"
+          />
+          <button
+            @click="addNote"
+            class="bg-primary-basic px-4 py-2 rounded-md text-white hover:bg-primary-vibrant"
+          >
+            Create
+          </button>
         </div>
       </div>
     </Modal>
@@ -133,25 +146,32 @@ import NoteItemDelegate from "@/components/NoteItemDelegate.vue";
 import useNote from "@/composables/useNotes";
 import Modal from "@/components/Modal.vue";
 import { ref } from "@vue/reactivity";
+import { createNote } from "@/constants/datamodel";
+import { useStore } from 'vuex';
+import { ADD_ITEM } from '@/constants/mutations';
 
 export default {
   components: { SideMenuButton, IconButton, NoteItemDelegate, Modal },
   setup() {
-    const { $createNote, notes } = useNote();
+    const store = useStore();
+    const { notes } = useNote();
     const newNoteModal = ref(false);
     const newNoteForm = ref({
-      title: '',
-      description: ''
-    })
+      title: "",
+      description: "",
+    });
 
     const addNote = () => {
-      $createNote({
+      const note = createNote({
         name: newNoteForm.value.title,
-        description: newNoteForm.value.description
+        description: newNoteForm.value.description,
       });
-      newNoteForm.value.description = ""
-      newNoteForm.value.title = ""
-      newNoteModal.value = false
+
+      store.commit(ADD_ITEM, note)
+      
+      newNoteForm.value.description = "";
+      newNoteForm.value.title = "";
+      newNoteModal.value = false;
     };
 
     return { addNote, notes, newNoteModal, newNoteForm };
