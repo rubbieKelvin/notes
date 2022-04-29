@@ -21,24 +21,49 @@
 
         <FuzzyDate :datetime="data.created_at" v-slot="{ fuzzy }">
           <p class="">
-            Created by <span class="bg-gray-100 rounded p-1">{{ author.fullname }}</span
+            Created by
+            <span class="bg-gray-100 rounded p-1">{{ author.fullname }}</span
             >, {{ fuzzy }}
           </p>
         </FuzzyDate>
       </DetailItem>
     </div>
 
-    <div v-if="data.description" class=" border-b border-gray-200 pb-3">
-        <h2 class="font-medium text-xl">{{ data.description }}</h2>
+    <div v-if="data.description" class="border-b border-gray-200 pb-3">
+      <h2 class="font-medium text-xl">{{ data.description }}</h2>
     </div>
 
     <!-- content -->
-    <div class="flex flex-col gap-3 flex-grow overflow-y-hidden hover:overflow-y-auto custom-scrollbar">
-        <template v-for="item in content">
-            <TextSr v-if="item._type==types.TYPE_PARAGRAPH" :data="item" :parent="data" :key="item.ld"/>
-            <ImageSr v-if="item._type==types.TYPE_IMAGE" :data="item" :parent="data" :key="item.ld"/>
-            <ListSr v-if="item._type==types.TYPE_LIST" :data="item" :parent="data" :key="item.ld"/>
-        </template>
+    <div
+      class="
+        flex flex-col
+        gap-3
+        flex-grow
+        overflow-y-hidden
+        hover:overflow-y-auto
+        custom-scrollbar
+      "
+    >
+      <template v-for="item in content">
+        <TextSr
+          v-if="item._type == types.TYPE_PARAGRAPH"
+          :data="item"
+          :parent="data"
+          :key="item.ld"
+        />
+        <ImageSr
+          v-if="item._type == types.TYPE_IMAGE"
+          :data="item"
+          :parent="data"
+          :key="item.ld"
+        />
+        <ListSr
+          v-if="item._type == types.TYPE_LIST"
+          :data="item"
+          :parent="data"
+          :key="item.ld"
+        />
+      </template>
     </div>
   </div>
 </template>
@@ -51,7 +76,7 @@ import FuzzyDate from "@/components/FuzzyDate.vue";
 import TextSr from "@/components/sr/TextSr.vue";
 import ImageSr from "@/components/sr/ImageSr.vue";
 import ListSr from "@/components/sr/ListSr.vue";
-import * as types from '@/constants/types';
+import * as types from "@/constants/types";
 
 export default {
   name: "ViewPad",
@@ -65,14 +90,14 @@ export default {
   setup(props) {
     const { getNoteAuthor, getNoteContent } = useNotes();
     const author = computed(() => {
-      const a = getNoteAuthor(props.data)
+      const a = getNoteAuthor(props.data);
       return {
         ...a,
-        fullname: `${a.first_name} ${a.last_name}`
-      }
+        fullname: `${a.first_name} ${a.last_name}`,
+      };
     });
 
-    const content = computed(() => getNoteContent(props.data))
+    const content = computed(() => getNoteContent(props.data));
 
     return { author, content, types };
   },

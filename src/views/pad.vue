@@ -12,13 +12,15 @@
           <h1 class="flex-grow capitalize">{{note.name}}</h1>
 
           <div class="tools">
-            <IconButton class="w-[30px] h-[30px]">
-              <EditModeSvg/>
+            <IconButton class="w-[30px] h-[30px]" :class="{'bg-primary-basic hover:bg-primary-vibrant w-auto px-2 gap-2': editmode}" @click="editmode = !editmode">
+              <EditModeSvg :class="[editmode ? 'text-white' : 'text-inherit']"/>
+              <span v-if="editmode" class="text-white">Save</span>
             </IconButton>
           </div>
         </div>
 
-        <ViewPad :data="note"/>
+        <EditPad v-if="editmode"/>
+        <ViewPad v-else :data="note"/>
       </template>
       <template v-else>
           <div class="h-full flex flex-col gap-4 items-center justify-center">
@@ -42,6 +44,7 @@ import ViewPad from "./pad/view.vue";
 import EditModeSvg from "../assets/svgs/editModeSvg.vue";
 import LeftChevronSvg from "../assets/svgs/leftChevronSvg.vue";
 import EmptyStateSvg from "../assets/svgs/emptyStateSvg.vue";
+import EditPad from "./pad/edit.vue";
 
 export default {
   props: {
@@ -50,7 +53,7 @@ export default {
       default: null,
     }
   },
-  components: { IconButton, ViewPad, EditModeSvg, LeftChevronSvg, EmptyStateSvg },
+  components: { IconButton, ViewPad, EditModeSvg, LeftChevronSvg, EmptyStateSvg, EditPad },
   setup(props) {
     const { getNote } = useNote();
     const note = computed(() => getNote(props.ld));
