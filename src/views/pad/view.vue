@@ -34,10 +34,10 @@
 
     <!-- content -->
     <div class="flex flex-col gap-3 flex-grow overflow-y-scroll">
-        <template v-for="item in data.content">
-            <TextSr v-if="item._type=='text'" :data="item" :parent="data" :key="item.id"/>
-            <ImageSr v-if="item._type=='image'" :data="item" :parent="data" :key="item.id"/>
-            <ListSr v-if="item._type=='list'" :data="item" :parent="data" :key="item.id"/>
+        <template v-for="item in content">
+            <TextSr v-if="item._type==types.TYPE_PARAGRAPH" :data="item" :parent="data" :key="item.id"/>
+            <ImageSr v-if="item._type==types.TYPE_IMAGE" :data="item" :parent="data" :key="item.id"/>
+            <ListSr v-if="item._type==TYPE_LIST" :data="item" :parent="data" :key="item.id"/>
         </template>
     </div>
   </div>
@@ -46,11 +46,12 @@
 <script>
 import DetailItem from "@/components/DetailItem.vue";
 import useNotes from "@/composables/useNotes";
-import { computed } from "@vue/runtime-core";
+import { computed, ref } from "@vue/runtime-core";
 import FuzzyDate from "@/components/FuzzyDate.vue";
 import TextSr from "@/components/sr/TextSr.vue";
 import ImageSr from "@/components/sr/ImageSr.vue";
 import ListSr from "@/components/sr/ListSr.vue";
+import { TYPE_HEADING, TYPE_IMAGE, TYPE_LIST, TYPE_LIST_ITEM, TYPE_PARAGRAPH } from '@/constants/datamodel';
 
 export default {
   name: "ViewPad",
@@ -62,10 +63,25 @@ export default {
   },
   components: { DetailItem, FuzzyDate, TextSr, ImageSr, ListSr },
   setup(props) {
-    const { $getAuthor } = useNotes();
-    const author = computed(() => $getAuthor(props.data));
+    const { getNoteAuthor, getNoteContent } = useNotes();
+    const author = computed(() => {
+      const a = getNoteAuthor(props.data)
+      return {
+        ...a,
+        fullname: `${a.first_name} ${a.last_name}`
+      }
+    });
 
-    return { author };
+    const types = ref({
+      TYPE_IMAGE,
+      TYPE_PARAGRAPH,
+      TYPE_HEADING,
+      TYPE_LIST,
+      TYPE_LIST_ITEM
+    })
+    const content = computed(() => getNoteContent(props.data))
+
+    return { author, content, types };
   },
 };
 </script>

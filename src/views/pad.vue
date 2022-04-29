@@ -76,10 +76,9 @@ export default {
   },
   components: { IconButton, Emptystate_note, ViewPad },
   setup(props) {
-    const { $getNoteBySlug } = useNote();
-    const note = computed(() => $getNoteBySlug(props.slug));
-    const title = ref("heading")
-    return { note, title };
+    const { getNote } = useNote();
+    const note = computed(() => getNote(props.ld));
+    return { note };
   },
 };
 </script>
