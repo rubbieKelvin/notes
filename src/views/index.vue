@@ -200,7 +200,13 @@ export default {
         description: newNoteForm.value.description,
       });
 
-      store.commit(ADD_ITEM, note);
+      note.author = notepad.createAuthor({
+        id: "local",
+        first_name: "Me",
+        last_name: "",
+      }).ld;
+
+      notepad.dump((item) => store.commit(ADD_ITEM, item));
 
       newNoteForm.value.description = "";
       newNoteForm.value.title = "";
