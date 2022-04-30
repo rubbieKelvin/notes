@@ -7,6 +7,7 @@ import { EditorContent, useEditor } from "@tiptap/vue-3";
 import StaterKit from "@tiptap/starter-kit";
 import { watch } from "@vue/runtime-core";
 import Placeholder from "@tiptap/extension-placeholder";
+import Image from '@/extensions/Image'
 
 export default {
   name: "TextEditor",
@@ -22,12 +23,12 @@ export default {
   setup(props, ctx) {
     const editor = useEditor({
       extensions: [
+        Image,
         StaterKit.configure({ heading: { levels: [1, 2, 3] } }),
         Placeholder.configure({
           emptyEditorClass: "editor-empty",
           emptyNodeClass: "empty-node",
           placeholder: ({ node }) => {
-              console.log(node)
             if (node.type.name === "heading") {
                 if (node.attrs.level === 1 )
                     return "What's are we writing about?...";
