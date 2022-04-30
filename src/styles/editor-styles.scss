@@ -1,0 +1,66 @@
+.ProseMirror {
+  height: 100%;
+  outline: none;
+
+  > * + * {
+    margin-top: 0.75em;
+  }
+
+  p > code {
+    background-color: rgba(#616161, 0.1);
+    color: #616161;
+    padding: 2px 2px;
+    @apply rounded;
+  }
+
+  h1, h2 {
+    @apply border-b border-b-gray-200;
+  }
+
+  h1, h2 {
+    @apply pb-1;
+  }
+
+  h1 {
+    font-size: x-large;
+  }
+
+  h2 {
+    font-size: larger;
+  }
+
+  h3 {
+    font-size: medium;
+    @apply font-bold;
+  }
+
+  blockquote {
+    border-left: 3px solid black;
+    @apply bg-gray-100 rounded;
+    padding-left: 1em;
+    padding-top: 3px;
+    padding-bottom: 3px;
+  }
+
+  ul {
+    list-style-type: circle;
+    padding-left: 2em;
+  }
+
+  ol {
+    list-style-type: decimal;
+    padding-left: 2em;
+  }
+
+  p.empty-node,p.editor-empty{
+    color: red;
+  }
+
+  .empty-node::before, .editor-empty::before {
+    content: attr(data-placeholder);
+    float: left;
+    color: #adb5bd;
+    pointer-events: none;
+    height: 0;
+  }
+}
