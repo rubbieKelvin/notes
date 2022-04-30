@@ -93,9 +93,7 @@ export default {
     const { getNote, getNoteAuthor } = useNote();
     const note = computed(() => getNote(props.ld));
     const store = useStore()
-    const content = ref(
-      "<h2>Hi my name's rubbie</h2><ul><li><p>[x] hell</p></li><li><p></p></li></ul>"
-    );
+    const content = ref('');
 
     const author = computed(() => {
       const a = getNoteAuthor(note.value);
