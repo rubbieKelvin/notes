@@ -1,5 +1,5 @@
 <template>
-  <div class="view-pad flex flex-col gap-4 flex-grow h-[90%]">
+  <div class="view-pad flex flex-col gap-4 flex-grow md:h-[90%]">
     <h1 class="subject-heading">{{ data.name }}</h1>
 
     <div class="pb-4">
@@ -66,6 +66,7 @@ export default {
     const { getNoteAuthor, getNoteContent } = useNotes();
     const author = computed(() => {
       const a = getNoteAuthor(props.data)
+      
       return {
         ...a,
         fullname: `${a.first_name} ${a.last_name}`

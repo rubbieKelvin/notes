@@ -1,6 +1,6 @@
 <template>
   <div class="bg-gray-50 min-h-screen flex justify-center items-end">
-    <div class="bg-white shadow-md rounded-t-md h-[90vh] max-h-[90vh] max-w-[850px] w-full flex-col flex flex-grow">
+    <div class="bg-white shadow-md rounded-t-md md:h-[90vh] md:max-h-[90vh] h-screen max-w-[850px] w-full flex-col flex flex-grow">
       <template v-if="note">
         <div
           class="flex items-center px-5 py-2 border-b border-b-gray-200 gap-5"

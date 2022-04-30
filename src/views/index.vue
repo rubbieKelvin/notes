@@ -147,8 +147,8 @@ import useNote from "@/composables/useNotes";
 import Modal from "@/components/Modal.vue";
 import { ref } from "@vue/reactivity";
 import { NotePad } from "@/utils/datamodel";
-import { useStore } from 'vuex';
-import { ADD_ITEM } from '@/constants/mutations';
+import { useStore } from "vuex";
+import { ADD_ITEM } from "@/constants/mutations";
 
 export default {
   components: { SideMenuButton, IconButton, NoteItemDelegate, Modal },
@@ -162,15 +162,21 @@ export default {
     });
 
     const addNote = () => {
-      const notepad = NotePad()
+      const notepad = NotePad();
 
       const note = notepad.createNote({
         name: newNoteForm.value.title,
         description: newNoteForm.value.description,
       });
 
-      store.commit(ADD_ITEM, note)
-      
+      note.author = notepad.createAuthor({
+        id: "local",
+        first_name: "Me",
+        last_name: "",
+      }).ld;
+
+      notepad.dump((item) => store.commit(ADD_ITEM, item));
+
       newNoteForm.value.description = "";
       newNoteForm.value.title = "";
       newNoteModal.value = false;
