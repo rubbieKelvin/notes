@@ -135,6 +135,7 @@
             placeholder="Title"
             @keypress.enter="add_note"
           />
+          <p class="text-red-500 text-sm">{{ errormessage }}</p>
           <button
             @click="add_note"
             class="
@@ -166,10 +167,11 @@ import { watch } from "@vue/runtime-core";
 export default {
   components: { SideMenuButton, IconButton, NoteItemDelegate, Modal },
   setup() {
-    const { notes, addNote } = useNote()
+    const { notes, addNote } = useNote();
 
     const newNoteModal = ref(false);
     const modalTitleInput = ref(null);
+    const errormessage = ref("");
     const newNoteForm = ref({
       title: "",
     });
@@ -177,17 +179,31 @@ export default {
     watch(newNoteModal, (oldValue, newValue) => {
       if (oldValue) {
         window.requestAnimationFrame(() => modalTitleInput.value.focus());
+        errormessage.value = ""
       }
     });
 
     const add_note = () => {
-      addNote(newNoteForm.value.title)
+      const title = newNoteForm.value.title.trim();
 
-      newNoteForm.value.title = "";
-      newNoteModal.value = false;
+      if (title) {
+        addNote(title);
+        newNoteForm.value.title = "";
+        newNoteModal.value = false;
+      } else {
+        errormessage.value = "*Title cannot be empty";
+        newNoteForm.value.title = "";
+      }
     };
 
-    return { add_note, notes, newNoteModal, newNoteForm, modalTitleInput };
+    return {
+      add_note,
+      notes,
+      newNoteModal,
+      newNoteForm,
+      modalTitleInput,
+      errormessage,
+    };
   },
 };
 </script>
