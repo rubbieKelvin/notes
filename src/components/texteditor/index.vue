@@ -21,14 +21,19 @@
 </template>
 
 <style lang="scss" scoped>
-.root,
-.root > div {
-  height: 100%;
+.root {
+  height: 0;
+  overflow-y: auto;
+  @apply custom-scrollbar;
+
+  div {
+    height: 100%;
+  }
 }
 
 .floating {
   pointer-events: all;
-  @apply flex gap-2 bg-gray-50 rounded-md p-1 mt-20 -ml-3;
+  @apply flex gap-2 bg-gray-50 rounded-md p-1 mt-8 -ml-3;
 
   button {
     @apply hover:bg-gray-200 text-sm p-1 rounded-md;
