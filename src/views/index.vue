@@ -132,7 +132,7 @@
             v-model="newNoteForm.title"
             class="input-text"
             type="text"
-            placeholder="title"
+            placeholder="Title"
             @keypress.enter="add_note"
           />
           <button
