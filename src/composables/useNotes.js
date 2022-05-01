@@ -1,7 +1,7 @@
 import { computed } from "vue";
 import { useStore } from "vuex";
 import { v4 as uuid4 } from "uuid";
-import { UPDATE_NOTE } from "@/constants/mutations";
+import { DELETE_NOTE, UPDATE_NOTE } from "@/constants/mutations";
 import welcomeNote from "@/templates/welcome.json";
 
 export default function () {
@@ -80,11 +80,16 @@ export default function () {
     store.commit(UPDATE_NOTE, _raw);
   };
 
+  const deleteNote = (ld) => {
+    store.commit(DELETE_NOTE, ld)
+  }
+
   return {
     notes,
     addNote,
     Note,
     getAuthorFullName,
     createWelcomeNote,
+    deleteNote
   };
 }
