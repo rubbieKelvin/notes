@@ -28,6 +28,27 @@
 
           <div class="tools">
             <!-- ... -->
+            <IconButton
+              class="hover:bg-red-500 p-1 hover:text-white"
+              @click="deleteModalOpened = true"
+            >
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 18 18"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                class=""
+              >
+                <path
+                  d="M3 5.25H15M14.25 5.25L13.5997 14.3565C13.5728 14.7349 13.4035 15.0891 13.1258 15.3477C12.8482 15.6063 12.4829 15.75 12.1035 15.75H5.8965C5.5171 15.75 5.1518 15.6063 4.87416 15.3477C4.59653 15.0891 4.42719 14.7349 4.40025 14.3565L3.75 5.25H14.25ZM7.5 8.25V12.75V8.25ZM10.5 8.25V12.75V8.25ZM11.25 5.25V3C11.25 2.80109 11.171 2.61032 11.0303 2.46967C10.8897 2.32902 10.6989 2.25 10.5 2.25H7.5C7.30109 2.25 7.11032 2.32902 6.96967 2.46967C6.82902 2.61032 6.75 2.80109 6.75 3V5.25H11.25Z"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </IconButton>
           </div>
         </div>
 
@@ -78,6 +99,15 @@
         </div>
       </template>
     </div>
+
+    <Modal v-model="deleteModalOpened" dim closeOnClickOutside closeOnEsc>
+      <ConfirmDialog
+        :noAction="() => (deleteModalOpened = false)"
+        :yesAction="() => delete_note()"
+        :yesClass="['bg-red-400 hover:bg-red-500']"
+        :noClass="['bg-gray-300 hover:bg-gray-400 text-black']"
+      />
+    </Modal>
   </div>
 </template>
 
@@ -91,6 +121,9 @@ import { computed, ref } from "@vue/runtime-core";
 import EditModeSvg from "../assets/svgs/editModeSvg.vue";
 import LeftChevronSvg from "../assets/svgs/leftChevronSvg.vue";
 import EmptyStateSvg from "../assets/svgs/emptyStateSvg.vue";
+import { useRouter } from "vue-router";
+import Modal from "@/components/Modal.vue";
+import ConfirmDialog from "@/components/ConfirmDialog.vue";
 
 export default {
   props: {
@@ -107,10 +140,14 @@ export default {
     DetailItem,
     Texteditor,
     FuzzyDate,
+    Modal,
+    ConfirmDialog,
   },
   setup(props) {
-    const { Note, getAuthorFullName } = useNote();
+    const { Note, getAuthorFullName, deleteNote } = useNote();
     const note = Note(props.ld);
+    const router = useRouter();
+    const deleteModalOpened = ref(false);
 
     const author = getAuthorFullName(note.value?.author);
 
@@ -132,7 +169,19 @@ export default {
       },
     });
 
-    return { note, noteBody, author, noteHeading };
+    const delete_note = () => {
+      deleteNote(props.ld);
+      router.push("/");
+    };
+
+    return {
+      note,
+      noteBody,
+      author,
+      noteHeading,
+      delete_note,
+      deleteModalOpened,
+    };
   },
 };
 </script>
