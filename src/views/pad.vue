@@ -1,7 +1,15 @@
 <template>
   <div class="bg-gray-50 min-h-screen flex justify-center items-end">
     <div
-      class="bg-white shadow-md rounded-t-md h-[90vh] max-h-[90vh] max-w-[850px] w-full flex-col flex flex-grow"
+      class="
+        bg-white
+        shadow-md
+        rounded-t-md
+        h-[90vh]
+        max-h-[90vh] max-w-[850px]
+        w-full
+        flex-col flex flex-grow
+      "
     >
       <template v-if="note">
         <div
@@ -21,18 +29,18 @@
         <!-- ...pad -->
         <div class="view-pad">
           <!-- heading -->
-          <input v-model="noteHeading" type="text" class="subject-heading" />
+          <input v-model="noteHeading" placeholder="Note title...." type="text" class="subject-heading" />
 
           <FuzzyDate :datetime="note.created_at" v-slot="{ fuzzy }">
             <p class="">
               Created by
-              <span class="bg-gray-100 rounded p-1">{{ author.fullname }}</span
+              <span class="bg-gray-100 rounded p-1">{{ author }}</span
               >, {{ fuzzy }}
             </p>
           </FuzzyDate>
 
           <!-- ...editable -->
-          <Texteditor class="flex-grow" v-model="content" />
+          <!-- <Texteditor class="flex-grow" v-model="content" /> -->
         </div>
       </template>
 
@@ -49,7 +57,14 @@
               in your notes.
             </p>
             <router-link
-              class="bg-primary-basic p-2 bg-opacity-10 hover:bg-opacity-25 text-primary-basic rounded-md"
+              class="
+                bg-primary-basic
+                p-2
+                bg-opacity-10
+                hover:bg-opacity-25
+                text-primary-basic
+                rounded-md
+              "
               to="/"
               >Go Home</router-link
             >
@@ -64,14 +79,12 @@
 import DetailItem from "@/components/DetailItem.vue";
 import Texteditor from "@/components/texteditor/index.vue";
 import FuzzyDate from "@/components/FuzzyDate.vue";
-import { ADD_ITEM } from "@/constants/mutations";
 import IconButton from "@/components/IconButton.vue";
 import useNote from "@/composables/useNotes";
 import { computed, ref } from "@vue/runtime-core";
 import EditModeSvg from "../assets/svgs/editModeSvg.vue";
 import LeftChevronSvg from "../assets/svgs/leftChevronSvg.vue";
 import EmptyStateSvg from "../assets/svgs/emptyStateSvg.vue";
-import { useStore } from 'vuex';
 
 export default {
   props: {
@@ -90,26 +103,18 @@ export default {
     FuzzyDate,
   },
   setup(props) {
-    const { getNote, getNoteAuthor } = useNote();
-    const note = computed(() => getNote(props.ld));
-    const store = useStore()
-    const content = ref('');
+    const { Note, getAuthorFullName } = useNote();
+    const note = Note(props.ld);
+    const content = ref("");
 
-    const author = computed(() => {
-      const a = getNoteAuthor(note.value);
-      return {
-        ...a,
-        fullname: `${a.first_name} ${a.last_name}`,
-      };
-    });
+    const author = getAuthorFullName(note.value?.author);
 
     const noteHeading = computed({
       get() {
         return note.value.name;
       },
       set(name) {
-        const newNote = { ...note.value, name };
-        store.commit(ADD_ITEM, newNote);
+        note.value = { name };
       },
     });
 

@@ -44,15 +44,32 @@ export default function () {
     store.commit(UPDATE_NOTE, note);
   };
 
-  const getNote = (ld) => {
-    return computed(() => notes.value.filter((note) => note.ld === ld));
+  const Note = (ld) => {
+    const get = () => notes.value.filter((note) => note.ld === ld)[0];
+
+    return computed({
+      get,
+      set: (update) => {
+        const newNote = {
+          ...get(),
+          ...update,
+          last_edited: new Date().toISOString(),
+        };
+
+        store.commit(UPDATE_NOTE, newNote);
+      },
+    });
   };
+
+  const getAuthorFullName = (author) =>
+    author.id === "local" ? "Me" : author.first_name + author.last_name;
 
   return {
     notes,
     addNote,
-    getNote
-  }
+    Note,
+    getAuthorFullName
+  };
   // const kvdb = computed(() => store.state.kvdb);
 
   // const _getKind = (key, value) =>

@@ -30,6 +30,7 @@
 <script>
 import { computed } from "@vue/runtime-core";
 import FuzzyDate from "./FuzzyDate.vue";
+import useNotes from '@/composables/useNotes';
 
 export default {
   props: {
@@ -39,9 +40,10 @@ export default {
     },
   },
   setup(props) {
+    const { getAuthorFullName } = useNotes()
     const description = computed(() => {
       const author = props.data.author;
-      const author_name = author.id === "local" ? "Me" : author.first_name;
+      const author_name = getAuthorFullName(author);
       return `Created by ${author_name} `;
     });
     return { description }
