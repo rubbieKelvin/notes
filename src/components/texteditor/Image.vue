@@ -139,10 +139,12 @@ import { computed, ref } from "@vue/runtime-core";
 
 export default {
   props: {
-    ...nodeViewProps,
+    ...nodeViewProps,   
   },
   components: {
     NodeViewWrapper,
+    ImageModal,
+    Modal
   },
   setup(prop) {
     const opened = ref(false);
@@ -156,6 +158,5 @@ export default {
     };
     return { pingImg, src, opened, alt };
   },
-  components: { Modal, ImageModal },
 };
 </script>

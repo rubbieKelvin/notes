@@ -8,6 +8,10 @@ button {
   cursor: default;
 }
 
+::selection{
+  @apply bg-blue-100;
+}
+
 * {
   -webkit-tap-highlight-color: transparent;
   -webkit-touch-callout: none;

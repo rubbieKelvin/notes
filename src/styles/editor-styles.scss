@@ -1,7 +1,7 @@
 .ProseMirror {
   height: 100%;
   outline: none;
-
+  
   > * + * {
     margin-top: 0.75em;
   }
@@ -18,7 +18,7 @@
   }
 
   h1, h2 {
-    @apply pb-1;
+    @apply pb-3;
   }
 
   h1 {
@@ -36,10 +36,8 @@
 
   blockquote {
     border-left: 3px solid black;
-    @apply bg-gray-100 rounded;
-    padding-left: 1em;
-    padding-top: 3px;
-    padding-bottom: 3px;
+    @apply bg-gray-100 rounded-sm;
+    @apply py-2 px-3;
   }
 
   ul {
@@ -50,6 +48,10 @@
   ol {
     list-style-type: decimal;
     padding-left: 2em;
+  }
+
+  li {
+    @apply mb-0.5 hover:bg-gray-50;
   }
 
   p.empty-node,p.editor-empty{
@@ -63,4 +65,9 @@
     pointer-events: none;
     height: 0;
   }
+}
+
+
+div#tippy-2[data-tippy-root]{
+  pointer-events: none;
 }

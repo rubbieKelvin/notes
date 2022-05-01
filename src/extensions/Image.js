@@ -2,8 +2,9 @@ import { Node } from "@tiptap/core";
 import { VueNodeViewRenderer } from "@tiptap/vue-3";
 import Image from "@/components/texteditor/Image.vue";
 
+// TODO: fix this extension
 export default Node.create({
-  name: "note-image",
+  name: 'noteImage',
   addNodeView() {
     return VueNodeViewRenderer(Image);
   },
@@ -33,11 +34,6 @@ export default Node.create({
           if (dispatch) tr.replaceRangeWith(selection.from, selection.to, node);
           return true;
         },
-    };
-  },
-  addKeyboardShortcuts() {
-    return {
-      "Mod-a": () => this.editor.commands.addImage(),
     };
   },
 });
