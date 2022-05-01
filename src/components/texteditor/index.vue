@@ -40,6 +40,8 @@ import Placeholder from "@tiptap/extension-placeholder";
 import Image from "@/extensions/Image";
 import Link from "@tiptap/extension-link";
 import SelectMenu from "./SelectMenu.vue";
+import TaskList from '@tiptap/extension-task-list'
+import TaskItem from '@tiptap/extension-task-item'
 
 export default {
   name: "TextEditor",
@@ -55,6 +57,8 @@ export default {
     const editor = useEditor({
       extensions: [
         Image,
+        TaskList,
+        TaskItem,
         Link.configure({
           autolink: true,
           linkOnPaste: true,
