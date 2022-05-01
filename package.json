@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@tiptap/extension-floating-menu": "^2.0.0-beta.51",
+    "@tiptap/extension-link": "^2.0.0-beta.37",
     "@tiptap/extension-placeholder": "^2.0.0-beta.48",
     "@tiptap/starter-kit": "^2.0.0-beta.184",
     "@tiptap/vue-3": "^2.0.0-beta.91",

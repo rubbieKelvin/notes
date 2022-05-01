@@ -145,6 +145,25 @@
         }
       ]
     },
-    { "type": "paragraph" }
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "you can also add links " },
+        {
+          "type": "text",
+          "marks": [
+            {
+              "type": "link",
+              "attrs": {
+                "href": "http://rubbiekelvin.netlify.app",
+                "target": "_blank"
+              }
+            }
+          ],
+          "text": "http://rubbiekelvin.netlify.app"
+        },
+        { "type": "text", "text": " " }
+      ]
+    }
   ]
 }

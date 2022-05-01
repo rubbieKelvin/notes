@@ -1,9 +1,13 @@
 .ProseMirror {
   height: 100%;
   outline: none;
-  
+
   > * + * {
     margin-top: 0.75em;
+  }
+
+  a {
+    @apply text-blue-500 underline cursor-default;
   }
 
   p > code {
@@ -13,11 +17,13 @@
     @apply rounded;
   }
 
-  h1, h2 {
+  h1,
+  h2 {
     @apply border-b border-b-gray-200;
   }
 
-  h1, h2 {
+  h1,
+  h2 {
     @apply pb-3;
   }
 
@@ -54,11 +60,13 @@
     @apply mb-0.5 hover:bg-gray-50;
   }
 
-  p.empty-node,p.editor-empty{
+  p.empty-node,
+  p.editor-empty {
     color: red;
   }
 
-  .empty-node::before, .editor-empty::before {
+  .empty-node::before,
+  .editor-empty::before {
     content: attr(data-placeholder);
     float: left;
     color: #adb5bd;
@@ -67,7 +75,6 @@
   }
 }
 
-
-div#tippy-2[data-tippy-root]{
+div#tippy-2[data-tippy-root] {
   pointer-events: none;
 }

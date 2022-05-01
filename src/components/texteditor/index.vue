@@ -31,6 +31,7 @@ import StaterKit from "@tiptap/starter-kit";
 import { watch, ref } from "@vue/runtime-core";
 import Placeholder from "@tiptap/extension-placeholder";
 import Image from "@/extensions/Image";
+import Link from '@tiptap/extension-link'
 
 export default {
   name: "TextEditor",
@@ -44,6 +45,11 @@ export default {
     const editor = useEditor({
       extensions: [
         Image,
+        Link.configure({
+          autolink: true,
+          linkOnPaste: true,
+          openOnClick: true
+        }),
         StaterKit.configure({ heading: { levels: [1, 2, 3] } }),
         Placeholder.configure({
           emptyEditorClass: "editor-empty",
