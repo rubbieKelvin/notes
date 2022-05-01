@@ -6,7 +6,8 @@
 import { onMounted } from "@vue/runtime-core";
 import { values } from "idb-keyval";
 import { useStore } from "vuex";
-import { UPDATE_NOTE } from './constants/mutations';
+import { UPDATE_NOTE } from "./constants/mutations";
+import useNotes from "./composables/useNotes";
 // import { _buildWelcomeDocument } from "./utils"
 
 export default {
@@ -21,9 +22,14 @@ export default {
       dbvalues.forEach((value) => {
         const jsonValue = JSON.parse(value);
         if (jsonValue?._type === "note" && !notekeys.includes(jsonValue.ld)) {
-          store.commit(UPDATE_NOTE, jsonValue)
+          store.commit(UPDATE_NOTE, jsonValue);
         }
       });
+
+      if (Object.keys(store.state.notes).length === 0) {
+        const { createWelcomeNote } = useNotes();
+        createWelcomeNote(store);
+      }
     });
     return {};
   },

@@ -1,0 +1,150 @@
+{
+  "type": "doc",
+  "content": [
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "Hi there ✌🏽, welcome to " },
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "notes" },
+        { "type": "text", "text": ". " }
+      ]
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 2 },
+      "content": [{ "type": "text", "text": "Markdown" }]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "note supports markdown, you can use " },
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "#" },
+        {
+          "type": "text",
+          "text": " at the beginning of a line to create headings, up to three levels."
+        }
+      ]
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 1 },
+      "content": [{ "type": "text", "text": "One # " }]
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 2 },
+      "content": [{ "type": "text", "text": "Two ##" }]
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 3 },
+      "content": [{ "type": "text", "text": "Three ###" }]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "Enclose a text in " },
+        { "type": "text", "marks": [{ "type": "code" }], "text": "*" },
+        { "type": "text", "text": " to get an italic text." }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "type " },
+        { "type": "text", "marks": [{ "type": "code" }], "text": "*text*" },
+        { "type": "text", "text": "  to get " },
+        { "type": "text", "marks": [{ "type": "italic" }], "text": "text" }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "type " },
+        { "type": "text", "marks": [{ "type": "code" }], "text": "**text**" },
+        { "type": "text", "text": " to get " },
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "text" }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "type " },
+        { "type": "text", "marks": [{ "type": "code" }], "text": "~~text~~" },
+        { "type": "text", "text": " to " },
+        {
+          "type": "text",
+          "marks": [{ "type": "strike" }],
+          "text": "strike through "
+        }
+      ]
+    },
+    {
+      "type": "blockquote",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "marks": [{ "type": "bold" }], "text": "Note" },
+            { "type": "text", "text": ": dont be afraid to use " },
+            {
+              "type": "text",
+              "marks": [{ "type": "italic" }],
+              "text": "Ctrl-Z"
+            },
+            { "type": "text", "text": " and " },
+            {
+              "type": "text",
+              "marks": [{ "type": "italic" }],
+              "text": "Ctrl-Y"
+            },
+            { "type": "text", "text": " to undo and \"redo\" mistakes 😂" }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "Create a list item starting your line with either "
+        },
+        { "type": "text", "marks": [{ "type": "code" }], "text": "-" },
+        { "type": "text", "text": " or " },
+        { "type": "text", "marks": [{ "type": "code" }], "text": "1." },
+        { "type": "text", "text": " as so..." }
+      ]
+    },
+    {
+      "type": "bulletList",
+      "content": [
+        {
+          "type": "listItem",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "Hello" }]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "orderedList",
+      "attrs": { "start": 1 },
+      "content": [
+        {
+          "type": "listItem",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "World" }]
+            }
+          ]
+        }
+      ]
+    },
+    { "type": "paragraph" }
+  ]
+}
