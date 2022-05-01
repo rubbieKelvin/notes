@@ -75,7 +75,7 @@
         </div>
 
         <!-- list -->
-        <div class="flex-grow h-0 overflow-y-scroll">
+        <div class="flex-grow h-0 overflow-y-scroll custom-scrollbar">
           <NoteItemDelegate
             v-for="note in notes"
             :key="note.ld"
@@ -133,18 +133,10 @@
             class="input-text"
             type="text"
             placeholder="title"
-            @keypress.enter="$refs.modalDescrInput.focus()"
-          />
-          <input
-          ref="modalDescrInput"
-          @keypress.enter="addNote"
-            v-model="newNoteForm.description"
-            class="input-text"
-            type="text"
-            placeholder="descripton"
+            @keypress.enter="add_note"
           />
           <button
-            @click="addNote"
+            @click="add_note"
             class="
               bg-primary-basic
               px-4
@@ -169,21 +161,17 @@ import NoteItemDelegate from "@/components/NoteItemDelegate.vue";
 import useNote from "@/composables/useNotes";
 import Modal from "@/components/Modal.vue";
 import { ref } from "@vue/reactivity";
-import { NotePad } from "@/utils/datamodel";
-import { useStore } from "vuex";
-import { ADD_ITEM } from "@/constants/mutations";
 import { watch } from "@vue/runtime-core";
 
 export default {
   components: { SideMenuButton, IconButton, NoteItemDelegate, Modal },
   setup() {
-    const store = useStore();
-    const { notes } = useNote();
+    const { notes, addNote } = useNote()
+
     const newNoteModal = ref(false);
     const modalTitleInput = ref(null);
     const newNoteForm = ref({
       title: "",
-      description: "",
     });
 
     watch(newNoteModal, (oldValue, newValue) => {
@@ -192,28 +180,14 @@ export default {
       }
     });
 
-    const addNote = () => {
-      const notepad = NotePad();
+    const add_note = () => {
+      addNote(newNoteForm.value.title)
 
-      const note = notepad.createNote({
-        name: newNoteForm.value.title,
-        description: newNoteForm.value.description,
-      });
-
-      note.author = notepad.createAuthor({
-        id: "local",
-        first_name: "Me",
-        last_name: "",
-      }).ld;
-
-      notepad.dump((item) => store.commit(ADD_ITEM, item));
-
-      newNoteForm.value.description = "";
       newNoteForm.value.title = "";
       newNoteModal.value = false;
     };
 
-    return { addNote, notes, newNoteModal, newNoteForm, modalTitleInput };
+    return { add_note, notes, newNoteModal, newNoteForm, modalTitleInput };
   },
 };
 </script>

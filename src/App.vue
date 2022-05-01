@@ -3,11 +3,11 @@
 </template>
 
 <script>
-import { _buildWelcomeDocument } from "./utils"
+// import { _buildWelcomeDocument } from "./utils"
 
 export default {
   setup(){
-    _buildWelcomeDocument()
+    // _buildWelcomeDocument()
     return {}
   }
 }

@@ -1,14 +1,14 @@
 import { createStore } from "vuex";
-import { ADD_ITEM } from "@/constants/mutations";
+import { UPDATE_NOTE } from "@/constants/mutations";
 
 export default createStore({
   state: () => ({
-    kvdb: {},
+    notes: {}
   }),
   mutations: {
-    [ADD_ITEM](state, payload){
+    [UPDATE_NOTE](state, payload){
       if (!payload.ld) return
-      state.kvdb[payload.ld] = payload
+      state.notes[payload.ld] = payload
     },
   },
 });
