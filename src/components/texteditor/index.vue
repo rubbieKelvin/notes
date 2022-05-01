@@ -1,5 +1,12 @@
 <template>
   <div class="root">
+    <bubble-menu
+      :editor="editor"
+      v-if="editor"
+      :tippy-options="{ duration: 100 }"
+    >
+      <SelectMenu :editor="editor" />
+    </bubble-menu>
     <editor-content :editor="editor" />
   </div>
 </template>
@@ -26,24 +33,33 @@
 </style>
 
 <script>
-import { EditorContent, useEditor } from "@tiptap/vue-3";
+import { EditorContent, useEditor, BubbleMenu } from "@tiptap/vue-3";
 import StaterKit from "@tiptap/starter-kit";
 import { watch, ref } from "@vue/runtime-core";
 import Placeholder from "@tiptap/extension-placeholder";
 import Image from "@/extensions/Image";
+import Link from "@tiptap/extension-link";
+import SelectMenu from "./SelectMenu.vue";
 
 export default {
   name: "TextEditor",
   components: {
     EditorContent,
+    BubbleMenu,
+    SelectMenu,
   },
   props: {
-    modelValue: Object
+    modelValue: Object,
   },
   setup(props, ctx) {
     const editor = useEditor({
       extensions: [
         Image,
+        Link.configure({
+          autolink: true,
+          linkOnPaste: true,
+          openOnClick: true,
+        }),
         StaterKit.configure({ heading: { levels: [1, 2, 3] } }),
         Placeholder.configure({
           emptyEditorClass: "editor-empty",
@@ -71,7 +87,8 @@ export default {
     watch(
       () => props.modelValue,
       (value) => {
-        if (JSON.stringify(editor.value.getJSON()) === JSON.stringify(value)) return;
+        if (JSON.stringify(editor.value.getJSON()) === JSON.stringify(value))
+          return;
         editor.value.commands.setContent(value, false);
       }
     );

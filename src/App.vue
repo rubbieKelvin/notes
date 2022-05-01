@@ -8,11 +8,9 @@ import { values } from "idb-keyval";
 import { useStore } from "vuex";
 import { UPDATE_NOTE } from "./constants/mutations";
 import useNotes from "./composables/useNotes";
-// import { _buildWelcomeDocument } from "./utils"
 
 export default {
   setup() {
-    // _buildWelcomeDocument()
     const store = useStore();
 
     onMounted(async () => {
