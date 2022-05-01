@@ -51,6 +51,24 @@
     padding-left: 2em;
   }
 
+  ul[data-type="taskList"] {
+    list-style-type: none;
+    padding-left: 1em;
+
+    li {
+      @apply flex gap-3 items-center hover:bg-inherit mb-1;
+      > label {
+        display: flex;
+        align-items: center;
+
+        > input[type="checkbox"] {
+          height: 17px;
+          width: 17px;
+        }
+      }
+    }
+  }
+
   ol {
     list-style-type: decimal;
     padding-left: 2em;
