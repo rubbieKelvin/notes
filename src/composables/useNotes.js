@@ -16,6 +16,7 @@ export default function () {
       name,
       ld: uuid4(),
       id: null,
+      _type: 'note',
       version: "0.0.0",
       created_at: new Date().toISOString(),
       last_edited: new Date().toISOString(),
