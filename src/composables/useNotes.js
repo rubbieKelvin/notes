@@ -61,8 +61,10 @@ export default function () {
     });
   };
 
-  const getAuthorFullName = (author) =>
-    author.id === "local" ? "Me" : author.first_name + author.last_name;
+  const getAuthorFullName = (author) => {
+    if (!author) return null
+    return  author.id === "local" ? "Me" : author.first_name + author.last_name;
+  }
 
   return {
     notes,

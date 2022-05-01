@@ -21,7 +21,7 @@
         
       </FuzzyDate>
     </div>
-    <FuzzyDate :datetime="data.last_edited" v-slot="{ fuzzy }">
+    <FuzzyDate shortened :datetime="data.last_edited" v-slot="{ fuzzy }">
       <p class="md:text-xs text-sm text-gray-400">{{ fuzzy }}</p>
     </FuzzyDate>
   </router-link>

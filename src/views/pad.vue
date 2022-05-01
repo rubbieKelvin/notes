@@ -29,7 +29,12 @@
         <!-- ...pad -->
         <div class="view-pad">
           <!-- heading -->
-          <input v-model="noteHeading" placeholder="Note title...." type="text" class="subject-heading" />
+          <input
+            v-model="noteHeading"
+            placeholder="Note title...."
+            type="text"
+            class="subject-heading"
+          />
 
           <FuzzyDate :datetime="note.created_at" v-slot="{ fuzzy }">
             <p class="">
@@ -50,19 +55,15 @@
           <div class="flex gap-2 flex-col items-center">
             <h1 class="text-5xl">404</h1>
             <p class="text-gray-500 max-w-[200px] text-center">
-              Couldnt find
-              <span class="text-gray-800 bg-gray-100 rounded-md p-1">{{
-                slug
-              }}</span>
-              in your notes.
+              Couldnt find this note.
             </p>
             <router-link
               class="
                 bg-primary-basic
                 p-2
-                bg-opacity-10
-                hover:bg-opacity-25
-                text-primary-basic
+                bg-opacity-5
+                hover:bg-opacity-10
+                text-sm text-primary-basic
                 rounded-md
               "
               to="/"
