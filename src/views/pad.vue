@@ -19,7 +19,12 @@
             <LeftChevronSvg />
           </IconButton>
 
-          <h1 class="flex-grow capitalize">{{ note.name }}</h1>
+          <div class="flex flex-grow gap-3 items-center">
+            <h1 class="capitalize">{{ note.name }}</h1>
+            <FuzzyDate :datetime="note.last_edited" v-slot="{ fuzzy }">
+              <p class="text-sm text-gray-400">edited {{ fuzzy }}</p>
+            </FuzzyDate>
+          </div>
 
           <div class="tools">
             <!-- ... -->
@@ -45,7 +50,7 @@
           </FuzzyDate>
 
           <!-- ...editable -->
-          <!-- <Texteditor class="flex-grow" v-model="content" /> -->
+          <Texteditor class="flex-grow" v-model="noteBody" />
         </div>
       </template>
 
@@ -106,7 +111,6 @@ export default {
   setup(props) {
     const { Note, getAuthorFullName } = useNote();
     const note = Note(props.ld);
-    const content = ref("");
 
     const author = getAuthorFullName(note.value?.author);
 
@@ -119,7 +123,16 @@ export default {
       },
     });
 
-    return { note, content, author, noteHeading };
+    const noteBody = computed({
+      get() {
+        return note.value.body;
+      },
+      set(body) {
+        note.value = { body };
+      },
+    });
+
+    return { note, noteBody, author, noteHeading };
   },
 };
 </script>
