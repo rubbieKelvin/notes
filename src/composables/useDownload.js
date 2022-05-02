@@ -8,7 +8,7 @@ export default () => {
     const blob = new Blob([JSON.stringify(noteObject, null, 2)], {
       type: "text/json",
     });
-    const download = `${noteObject.name}.json`;
+    const download = `${noteObject.name.toLowerCase()}.json`;
     const href = window.URL.createObjectURL(blob);
 
     return {
