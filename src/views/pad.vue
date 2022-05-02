@@ -106,6 +106,10 @@
         :yesAction="() => delete_note()"
         :yesClass="['bg-red-400 hover:bg-red-500']"
         :noClass="['bg-gray-300 hover:bg-gray-400 text-black']"
+        message="You cannot undo this action, are you sure you want to delete this note?"
+        :title="`Delete ${note.name}`"
+        noText="No, Take me back"
+        yesText="Yes, Delete this note"
       />
     </Modal>
   </div>
