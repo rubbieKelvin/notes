@@ -24,8 +24,8 @@
       <div class="tab">
         <button
           class="capitalize"
-          @click="activeMenu = menu.enabled ? menu.name : activeMenu"
-          :class="{ active: activeMenu === menu.name }"
+          @click="activeMenu = menu.enabled ? menu : activeMenu"
+          :class="{ active: activeMenu.name === menu.name }"
           v-for="menu in MENUS"
           :key="menu.name"
           :title="menu.enabled ? null : menu.disabledMessage"
@@ -38,9 +38,16 @@
     </div>
 
     <!-- search -->
-    <NoteSearch/>
+    <NoteSearch />
 
     <!-- notes -->
+    <div>
+      <NoteItemDelegate
+        v-for="note in filteredNotes"
+        :key="note.ld"
+        :data="note"
+      />
+    </div>
   </div>
 </template>
 
@@ -48,27 +55,38 @@
 import { PlusIcon, BanIcon } from "@heroicons/vue/outline";
 import { ref } from "@vue/reactivity";
 import NoteSearch from "@/components/panels/NoteSearch.vue";
+import useNotes from "@/composables/useNotes";
+import { NOTE_TYPES } from "@/constants/note";
+import { computed } from "@vue/runtime-core";
+import NoteItemDelegate from "@/components/NoteItemDelegate.vue";
 
 const _menu = ({
   name,
   enabled = false,
+  noteTypeKey = NOTE_TYPES.CLASSIC_NOTE,
   disabledMessage = "This Feature is not implemented yet",
-}) => ({ name, enabled, disabledMessage });
+}) => ({ name, enabled, disabledMessage, noteTypeKey });
 
 const MENUS = [
   _menu({ name: "Classic", enabled: true }),
-  _menu({ name: "Important" }),
+  _menu({ name: "Important", noteTypeKey: NOTE_TYPES.IMPORTANT_NOTE }),
 ];
 
 export default {
   components: {
     PlusIcon,
     BanIcon,
-    NoteSearch
-},
+    NoteSearch,
+    NoteItemDelegate,
+  },
   setup() {
-    const activeMenu = ref(MENUS[0].name);
-    return { MENUS, activeMenu };
+    const activeMenu = ref(MENUS[0]);
+    const { notes } = useNotes();
+
+    const filteredNotes = computed(() =>
+      notes.value.filter((note) => note.note_type === activeMenu.noteTypeKey)
+    );
+    return { MENUS, activeMenu, filteredNotes };
   },
 };
 </script>
@@ -83,7 +101,7 @@ export default {
       @apply w-4 h-4;
     }
 
-    > div{
+    > div {
       @apply h-4;
     }
   }

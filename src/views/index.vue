@@ -34,7 +34,7 @@ export default {
 
 <style lang="scss" scoped>
 .root {
-  @apply h-screen flex items-center justify-center bg-slate-200;
+  @apply h-screen flex items-center justify-center bg-gray-100;
 
   .board {
     @apply overflow-clip;
