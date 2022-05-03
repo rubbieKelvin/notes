@@ -4,6 +4,7 @@
       <div class="flex flex-grow items-center">
         <h1 class="flex-grow text-3xl">Notes</h1>
         <button
+          @click="newNoteModal = true"
           class="
             flex
             items-center
@@ -48,17 +49,52 @@
         :data="note"
       />
     </div>
+
+    <!-- modal -->
+    <Modal v-model="newNoteModal" dim closeOnClickOutside closeOnEsc>
+      <div class="bg-white rounded-md w-[300px] p-3 flex flex-col gap-6">
+        <div>
+          <p>New Note</p>
+        </div>
+
+        <div class="flex flex-col gap-4">
+          <input
+            ref="modalTitleInput"
+            v-model="newNoteForm.title"
+            class="input-text"
+            type="text"
+            placeholder="Title"
+            @keypress.enter="add_note"
+          />
+          <p class="text-red-500 text-sm">{{ errormessage }}</p>
+          <button
+            @click="add_note"
+            class="
+              bg-primary-basic
+              px-4
+              py-2
+              rounded-md
+              text-white
+              hover:bg-primary-vibrant
+            "
+          >
+            Create
+          </button>
+        </div>
+      </div>
+    </Modal>
   </div>
 </template>
 
 <script>
 import { PlusIcon, BanIcon } from "@heroicons/vue/outline";
-import { ref } from "@vue/reactivity";
 import NoteSearch from "@/components/panels/NoteSearch.vue";
 import useNotes from "@/composables/useNotes";
 import { NOTE_TYPES } from "@/constants/note";
-import { computed } from "@vue/runtime-core";
+import { computed, ref, watch } from "@vue/runtime-core";
 import NoteItemDelegate from "@/components/NoteItemDelegate.vue";
+import Modal from "@/components/Modal.vue";
+import { useRouter } from "vue-router";
 
 const _menu = ({
   name,
@@ -77,16 +113,56 @@ export default {
     PlusIcon,
     BanIcon,
     NoteSearch,
+    Modal,
     NoteItemDelegate,
   },
   setup() {
     const activeMenu = ref(MENUS[0]);
-    const { notes } = useNotes();
+    const { notes, addNote } = useNotes();
+    const newNoteModal = ref(false);
+    const modalTitleInput = ref(null);
+    const { push } = useRouter();
+    const errormessage = ref("");
+
+    const newNoteForm = ref({
+      title: "",
+    });
 
     const filteredNotes = computed(() =>
-      notes.value.filter((note) => note.note_type === activeMenu.noteTypeKey)
+      notes.value.filter((note) => note.note_type === activeMenu.value.noteTypeKey)
     );
-    return { MENUS, activeMenu, filteredNotes };
+
+    watch(newNoteModal, (oldValue, newValue) => {
+      if (oldValue) {
+        window.requestAnimationFrame(() => modalTitleInput.value.focus());
+        errormessage.value = "";
+      }
+    });
+
+    const add_note = () => {
+      const title = newNoteForm.value.title.trim();
+
+      if (title) {
+        const note = addNote(title);
+        newNoteForm.value.title = "";
+        newNoteModal.value = false;
+        push(`/${note.ld}`);
+      } else {
+        errormessage.value = "*Title cannot be empty";
+        newNoteForm.value.title = "";
+      }
+    };
+
+    return {
+      MENUS,
+      errormessage,
+      add_note,
+      activeMenu,
+      filteredNotes,
+      newNoteModal,
+      newNoteForm,
+      modalTitleInput
+    };
   },
 };
 </script>
