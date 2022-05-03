@@ -41,6 +41,7 @@ export default function () {
     });
 
     store.commit(UPDATE_NOTE, note);
+    return note
   };
 
   const Note = (ld) => {
