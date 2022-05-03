@@ -163,12 +163,13 @@ import useNote from "@/composables/useNotes";
 import Modal from "@/components/Modal.vue";
 import { ref } from "@vue/reactivity";
 import { watch } from "@vue/runtime-core";
+import { useRouter } from 'vue-router';
 
 export default {
   components: { SideMenuButton, IconButton, NoteItemDelegate, Modal },
   setup() {
     const { notes, addNote } = useNote();
-
+    const { push } = useRouter()
     const newNoteModal = ref(false);
     const modalTitleInput = ref(null);
     const errormessage = ref("");
@@ -187,9 +188,10 @@ export default {
       const title = newNoteForm.value.title.trim();
 
       if (title) {
-        addNote(title);
+        const note = addNote(title);
         newNoteForm.value.title = "";
         newNoteModal.value = false;
+        push(`/${note.ld}`)
       } else {
         errormessage.value = "*Title cannot be empty";
         newNoteForm.value.title = "";
