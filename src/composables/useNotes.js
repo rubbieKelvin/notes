@@ -5,6 +5,13 @@ import { DELETE_NOTE, UPDATE_NOTE } from "@/constants/mutations";
 import welcomeNote from "@/templates/welcome.json";
 import { NOTE_TYPES } from "@/constants/note";
 
+const _menu = ({
+  name,
+  enabled = false,
+  noteTypeKey = NOTE_TYPES.CLASSIC_NOTE,
+  disabledMessage = "This Feature is not implemented yet",
+}) => ({ name, enabled, disabledMessage, noteTypeKey });
+
 export default function () {
   const store = useStore();
   const notes = computed(() => Object.values(store.state.notes));
@@ -41,11 +48,11 @@ export default function () {
   const addNote = (name, note_type) => {
     const note = _note({
       name,
-      note_type: note_type || NOTE_TYPES.CLASSIC_NOTE
+      note_type: note_type || NOTE_TYPES.CLASSIC_NOTE,
     });
 
     store.commit(UPDATE_NOTE, note);
-    return note
+    return note;
   };
 
   const Note = (ld) => {
@@ -86,8 +93,13 @@ export default function () {
   };
 
   const deleteNote = (ld) => {
-    store.commit(DELETE_NOTE, ld)
-  }
+    store.commit(DELETE_NOTE, ld);
+  };
+
+  const noteFolders = computed(() => [
+    _menu({ name: "Classic", enabled: true }),
+    _menu({ name: "Important", noteTypeKey: NOTE_TYPES.IMPORTANT_NOTE }),
+  ]);
 
   return {
     notes,
@@ -95,6 +107,7 @@ export default function () {
     Note,
     getAuthorFullName,
     createWelcomeNote,
-    deleteNote
+    deleteNote,
+    noteFolders,
   };
 }

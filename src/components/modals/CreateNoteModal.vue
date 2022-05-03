@@ -6,11 +6,13 @@
 
     <div class="flex flex-col gap-4">
       <p class="text-gray-500">Give a title to your new note to get started.</p>
+
+      <!-- title -->
       <div class="flex flex-col gap-2">
-        <h6 class="text-sm text-primary-vibrant flex">
-          <span class="flex-grow">NOTE TITLE</span>
-          <p class="text-red-500 text-xs font-medium">{{ error }}</p>
-        </h6>
+        <label class="label">
+          <span class="text">Note title</span>
+          <p class="error">{{ error }}</p>
+        </label>
 
         <input
           ref="input"
@@ -21,6 +23,27 @@
           @keypress.enter="fire"
         />
       </div>
+
+      <!-- type -->
+      <div>
+        <label class="label">
+          <span class="text">Folder</span>
+        </label>
+
+        <ComboBox
+          class="border-2"
+          v-slot="{ open }"
+          :list="noteFolders"
+          :getItemText="(item) => item.name"
+        >
+          <div class="flex items-center px-2 py-1" @click="open">
+            <span class="flex-grow font-medium">Text</span>
+            <ChevronDownIcon class="w-3 h-3" />
+          </div>
+        </ComboBox>
+      </div>
+
+      <!-- button -->
       <div class="flex items-center justify-end">
         <button
           @click="fire"
@@ -35,12 +58,14 @@
 </template>
 
 <script>
-import { PlusIcon } from "@heroicons/vue/outline";
+import { PlusIcon, ChevronDownIcon } from "@heroicons/vue/outline";
 import { ref } from "@vue/reactivity";
 import { watch } from "@vue/runtime-core";
+import ComboBox from "../controls/ComboBox.vue";
+import useNotes from "@/composables/useNotes";
 
 export default {
-  components: { PlusIcon },
+  components: { PlusIcon, ComboBox, ChevronDownIcon },
   props: {
     callback: {
       type: Function,
@@ -48,7 +73,7 @@ export default {
     },
   },
   methods: {
-    focus(){
+    focus() {
       this.input.focus();
       this.error = "";
     },
@@ -57,6 +82,7 @@ export default {
     const error = ref("");
     const text = ref("");
     const input = ref(null);
+    const { noteFolders } = useNotes();
 
     const fire = () => {
       const title = text.value.trim();
@@ -73,7 +99,7 @@ export default {
       if (value) error.value = "";
     });
 
-    return { error, text, fire, input };
+    return { error, text, fire, input, noteFolders };
   },
 };
 </script>

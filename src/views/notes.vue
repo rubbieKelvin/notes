@@ -14,14 +14,14 @@
       <div class="tab">
         <button
           class="capitalize"
-          @click="activeMenu = menu.enabled ? menu : activeMenu"
-          :class="{ active: activeMenu.name === menu.name }"
-          v-for="menu in MENUS"
-          :key="menu.name"
-          :title="menu.enabled ? null : menu.disabledMessage"
+          @click="activeMenu = folder.enabled ? folder : activeMenu"
+          :class="{ active: activeMenu.name === folder.name }"
+          v-for="folder in noteFolders"
+          :key="folder.name"
+          :title="folder.enabled ? null : folder.disabledMessage"
         >
-          <BanIcon v-if="!menu.enabled" />
-          {{ menu.name }}
+          <BanIcon v-if="!folder.enabled" />
+          {{ folder.name }}
           <div class="" />
         </button>
       </div>
@@ -50,24 +50,11 @@
 import { PlusIcon, BanIcon } from "@heroicons/vue/outline";
 import NoteSearch from "@/components/panels/NoteSearch.vue";
 import useNotes from "@/composables/useNotes";
-import { NOTE_TYPES } from "@/constants/note";
 import { computed, ref, watch } from "@vue/runtime-core";
 import NoteItemDelegate from "@/components/NoteItemDelegate.vue";
 import Modal from "@/components/Modal.vue";
 import { useRouter } from "vue-router";
 import CreateNoteModal from "@/components/modals/CreateNoteModal.vue";
-
-const _menu = ({
-  name,
-  enabled = false,
-  noteTypeKey = NOTE_TYPES.CLASSIC_NOTE,
-  disabledMessage = "This Feature is not implemented yet",
-}) => ({ name, enabled, disabledMessage, noteTypeKey });
-
-const MENUS = [
-  _menu({ name: "Classic", enabled: true }),
-  _menu({ name: "Important", noteTypeKey: NOTE_TYPES.IMPORTANT_NOTE }),
-];
 
 export default {
   components: {
@@ -79,12 +66,12 @@ export default {
     CreateNoteModal,
   },
   setup() {
-    const activeMenu = ref(MENUS[0]);
+    const { push } = useRouter();
+    const { notes, addNote, noteFolders } = useNotes();
+
     const newNoteModal = ref(false);
     const cn_modal = ref(null)
-
-    const { push } = useRouter();
-    const { notes, addNote } = useNotes();
+    const activeMenu = ref(noteFolders.value[0]);
 
     const filteredNotes = computed(() =>
       notes.value.filter(
@@ -105,7 +92,7 @@ export default {
     };
 
     return {
-      MENUS,
+      noteFolders,
       add_note,
       activeMenu,
       filteredNotes,

@@ -22,6 +22,18 @@ button {
       @apply rounded px-4 py-3 outline-gray-200;
       @apply focus:outline-primary-basic outline-2 outline;
     }
+
+    label.label{
+      @apply text-sm text-primary-vibrant flex;
+    }
+
+    label.label > .text{
+      @apply flex-grow uppercase;
+    }
+
+    label.label > .error{
+      @apply text-red-500 text-xs font-medium;
+    }
 }
 
 @layer utilities {
