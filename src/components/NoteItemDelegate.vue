@@ -5,7 +5,6 @@
       flex
       md:px-4
       px-5
-      md:py-1
       py-2
       hover:bg-slate-100
       select-none
@@ -13,9 +12,9 @@
     "
   >
     <div class="flex flex-grow flex-col">
-      <h2 class="md:text-sm capitalize">{{ data.name }}</h2>
+      <h2 class="text-base font-semibold text-gray-700 capitalize">{{ data.name }}</h2>
       <FuzzyDate :datetime="data.created_at" v-slot="{fuzzy}">
-      <p class="md:text-xs text-sm text-gray-600">
+      <p class="md:text-xs text-sm text-gray-800">
         {{ description + fuzzy }}
       </p>
         

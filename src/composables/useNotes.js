@@ -3,6 +3,7 @@ import { useStore } from "vuex";
 import { v4 as uuid4 } from "uuid";
 import { DELETE_NOTE, UPDATE_NOTE } from "@/constants/mutations";
 import welcomeNote from "@/templates/welcome.json";
+import { NOTE_TYPES } from "@/constants/note";
 
 export default function () {
   const store = useStore();
@@ -12,6 +13,7 @@ export default function () {
     name: null,
     ld: uuid4(),
     id: null,
+    note_type: NOTE_TYPES.CLASSIC_NOTE,
     _type: "note",
     version: "0.0.0",
     created_at: new Date().toISOString(),
@@ -34,10 +36,12 @@ export default function () {
   /**
    *
    * @param {String} name
+   * @param {String} note_type
    */
-  const addNote = (name) => {
+  const addNote = (name, note_type) => {
     const note = _note({
       name,
+      note_type: note_type || NOTE_TYPES.CLASSIC_NOTE
     });
 
     store.commit(UPDATE_NOTE, note);
