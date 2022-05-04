@@ -6,6 +6,7 @@
         type="text"
         placeholder="Search Notes..."
         class="flex-grow outline-0 h-12"
+        v-model="text"
       />
     </div>
     <ComboBox
@@ -38,22 +39,26 @@ import { useStore } from "vuex";
 import { ref } from "@vue/reactivity";
 import { UPDATE_SETTINGS } from "@/constants/mutations";
 import { SETTING_KEYS } from "@/constants/settings";
-import { computed } from "@vue/runtime-core";
+import { computed, watch } from "@vue/runtime-core";
 
 export default {
   components: { ComboBox, SortAscendingIcon, SearchIcon },
-  setup() {
+  emits: ["update:searchtext"],
+  setup(props, ctx) {
     const store = useStore();
+    const text = ref("");
     const sortingOptions = ref(Object.values(SORTING_OPTIONS));
     const savedItem = computed(
       () => store.state.settings[SETTING_KEYS.SORTING_TYPE]
     );
 
+    watch(text, (value) => ctx.emit("update:searchtext", value));
+
     const updateSortingSetting = (item) => {
       store.commit(UPDATE_SETTINGS, { [SETTING_KEYS.SORTING_TYPE]: item });
     };
 
-    return { sortingOptions, updateSortingSetting, savedItem };
+    return { sortingOptions, updateSortingSetting, text, savedItem };
   },
 };
 </script>

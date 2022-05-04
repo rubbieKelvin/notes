@@ -28,7 +28,29 @@
     </div>
 
     <!-- search -->
-    <NoteSearch />
+    <NoteSearch @update:searchtext="setSearch" />
+
+    <!-- empty banner -->
+    <div v-if="filteredNotes.length === 0" class="p-3">
+      <div
+        class="flex items-center gap-3 text-primary-basic p-3 rounded-md bg-primary-basic bg-opacity-10"
+      >
+        <BanIcon class="w-5 h-5" />
+        <template v-if="searchText.length === 0">
+          <p class="font-medium flex-grow">No notes in this folder</p>
+          <button
+            @click="newNoteModal = true"
+            class="bg-primary-basic hover:bg-primary-vibrant rounded-md p-2"
+          >
+            <PlusIcon class="w-4 h-4 text-white" />
+          </button>
+        </template>
+        <p v-else class="font-medium flex-grow">
+          No search result for
+          <span class="font-semibold">{{ searchText }}</span>
+        </p>
+      </div>
+    </div>
 
     <!-- notes -->
     <div>
@@ -70,13 +92,17 @@ export default {
     const { notes, addNote, noteFolders } = useNotes();
 
     const newNoteModal = ref(false);
-    const cn_modal = ref(null)
+    const cn_modal = ref(null);
+    const searchText = ref("");
     const activeMenu = ref(noteFolders.value[0]);
 
     const filteredNotes = computed(() =>
-      notes.value.filter(
-        (note) => note.folder === activeMenu.value.noteTypeKey
-      )
+      notes.value.filter((note) => {
+        return (
+          note.folder === activeMenu.value.noteTypeKey &&
+          note.name.toLowerCase().includes(searchText.value.trim())
+        );
+      })
     );
 
     watch(newNoteModal, (value) => {
@@ -91,14 +117,18 @@ export default {
       push(`/${note.ld}`);
     };
 
+    const setSearch = (value) => (searchText.value = value);
+
     return {
       notes,
       noteFolders,
+      setSearch,
       add_note,
       activeMenu,
       filteredNotes,
       newNoteModal,
-      cn_modal
+      cn_modal,
+      searchText,
     };
   },
 };
