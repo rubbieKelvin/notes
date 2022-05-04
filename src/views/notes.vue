@@ -25,21 +25,51 @@
       <div class="tab">
         <button
           class="capitalize"
-          @click="activeMenu = menu.enabled ? menu : activeMenu"
-          :class="{ active: activeMenu.name === menu.name }"
-          v-for="menu in MENUS"
-          :key="menu.name"
-          :title="menu.enabled ? null : menu.disabledMessage"
+          @click="activeMenu = folder.enabled ? folder : activeMenu"
+          :class="{ active: activeMenu.name === folder.name }"
+          v-for="folder in noteFolders"
+          :key="folder.name"
+          :title="folder.enabled ? null : folder.disabledMessage"
         >
-          <BanIcon v-if="!menu.enabled" />
-          {{ menu.name }}
+          <BanIcon v-if="!folder.enabled" />
+          {{ folder.name }}
           <div class="" />
         </button>
       </div>
     </div>
 
     <!-- search -->
-    <NoteSearch />
+    <NoteSearch @update:searchtext="setSearch" />
+
+    <!-- empty banner -->
+    <div v-if="filteredNotes.length === 0" class="p-3">
+      <div
+        class="
+          flex
+          items-center
+          gap-3
+          text-primary-basic
+          p-3
+          rounded-md
+          bg-primary-basic bg-opacity-10
+        "
+      >
+        <BanIcon class="w-5 h-5" />
+        <template v-if="searchText.length === 0">
+          <p class="font-medium flex-grow">No notes in this folder</p>
+          <button
+            @click="newNoteModal = true"
+            class="bg-primary-basic hover:bg-primary-vibrant rounded-md p-2"
+          >
+            <PlusIcon class="w-4 h-4 text-white" />
+          </button>
+        </template>
+        <p v-else class="font-medium flex-grow">
+          No search result for
+          <span class="font-semibold">{{ searchText }}</span>
+        </p>
+      </div>
+    </div>
 
     <!-- notes -->
     <div>
@@ -52,36 +82,7 @@
 
     <!-- modal -->
     <Modal v-model="newNoteModal" dim closeOnClickOutside closeOnEsc>
-      <div class="bg-white rounded-md w-[300px] p-3 flex flex-col gap-6">
-        <div>
-          <p>New Note</p>
-        </div>
-
-        <div class="flex flex-col gap-4">
-          <input
-            ref="modalTitleInput"
-            v-model="newNoteForm.title"
-            class="input-text"
-            type="text"
-            placeholder="Title"
-            @keypress.enter="add_note"
-          />
-          <p class="text-red-500 text-sm">{{ errormessage }}</p>
-          <button
-            @click="add_note"
-            class="
-              bg-primary-basic
-              px-4
-              py-2
-              rounded-md
-              text-white
-              hover:bg-primary-vibrant
-            "
-          >
-            Create
-          </button>
-        </div>
-      </div>
+      <CreateNoteModal ref="cn_modal" :callback="add_note" />
     </Modal>
   </div>
 </template>
@@ -90,23 +91,14 @@
 import { PlusIcon, BanIcon } from "@heroicons/vue/outline";
 import NoteSearch from "@/components/panels/NoteSearch.vue";
 import useNotes from "@/composables/useNotes";
-import { NOTE_TYPES } from "@/constants/note";
 import { computed, ref, watch } from "@vue/runtime-core";
 import NoteItemDelegate from "@/components/NoteItemDelegate.vue";
 import Modal from "@/components/Modal.vue";
 import { useRouter } from "vue-router";
-
-const _menu = ({
-  name,
-  enabled = false,
-  noteTypeKey = NOTE_TYPES.CLASSIC_NOTE,
-  disabledMessage = "This Feature is not implemented yet",
-}) => ({ name, enabled, disabledMessage, noteTypeKey });
-
-const MENUS = [
-  _menu({ name: "Classic", enabled: true }),
-  _menu({ name: "Important", noteTypeKey: NOTE_TYPES.IMPORTANT_NOTE }),
-];
+import CreateNoteModal from "@/components/modals/CreateNoteModal.vue";
+import { useStore } from "vuex";
+import { SETTING_KEYS } from "@/constants/settings";
+import { ORDER } from "@/constants/sorting";
 
 export default {
   components: {
@@ -115,53 +107,60 @@ export default {
     NoteSearch,
     Modal,
     NoteItemDelegate,
+    CreateNoteModal,
   },
   setup() {
-    const activeMenu = ref(MENUS[0]);
-    const { notes, addNote } = useNotes();
-    const newNoteModal = ref(false);
-    const modalTitleInput = ref(null);
     const { push } = useRouter();
-    const errormessage = ref("");
+    const store = useStore();
+    const { notes, addNote, noteFolders, sort } = useNotes();
 
-    const newNoteForm = ref({
-      title: "",
-    });
-
-    const filteredNotes = computed(() =>
-      notes.value.filter((note) => note.note_type === activeMenu.value.noteTypeKey)
+    const newNoteModal = ref(false);
+    const cn_modal = ref(null);
+    const searchText = ref("");
+    const activeMenu = ref(noteFolders.value[0]);
+    const order = computed(
+      () => store.state.settings[SETTING_KEYS.SORTING_ORDER]
     );
 
-    watch(newNoteModal, (oldValue, newValue) => {
-      if (oldValue) {
-        window.requestAnimationFrame(() => modalTitleInput.value.focus());
-        errormessage.value = "";
+    const filteredNotes = computed(() => {
+      let res = notes.value.filter((note) => {
+        return (
+          note.folder === activeMenu.value.noteTypeKey &&
+          note.name.toLowerCase().includes(searchText.value.trim())
+        );
+      });
+      const sortingName = store.state.settings[SETTING_KEYS.SORTING_TYPE];
+      const sortingFunc = sort()[sortingName];
+      if (typeof sortingFunc === "function") res = sortingFunc(res);
+
+      if (order.value === ORDER.ACSENDING) return res.reverse();
+      return res;
+    });
+
+    watch(newNoteModal, (value) => {
+      if (value) {
+        window.requestAnimationFrame(() => cn_modal.value.focus());
       }
     });
 
-    const add_note = () => {
-      const title = newNoteForm.value.title.trim();
-
-      if (title) {
-        const note = addNote(title);
-        newNoteForm.value.title = "";
-        newNoteModal.value = false;
-        push(`/${note.ld}`);
-      } else {
-        errormessage.value = "*Title cannot be empty";
-        newNoteForm.value.title = "";
-      }
+    const add_note = (title, folder) => {
+      const note = addNote(title, folder);
+      newNoteModal.value = false;
+      push(`/${note.ld}`);
     };
 
+    const setSearch = (value) => (searchText.value = value);
+
     return {
-      MENUS,
-      errormessage,
+      notes,
+      noteFolders,
+      setSearch,
       add_note,
       activeMenu,
       filteredNotes,
       newNoteModal,
-      newNoteForm,
-      modalTitleInput
+      cn_modal,
+      searchText,
     };
   },
 };
@@ -178,14 +177,14 @@ export default {
     }
 
     > div {
-      @apply h-4;
+      @apply h-4 absolute;
     }
   }
   > button.active {
     @apply overflow-clip text-gray-700 relative;
 
     > div {
-      @apply absolute rounded-md bg-primary-basic left-0 right-0 top-10;
+      @apply rounded-md bg-primary-basic left-0 right-0 top-10;
     }
   }
 }
