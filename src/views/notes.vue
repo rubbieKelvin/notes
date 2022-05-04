@@ -77,6 +77,8 @@ import NoteItemDelegate from "@/components/NoteItemDelegate.vue";
 import Modal from "@/components/Modal.vue";
 import { useRouter } from "vue-router";
 import CreateNoteModal from "@/components/modals/CreateNoteModal.vue";
+import { useStore } from 'vuex';
+import { SETTING_KEYS } from '@/constants/settings';
 
 export default {
   components: {
@@ -89,21 +91,24 @@ export default {
   },
   setup() {
     const { push } = useRouter();
-    const { notes, addNote, noteFolders } = useNotes();
+    const store = useStore()
+    const { notes, addNote, noteFolders, sort } = useNotes();
 
     const newNoteModal = ref(false);
     const cn_modal = ref(null);
     const searchText = ref("");
     const activeMenu = ref(noteFolders.value[0]);
 
-    const filteredNotes = computed(() =>
-      notes.value.filter((note) => {
+    const filteredNotes = computed(() => {
+      const res = notes.value.filter((note) => {
         return (
           note.folder === activeMenu.value.noteTypeKey &&
           note.name.toLowerCase().includes(searchText.value.trim())
         );
       })
-    );
+      const sortingName = store.state.settings[SETTING_KEYS.SORTING_TYPE]
+      return sort()[sortingName](res)
+    });
 
     watch(newNoteModal, (value) => {
       if (value) {

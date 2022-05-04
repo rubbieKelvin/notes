@@ -4,6 +4,7 @@ import { v4 as uuid4 } from "uuid";
 import { DELETE_NOTE, UPDATE_NOTE } from "@/constants/mutations";
 import welcomeNote from "@/templates/welcome.json";
 import { FIXED_FOLDERS } from "@/constants/note";
+import { OPTIONS as SORTING_OPTIONS } from "@/constants/sorting";
 
 const _menu = ({
   name,
@@ -105,10 +106,25 @@ export default function () {
     }),
   ]);
 
+  const sort = () => ({
+    [SORTING_OPTIONS.DEFAULT]: (list) => list,
+    [SORTING_OPTIONS.ALPHABETICAL]: (list) =>
+      list.sort((n1, n2) => n1.name.localeCompare(n2.name)),
+    [SORTING_OPTIONS.DATE_CREATED]: (list) =>
+      list.sort(
+        (n1, n2) => Date.parse(n2.created_at) - Date.parse(n1.created_at)
+      ),
+    [SORTING_OPTIONS.DATE_EDITED]: (list) =>
+      list.sort(
+        (n1, n2) => Date.parse(n2.last_edited) - Date.parse(n1.last_edited)
+      ),
+  });
+
   return {
     notes,
     addNote,
     Note,
+    sort,
     getAuthorFullName,
     createWelcomeNote,
     deleteNote,
