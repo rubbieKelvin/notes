@@ -5,7 +5,7 @@
       <input
         type="text"
         placeholder="Search Notes..."
-        class="flex-grow outline-0 h-12"
+        class="flex-grow outline-0 h-12 focus:outline-none"
         v-model="text"
       />
     </div>
@@ -17,8 +17,9 @@
       v-slot="{ open, selectedText }"
     >
       <div class="flex gap-1 items-center pl-2">
-        <button class="p-2 hover:bg-gray-100 rounded-md">
-          <SortAscendingIcon class="w-4 h-4 text-gray-500" />
+        <button class="px-2 py-1 hover:bg-gray-100 rounded-md" @click="flipSortOrder">
+          <SortAscendingIcon v-if="order === ORDER.ACSENDING" class="w-4 h-4 text-gray-500" />
+          <SortDescendingIcon v-else class="w-4 h-4 text-gray-500" />
         </button>
         <p
           class="text-gray-400 py-2 pr-2 h-full text-sm font-semibold"
@@ -32,7 +33,7 @@
 </template>
 
 <script>
-import { SortAscendingIcon, SearchIcon } from "@heroicons/vue/outline";
+import { SortAscendingIcon, SortDescendingIcon, SearchIcon } from "@heroicons/vue/outline";
 import ComboBox from "@/components/controls/ComboBox.vue";
 import { ORDER, OPTIONS as SORTING_OPTIONS } from "@/constants/sorting";
 import { useStore } from "vuex";
@@ -42,7 +43,7 @@ import { SETTING_KEYS } from "@/constants/settings";
 import { computed, watch } from "@vue/runtime-core";
 
 export default {
-  components: { ComboBox, SortAscendingIcon, SearchIcon },
+  components: { ComboBox, SortAscendingIcon, SearchIcon, SortDescendingIcon },
   emits: ["update:searchtext"],
   setup(props, ctx) {
     const store = useStore();
@@ -58,7 +59,14 @@ export default {
       store.commit(UPDATE_SETTINGS, { [SETTING_KEYS.SORTING_TYPE]: item });
     };
 
-    return { sortingOptions, updateSortingSetting, text, savedItem };
+    const order = computed(() => store.state.settings[SETTING_KEYS.SORTING_ORDER])
+
+    const flipSortOrder = () => {
+      const newOrder = order.value === ORDER.ACSENDING ? ORDER.DESCENDING : ORDER.ACSENDING
+      store.commit(UPDATE_SETTINGS, {[SETTING_KEYS.SORTING_ORDER]: newOrder})
+    }
+
+    return { sortingOptions, updateSortingSetting, text, savedItem, flipSortOrder, order, ORDER };
   },
 };
 </script>

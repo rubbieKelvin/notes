@@ -5,7 +5,18 @@
         <h1 class="flex-grow text-3xl">Notes</h1>
         <button
           @click="newNoteModal = true"
-          class="flex items-center gap-3 font-semibold bg-primary-basic text-white hover:bg-primary-vibrant rounded-md px-3 py-2"
+          class="
+            flex
+            items-center
+            gap-3
+            font-semibold
+            bg-primary-basic
+            text-white
+            hover:bg-primary-vibrant
+            rounded-md
+            px-3
+            py-2
+          "
         >
           <PlusIcon class="h-5 w-5" />
           <span>Create a Note</span>
@@ -33,7 +44,15 @@
     <!-- empty banner -->
     <div v-if="filteredNotes.length === 0" class="p-3">
       <div
-        class="flex items-center gap-3 text-primary-basic p-3 rounded-md bg-primary-basic bg-opacity-10"
+        class="
+          flex
+          items-center
+          gap-3
+          text-primary-basic
+          p-3
+          rounded-md
+          bg-primary-basic bg-opacity-10
+        "
       >
         <BanIcon class="w-5 h-5" />
         <template v-if="searchText.length === 0">
@@ -77,8 +96,9 @@ import NoteItemDelegate from "@/components/NoteItemDelegate.vue";
 import Modal from "@/components/Modal.vue";
 import { useRouter } from "vue-router";
 import CreateNoteModal from "@/components/modals/CreateNoteModal.vue";
-import { useStore } from 'vuex';
-import { SETTING_KEYS } from '@/constants/settings';
+import { useStore } from "vuex";
+import { SETTING_KEYS } from "@/constants/settings";
+import { ORDER } from "@/constants/sorting";
 
 export default {
   components: {
@@ -91,23 +111,30 @@ export default {
   },
   setup() {
     const { push } = useRouter();
-    const store = useStore()
+    const store = useStore();
     const { notes, addNote, noteFolders, sort } = useNotes();
 
     const newNoteModal = ref(false);
     const cn_modal = ref(null);
     const searchText = ref("");
     const activeMenu = ref(noteFolders.value[0]);
+    const order = computed(
+      () => store.state.settings[SETTING_KEYS.SORTING_ORDER]
+    );
 
     const filteredNotes = computed(() => {
-      const res = notes.value.filter((note) => {
+      let res = notes.value.filter((note) => {
         return (
           note.folder === activeMenu.value.noteTypeKey &&
           note.name.toLowerCase().includes(searchText.value.trim())
         );
-      })
-      const sortingName = store.state.settings[SETTING_KEYS.SORTING_TYPE]
-      return sort()[sortingName](res)
+      });
+      const sortingName = store.state.settings[SETTING_KEYS.SORTING_TYPE];
+      const sortingFunc = sort()[sortingName];
+      if (typeof sortingFunc === "function") res = sortingFunc(res);
+
+      if (order.value === ORDER.ACSENDING) return res.reverse();
+      return res;
     });
 
     watch(newNoteModal, (value) => {
