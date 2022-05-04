@@ -3,12 +3,12 @@ import { useStore } from "vuex";
 import { v4 as uuid4 } from "uuid";
 import { DELETE_NOTE, UPDATE_NOTE } from "@/constants/mutations";
 import welcomeNote from "@/templates/welcome.json";
-import { NOTE_TYPES } from "@/constants/note";
+import { FIXED_FOLDERS } from "@/constants/note";
 
 const _menu = ({
   name,
   enabled = false,
-  noteTypeKey = NOTE_TYPES.CLASSIC_NOTE,
+  noteTypeKey = FIXED_FOLDERS.CLASSIC_NOTE,
   disabledMessage = "This Feature is not implemented yet",
 }) => ({ name, enabled, disabledMessage, noteTypeKey });
 
@@ -20,7 +20,7 @@ export default function () {
     name: null,
     ld: uuid4(),
     id: null,
-    note_type: NOTE_TYPES.CLASSIC_NOTE,
+    folder: FIXED_FOLDERS.CLASSIC_NOTE,
     _type: "note",
     version: "0.0.0",
     created_at: new Date().toISOString(),
@@ -45,10 +45,10 @@ export default function () {
    * @param {String} name
    * @param {String} note_type
    */
-  const addNote = (name, note_type) => {
+  const addNote = (name, folder) => {
     const note = _note({
       name,
-      note_type: note_type || NOTE_TYPES.CLASSIC_NOTE,
+      folder: folder || FIXED_FOLDERS.CLASSIC_NOTE,
     });
 
     store.commit(UPDATE_NOTE, note);
@@ -98,7 +98,11 @@ export default function () {
 
   const noteFolders = computed(() => [
     _menu({ name: "Classic", enabled: true }),
-    _menu({ name: "Important", noteTypeKey: NOTE_TYPES.IMPORTANT_NOTE }),
+    _menu({
+      name: "Important",
+      noteTypeKey: FIXED_FOLDERS.IMPORTANT_NOTE,
+      enabled: true,
+    }),
   ]);
 
   return {

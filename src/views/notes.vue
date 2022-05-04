@@ -75,7 +75,7 @@ export default {
 
     const filteredNotes = computed(() =>
       notes.value.filter(
-        (note) => note.note_type === activeMenu.value.noteTypeKey
+        (note) => note.folder === activeMenu.value.noteTypeKey
       )
     );
 
@@ -85,13 +85,14 @@ export default {
       }
     });
 
-    const add_note = (title) => {
-      const note = addNote(title);
+    const add_note = (title, folder) => {
+      const note = addNote(title, folder);
       newNoteModal.value = false;
       push(`/${note.ld}`);
     };
 
     return {
+      notes,
       noteFolders,
       add_note,
       activeMenu,
@@ -114,14 +115,14 @@ export default {
     }
 
     > div {
-      @apply h-4;
+      @apply h-4 absolute;
     }
   }
   > button.active {
     @apply overflow-clip text-gray-700 relative;
 
     > div {
-      @apply absolute rounded-md bg-primary-basic left-0 right-0 top-10;
+      @apply rounded-md bg-primary-basic left-0 right-0 top-10;
     }
   }
 }

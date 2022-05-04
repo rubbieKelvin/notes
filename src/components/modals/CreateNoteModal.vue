@@ -31,13 +31,14 @@
         </label>
 
         <ComboBox
-          class="border-2"
-          v-slot="{ open }"
+          class="border-2 p-2"
+          v-slot="{ open, selectedText }"
           :list="noteFolders"
           :getItemText="(item) => item.name"
+          @selected="setFolder"
         >
           <div class="flex items-center px-2 py-1" @click="open">
-            <span class="flex-grow font-medium">Text</span>
+            <span class="flex-grow font-medium">{{ selectedText }}</span>
             <ChevronDownIcon class="w-3 h-3" />
           </div>
         </ComboBox>
@@ -82,24 +83,29 @@ export default {
     const error = ref("");
     const text = ref("");
     const input = ref(null);
+
     const { noteFolders } = useNotes();
+
+    const folder = ref(noteFolders.value[0]);
 
     const fire = () => {
       const title = text.value.trim();
 
       if (title) {
         text.value = "";
-        props?.callback(title);
+        props?.callback(title, folder.value.noteTypeKey);
       } else {
         error.value = "Title cannot be empty";
       }
     };
 
+    const setFolder = (f) => (folder.value = f);
+
     watch(text, (value) => {
       if (value) error.value = "";
     });
 
-    return { error, text, fire, input, noteFolders };
+    return { error, text, fire, input, noteFolders, setFolder, folder };
   },
 };
 </script>

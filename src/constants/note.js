@@ -1,4 +1,4 @@
-export const NOTE_TYPES = {
+export const FIXED_FOLDERS = {
     IMPORTANT_NOTE: "IMPORTANT_NOTE",
     CLASSIC_NOTE: "CLASSIC_NOTE"
 }
