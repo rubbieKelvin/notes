@@ -12,7 +12,7 @@
     <ComboBox
       :list="sortingOptions"
       :getDefault="() => savedItem"
-      :getItemText="(i) => i.replace('_', ' ')"
+      :getItemText="(i) => i || i.replace('_', ' ')"
       @selected="updateSortingSetting"
       v-slot="{ open, selectedText }"
     >

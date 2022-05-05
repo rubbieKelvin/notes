@@ -1,3 +1,4 @@
+import { FIXED_FOLDERS } from "@/constants/note";
 import { Editor } from "@tiptap/vue-3";
 
 export default () => {
@@ -5,10 +6,18 @@ export default () => {
    * @param {Object} noteObject
    */
   const getJSONDownload = (noteObject) => {
-    const blob = new Blob([JSON.stringify(noteObject, null, 2)], {
+    //Setting sensitive information to null
+    var noteObjectDuplicate = {...noteObject}
+    noteObjectDuplicate.id = null;
+    noteObjectDuplicate.ld = null;
+    noteObjectDuplicate.last_edited = null;
+    noteObjectDuplicate.last_backup = null;
+    noteObjectDuplicate.folder = FIXED_FOLDERS.CLASSIC_NOTE;
+
+    const blob = new Blob([JSON.stringify(noteObjectDuplicate, null, 2)], {
       type: "text/json",
     });
-    const download = `${noteObject.name.toLowerCase()}.json`;
+    const download = `${noteObjectDuplicate.name.toLowerCase()}.json`;
     const href = window.URL.createObjectURL(blob);
 
     return {
