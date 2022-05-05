@@ -39,11 +39,11 @@
             v-model="noteHeading"
             placeholder="Note title...."
             type="text"
-            class="subject-heading"
+            class="subject-heading mx-10"
           />
 
           <FuzzyDate :datetime="note.created_at" v-slot="{ fuzzy }">
-            <p class="">
+            <p class="px-10">
               Created by
               <span class="bg-gray-100 rounded p-1">{{ author }}</span
               >, {{ fuzzy }}
@@ -186,7 +186,7 @@ export default {
 
 <style scoped>
 .view-pad {
-  @apply px-10 pt-5 flex flex-col;
+  @apply pt-5 flex flex-col;
   @apply gap-4 flex-grow h-[90%];
 }
 

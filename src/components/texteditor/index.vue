@@ -15,7 +15,7 @@
 .root {
   height: 0;
   overflow-y: auto;
-  @apply custom-scrollbar;
+  @apply custom-scrollbar px-10;
 
   div {
     height: 100%;
