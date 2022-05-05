@@ -7,14 +7,20 @@
         </div>
         <div class="ql px-5 py-3">
           <h2>Quick Links</h2>
+          <!-- notes -->
           <router-link to="/notes">
-            <FolderIcon class="svg" />
+            <FolderIcon class="svg text-orange-400" />
             <span>Notes</span>
+          </router-link>
+          <!-- help -->
+          <router-link to="/help">
+            <QuestionMarkCircleIcon class="svg text-primary-basic" />
+            <span>Help</span>
           </router-link>
         </div>
       </div>
       <div class="main">
-          <router-view/>
+        <router-view />
       </div>
     </div>
   </div>
@@ -22,12 +28,13 @@
 
 <script>
 import WorkspaceWidget from "@/components/user/WorkspaceWidget.vue";
-import { FolderIcon } from "@heroicons/vue/outline/";
+import { FolderIcon, QuestionMarkCircleIcon } from "@heroicons/vue/outline/";
 
 export default {
   components: {
     WorkspaceWidget,
     FolderIcon,
+    QuestionMarkCircleIcon,
   },
 };
 </script>
@@ -60,14 +67,14 @@ export default {
           gap: 1em;
           @apply hover:bg-slate-100 p-2 rounded-md;
           > svg {
-            @apply text-orange-400 h-5 w-5;
+            @apply h-5 w-5;
           }
         }
       }
     }
 
-    > .main{
-        @apply flex-grow;
+    > .main {
+      @apply flex-grow;
     }
   }
 }
