@@ -2,13 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
-
-button {
-  user-select: none;
+button,
+a {
   cursor: default;
 }
 
-::selection{
+button {
+  user-select: none;
+}
+
+::selection {
   @apply bg-blue-100;
 }
 
@@ -17,27 +20,27 @@ button {
   -webkit-touch-callout: none;
 }
 
-@layer components{
-    .input-text {
-      @apply rounded px-4 py-3 outline-gray-200;
-      @apply focus:outline-primary-basic outline-2 outline;
-    }
+@layer components {
+  .input-text {
+    @apply rounded px-4 py-3 outline-gray-200;
+    @apply focus:outline-primary-basic outline-2 outline;
+  }
 
-    label.label{
-      @apply text-sm text-primary-vibrant flex;
-    }
+  label.label {
+    @apply text-sm text-primary-vibrant flex;
+  }
 
-    label.label > .text{
-      @apply flex-grow uppercase;
-    }
+  label.label > .text {
+    @apply flex-grow uppercase;
+  }
 
-    label.label > .error{
-      @apply text-red-500 text-xs font-medium;
-    }
+  label.label > .error {
+    @apply text-red-500 text-xs font-medium;
+  }
 }
 
 @layer utilities {
-  .custom-scrollbar{
+  .custom-scrollbar {
     position: relative;
     scrollbar-gutter: stable both-edges;
   }
