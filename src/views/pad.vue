@@ -5,8 +5,8 @@
         bg-white
         shadow-md
         rounded-t-md
-        h-[90vh]
-        max-h-[90vh] max-w-[850px]
+        h-[95vh]
+        max-h-[95vh] max-w-[1200px]
         w-full
         flex-col flex flex-grow
       "
