@@ -1,12 +1,13 @@
 <template>
-  <div class="bg-gray-50 min-h-screen flex justify-center items-end">
+  <div class="bg-gray-50 h-full md:min-h-screen flex justify-center items-end">
     <div
       class="
         bg-white
-        shadow-md
+        md:shadow-md
         rounded-t-md
-        h-[90vh]
-        max-h-[90vh] max-w-[850px]
+        h-screen
+        md:h-[90vh]
+        md:max-h-[90vh] max-w-[850px]
         w-full
         flex-col flex flex-grow
       "
@@ -15,14 +16,14 @@
         <div
           class="flex items-center px-5 py-2 border-b border-b-gray-200 gap-5"
         >
-          <IconButton class="w-[30px] h-[30px]" @click="$router.push('/')">
+          <IconButton class="w-[30px] h-[30px] hidden md:flex" @click="$router.push('/')">
             <LeftChevronSvg />
           </IconButton>
 
           <div class="flex flex-grow gap-3 items-center">
             <h1 class="capitalize">{{ note.name }}</h1>
             <FuzzyDate :datetime="note.last_edited" v-slot="{ fuzzy }">
-              <p class="text-sm text-gray-400">edited {{ fuzzy }}</p>
+              <p class="text-sm hidden md:flex text-gray-400">edited {{ fuzzy }}</p>
             </FuzzyDate>
           </div>
 
@@ -186,7 +187,7 @@ export default {
 
 <style scoped>
 .view-pad {
-  @apply px-10 pt-5 flex flex-col;
+  @apply md:px-10 px-5 pt-5 flex flex-col;
   @apply gap-4 flex-grow h-[90%];
 }
 

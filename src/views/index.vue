@@ -9,7 +9,7 @@
           <h2>Quick Links</h2>
           <!-- notes -->
           <router-link to="/notes">
-            <FolderIcon class="svg text-orange-400" />
+            <FolderIcon class="svg" />
             <span>Notes</span>
           </router-link>
           <!-- help -->
@@ -20,7 +20,7 @@
         </div>
       </div>
       <div class="main">
-        <router-view />
+          <router-view/>
       </div>
     </div>
   </div>
@@ -41,16 +41,16 @@ export default {
 
 <style lang="scss" scoped>
 .root {
-  @apply h-screen flex items-center justify-center bg-gray-100;
+  @apply md:h-screen h-full flex items-center justify-center bg-gray-100;
 
   .board {
-    @apply overflow-clip;
-    @apply w-[70%] max-w-[1250px] h-[80%] max-h-[800px] bg-white;
+    @apply overflow-clip w-full h-full;
+    @apply md:w-[70%] max-w-[1250px] md:h-[80%] max-h-[800px] bg-white;
     @apply rounded-md border border-gray-200 flex;
 
     > .side {
       @apply w-[30%] bg-gray-50 border-r border-r-gray-200;
-      @apply flex flex-col gap-4;
+      @apply md:flex flex-col gap-4 hidden;
 
       > .ql {
         display: flex;
@@ -67,14 +67,14 @@ export default {
           gap: 1em;
           @apply hover:bg-slate-100 p-2 rounded-md;
           > svg {
-            @apply h-5 w-5;
+            @apply text-orange-400 h-5 w-5;
           }
         }
       }
     }
 
-    > .main {
-      @apply flex-grow;
+    > .main{
+        @apply flex-grow;
     }
   }
 }
