@@ -2,29 +2,17 @@
   <div class="px-5 flex gap-3 items-center border-b border-b-gray-200">
     <div class="flex-grow h-full gap-2 flex items-center">
       <SearchIcon class="text-gray-300 w-5 h-5" />
-      <input
-        type="text"
-        placeholder="Search Notes..."
-        class="flex-grow outline-0 h-12 focus:outline-none"
-        v-model="text"
-      />
+      <input type="text" placeholder="Search Notes..." class="flex-grow outline-0 h-12 focus:outline-none"
+        v-model="text" />
     </div>
-    <ComboBox
-      :list="sortingOptions"
-      :getDefault="() => savedItem"
-      :getItemText="(i) => i || i.replace('_', ' ')"
-      @selected="updateSortingSetting"
-      v-slot="{ open, selectedText }"
-    >
+    <ComboBox :list="sortingOptions" :getDefault="() => savedItem" :getItemText="(i) => i || i.replace('_', ' ')"
+      @selected="updateSortingSetting" v-slot="{ open, selectedText }">
       <div class="flex gap-1 items-center pl-2">
         <button class="px-2 py-1 hover:bg-gray-100 rounded-md" @click="flipSortOrder">
           <SortAscendingIcon v-if="order === ORDER.ACSENDING" class="w-4 h-4 text-gray-500" />
           <SortDescendingIcon v-else class="w-4 h-4 text-gray-500" />
         </button>
-        <p
-          class="text-gray-400 py-2 pr-2 h-full text-sm font-semibold"
-          @click="open"
-        >
+        <p class="text-gray-400 py-2 pr-2 h-full text-sm font-semibold" @click="open">
           Sort: <span class="text-gray-900">{{ selectedText }}</span>
         </p>
       </div>
@@ -63,7 +51,7 @@ export default {
 
     const flipSortOrder = () => {
       const newOrder = order.value === ORDER.ACSENDING ? ORDER.DESCENDING : ORDER.ACSENDING
-      store.commit(UPDATE_SETTINGS, {[SETTING_KEYS.SORTING_ORDER]: newOrder})
+      store.commit(UPDATE_SETTINGS, { [SETTING_KEYS.SORTING_ORDER]: newOrder })
     }
 
     return { sortingOptions, updateSortingSetting, text, savedItem, flipSortOrder, order, ORDER };

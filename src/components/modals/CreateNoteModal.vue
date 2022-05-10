@@ -68,7 +68,7 @@ export default {
       this.text = '';
       this.combobox.setSelected(this.combobox.getDefault(this.noteFolders))
     },
-    setComboValue(folder){
+    setComboValue(folder) {
       this.combobox.setSelected(folder)
     }
   },
