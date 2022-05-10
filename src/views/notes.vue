@@ -58,7 +58,7 @@
         <template v-if="searchText.length === 0">
           <p class="font-medium flex-grow">No notes in this folder</p>
           <button
-            @click="newNoteModal = true"
+            @click="createNoteUnderCurrentFolder"
             class="bg-primary-basic hover:bg-primary-vibrant rounded-md p-2"
           >
             <PlusIcon class="w-4 h-4 text-white" />
@@ -140,6 +140,8 @@ export default {
     watch(newNoteModal, (value) => {
       if (value) {
         window.requestAnimationFrame(() => cn_modal.value.focus());
+      }else{
+        cn_modal.value.reset()
       }
     });
 
@@ -151,6 +153,11 @@ export default {
 
     const setSearch = (value) => (searchText.value = value);
 
+    const createNoteUnderCurrentFolder = () => {
+      cn_modal.value.setComboValue(activeMenu.value)
+      newNoteModal.value = true
+    }
+
     return {
       notes,
       noteFolders,
@@ -161,6 +168,7 @@ export default {
       newNoteModal,
       cn_modal,
       searchText,
+      createNoteUnderCurrentFolder
     };
   },
 };

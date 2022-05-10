@@ -42,6 +42,13 @@ export default {
       default: "Select item",
     },
   },
+  methods: {
+    setSelected(item){
+      this.selectedText = this.getItemText(item);
+      this.$emit("selected", item);
+      window.requestAnimationFrame(this.close)
+    }
+  },
   setup(props, ctx) {
     const popup = ref(null);
     const dom = ref(null);
