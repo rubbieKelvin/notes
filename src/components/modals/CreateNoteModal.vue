@@ -14,14 +14,7 @@
           <p class="error">{{ error }}</p>
         </label>
 
-        <input
-          ref="input"
-          v-model="text"
-          class="input-text"
-          type="text"
-          placeholder="Title"
-          @keypress.enter="fire"
-        />
+        <input ref="input" v-model="text" class="input-text" type="text" placeholder="Title" @keypress.enter="fire" />
       </div>
 
       <!-- type -->
@@ -30,13 +23,8 @@
           <span class="text">Folder</span>
         </label>
 
-        <ComboBox
-          class="border-2 p-2"
-          v-slot="{ open, selectedText }"
-          :list="noteFolders"
-          :getItemText="(item) => item.name"
-          @selected="setFolder"
-        >
+        <ComboBox ref="combobox" class="border-2 p-2" v-slot="{ open, selectedText }" :list="noteFolders"
+          :getItemText="(item) => item.name" @selected="setFolder">
           <div class="flex items-center px-2 py-1" @click="open">
             <span class="flex-grow font-medium">{{ selectedText }}</span>
             <ChevronDownIcon class="w-3 h-3" />
@@ -46,10 +34,8 @@
 
       <!-- button -->
       <div class="flex items-center justify-end">
-        <button
-          @click="fire"
-          class="bg-primary-basic px-5 py-3 rounded-md text-white hover:bg-primary-vibrant flex gap-2 items-center"
-        >
+        <button @click="fire"
+          class="bg-primary-basic px-5 py-3 rounded-md text-white hover:bg-primary-vibrant flex gap-2 items-center">
           <PlusIcon class="text-white w-4 h-4" />
           <span>Create</span>
         </button>
@@ -78,11 +64,19 @@ export default {
       this.input.focus();
       this.error = "";
     },
+    reset() {
+      this.text = '';
+      this.combobox.setSelected(this.combobox.getDefault(this.noteFolders))
+    },
+    setComboValue(folder) {
+      this.combobox.setSelected(folder)
+    }
   },
   setup(props) {
     const error = ref("");
     const text = ref("");
     const input = ref(null);
+    const combobox = ref(null)
 
     const { noteFolders } = useNotes();
 
@@ -105,7 +99,8 @@ export default {
       if (value) error.value = "";
     });
 
-    return { error, text, fire, input, noteFolders, setFolder, folder };
+
+    return { error, text, fire, input, noteFolders, setFolder, folder, combobox };
   },
 };
 </script>
