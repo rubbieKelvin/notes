@@ -40,11 +40,11 @@
             v-model="noteHeading"
             placeholder="Note title...."
             type="text"
-            class="subject-heading"
+            class="subject-heading mx-10"
           />
 
           <FuzzyDate :datetime="note.created_at" v-slot="{ fuzzy }">
-            <p class="">
+            <p class="px-10">
               Created by
               <span class="bg-gray-100 rounded p-1">{{ author }}</span
               >, {{ fuzzy }}
