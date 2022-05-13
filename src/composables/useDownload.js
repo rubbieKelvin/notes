@@ -30,18 +30,14 @@ export default () => {
   };
 
   const readJSONFile = async (file) => {
-    //First get the webapp to open the file manager
-    //then lets wait till then first
     if (file.type === 'application/json') {
       try {
         const value = await file.text()
         return value
       } catch(e) {
-        console.error(e)
         return null
       }
     }
-
     return null
   };
   return { getJSONDownload, readJSONFile };

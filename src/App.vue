@@ -9,12 +9,14 @@ import { get, values } from "idb-keyval";
 import { onMounted } from "@vue/runtime-core";
 import useNotes from "./composables/useNotes";
 // ...
-import { UPDATE_NOTE, UPDATE_SETTINGS } from "./constants/mutations";
+import { DELETE_NOTE, UPDATE_NOTE, UPDATE_SETTINGS } from "./constants/mutations";
 import { DEFAULT_SETTINGS } from "@/constants/settings";
+import useUtils from "./composables/useUtils";
 
 export default {
   setup() {
     const store = useStore();
+    const { isValidNoteObject } = useUtils();
 
     onMounted(async () => {
       const dbvalues = await values();
@@ -27,9 +29,13 @@ export default {
         const _type = jsonValue?._type;
         // ...
         if (_type === "note") {
-          // if the note already exist in our store, ignore
-          if (!notekeys.includes(jsonValue.ld))
-            store.commit(UPDATE_NOTE, jsonValue);
+          if (isValidNoteObject(jsonValue)) {
+            if (typeof jsonValue.ld === 'string' && jsonValue.ld?.length > 0 && !notekeys.includes(jsonValue.ld))
+              store.commit(UPDATE_NOTE, jsonValue);
+          } else {
+            // remove the object from the store
+            store.commit(DELETE_NOTE, jsonValue.ld)
+          }
         }
       });
 

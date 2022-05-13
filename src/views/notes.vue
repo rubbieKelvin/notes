@@ -5,17 +5,7 @@
         <h1 class="flex-grow text-3xl">Notes</h1>
         <button
           @click="$refs.fileinput.click()"
-          class="
-            flex
-            items-center
-            gap-3
-            font-semibold
-            bg-gray-100
-            hover:bg-gray-200
-            rounded-md
-            px-3
-            py-2
-          "
+          class="flex items-center gap-3 font-semibold bg-gray-100 hover:bg-gray-200 rounded-md px-3 py-2"
         >
           <input
             type="file"
@@ -28,21 +18,9 @@
         </button>
         <button
           @click="newNoteModal = true"
-          class="
-            flex
-            items-center
-            gap-3
-            font-semibold
-            bg-primary-basic
-            text-white
-            hover:bg-primary-vibrant
-            rounded-md
-            px-3
-            py-2
-          "
+          class="flex items-center gap-3 font-semibold bg-primary-basic text-white hover:bg-primary-vibrant rounded-md px-3 py-2"
         >
           <PlusIcon class="h-5 w-5" />
-          <!-- <span>Create a Note</span> -->
         </button>
       </div>
       <div class="tab">
@@ -67,15 +45,7 @@
     <!-- empty banner -->
     <div v-if="filteredNotes.length === 0" class="p-3">
       <div
-        class="
-          flex
-          items-center
-          gap-3
-          text-primary-basic
-          p-3
-          rounded-md
-          bg-primary-basic bg-opacity-10
-        "
+        class="flex items-center gap-3 text-primary-basic p-3 rounded-md bg-primary-basic bg-opacity-10"
       >
         <BanIcon class="w-5 h-5" />
         <template v-if="searchText.length === 0">
@@ -114,14 +84,7 @@
         <div class="px-3 py-2 flex justify-end">
           <button
             @click="errorModal = false"
-            class="
-              text-white
-              rounded-md
-              bg-primary-basic
-              hover:bg-primary-vibrant
-              px-3
-              py-1
-            "
+            class="text-white rounded-md bg-primary-basic hover:bg-primary-vibrant px-3 py-1"
           >
             Close
           </button>
@@ -144,6 +107,7 @@ import CreateNoteModal from "@/components/modals/CreateNoteModal.vue";
 import { useStore } from "vuex";
 import { SETTING_KEYS } from "@/constants/settings";
 import { ORDER } from "@/constants/sorting";
+import useUtils from "@/composables/useUtils";
 
 export default {
   components: {
@@ -160,6 +124,7 @@ export default {
     const store = useStore();
     const { notes, addNote, noteFolders, sort, uploadNote } = useNotes();
     const { readJSONFile } = useDownload();
+    const { isValidNoteObject } = useUtils();
     const fileinput = ref(null);
 
     const newNoteModal = ref(false);
@@ -191,9 +156,14 @@ export default {
       if (value) {
         window.requestAnimationFrame(() => cn_modal.value.focus());
       } else {
-        cn_modal.value.reset()
+        cn_modal.value.reset();
       }
     });
+
+    const showError = (text) => {
+      error.value = "cant upload corrupt json file";
+      errorModal.value = true;
+    };
 
     const fileChanged = async (event) => {
       const file = fileinput.value.files[0];
@@ -201,10 +171,10 @@ export default {
         let content = await readJSONFile(file);
         try {
           content = JSON.parse(content);
-          uploadNote(content);
+          if (!isValidNoteObject(content)) uploadNote(content);
+          else showError("cant upload corrupt json file");
         } catch {
-          error.value = "cant upload corrupt json file";
-          errorModal.value = true;
+          showError("cant upload corrupt json file");
         }
       }
     };
@@ -218,9 +188,9 @@ export default {
     const setSearch = (value) => (searchText.value = value);
 
     const createNoteUnderCurrentFolder = () => {
-      cn_modal.value.setComboValue(activeMenu.value)
-      newNoteModal.value = true
-    }
+      cn_modal.value.setComboValue(activeMenu.value);
+      newNoteModal.value = true;
+    };
 
     return {
       notes,
@@ -236,7 +206,7 @@ export default {
       fileChanged,
       error,
       errorModal,
-      createNoteUnderCurrentFolder
+      createNoteUnderCurrentFolder,
     };
   },
 };
