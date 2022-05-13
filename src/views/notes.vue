@@ -152,7 +152,9 @@ export default {
         try {
           content = JSON.parse(content)
           uploadNote(content)
-        } catch { }
+        } catch(error) {
+          console.error(error)
+        }
       }
     }
 

@@ -36,7 +36,8 @@ export default () => {
       try {
         const value = await file.text()
         return value
-      } catch {
+      } catch(e) {
+        console.error(e)
         return null
       }
     }

@@ -87,7 +87,7 @@ import Texteditor from "@/components/texteditor/index.vue";
 import FuzzyDate from "@/components/FuzzyDate.vue";
 import IconButton from "@/components/IconButton.vue";
 import useNote from "@/composables/useNotes";
-import { computed, onBeforeUnmount, onMounted, onUnmounted, ref } from "@vue/runtime-core";
+import { computed, onBeforeUnmount, onMounted, ref } from "@vue/runtime-core";
 import EditModeSvg from "../assets/svgs/editModeSvg.vue";
 import LeftChevronSvg from "../assets/svgs/leftChevronSvg.vue";
 import EmptyStateSvg from "../assets/svgs/emptyStateSvg.vue";

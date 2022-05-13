@@ -122,6 +122,9 @@ export default function () {
 
   const uploadNote = (note) => {
     const newNote = _note(note)
+    newNote.ld = uuid4()
+    newNote.last_edited = new Date().toISOString()
+    console.log(newNote)
     store.commit(UPDATE_NOTE, newNote);
     return newNote;
   }
