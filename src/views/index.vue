@@ -45,8 +45,8 @@ export default {
 
   .board {
     @apply overflow-clip;
-    @apply w-[60%] max-w-[1000px] h-[80%] max-h-[800px] bg-white;
-    @apply rounded-md border border-gray-200 flex;
+    @apply w-full lg:max-w-[1000px] h-full lg:max-h-[800px] bg-white;
+    @apply rounded-md lg:border border-gray-200 flex;
 
     > .side {
       @apply w-[30%] bg-gray-50 border-r border-r-gray-200;

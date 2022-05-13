@@ -7,7 +7,7 @@
         rounded-t-md
         w-full
         h-screen
-        md:max-h-[90vh]
+        xl:max-h-[90vh]
         xl:max-w-[800px]
         2xl:max-w-[850px]
         flex-col flex flex-grow
