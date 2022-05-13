@@ -38,7 +38,7 @@ export default {
 
   .board {
     @apply overflow-clip;
-    @apply w-[70%] max-w-[1250px] h-[80%] max-h-[800px] bg-white;
+    @apply w-[60%] max-w-[1000px] h-[80%] max-h-[800px] bg-white;
     @apply rounded-md border border-gray-200 flex;
 
     > .side {
