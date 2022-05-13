@@ -41,11 +41,11 @@
             v-model="noteHeading"
             placeholder="Note title...."
             type="text"
-            class="subject-heading px-7"
+            class="subject-heading u-px"
           />
 
           <FuzzyDate :datetime="note.created_at" v-slot="{ fuzzy }">
-            <p class="px-7">
+            <p class="u-px">
               Created by
               <span class="bg-gray-100 rounded p-1">{{ author }}</span
               >, {{ fuzzy }}
@@ -53,7 +53,7 @@
           </FuzzyDate>
 
           <!-- ...editable -->
-          <Texteditor class="flex-grow px-7" v-model="noteBody" />
+          <Texteditor class="flex-grow u-px" v-model="noteBody" />
         </div>
       </template>
 
@@ -188,11 +188,15 @@ export default {
 
 <style scoped>
 .view-pad {
-  @apply pt-5 flex flex-col;
+  @apply md:pt-5 pt-2 flex flex-col;
   @apply gap-4 flex-grow h-[90%];
 }
 
 .subject-heading {
   @apply font-medium text-5xl outline-none;
+}
+
+.u-px{
+  @apply px-2 md:px-7;
 }
 </style>
