@@ -1,7 +1,6 @@
 <template>
   <div class="bg-gray-50 h-full md:min-h-screen flex justify-center items-end">
-    <div
-      class="
+    <div class="
         bg-white
         md:shadow-md
         rounded-t-md
@@ -11,12 +10,9 @@
         xl:max-w-[800px]
         2xl:max-w-[850px]
         flex-col flex flex-grow
-      "
-    >
+      ">
       <template v-if="note">
-        <div
-          class="flex items-center px-5 py-3 border-b border-b-gray-200 gap-5"
-        >
+        <div class="flex items-center px-5 py-3 border-b border-b-gray-200 gap-5">
           <IconButton class="w-[30px] h-[30px] hidden md:flex" @click="$router.push('/')">
             <LeftChevronSvg />
           </IconButton>
@@ -28,27 +24,18 @@
             </FuzzyDate>
           </div>
 
-          <NoteTools
-            @click:delete="modals.delete = true"
-            @click:share="modals.share = true"
-          />
+          <NoteTools @click:delete="modals.delete = true" @click:share="modals.share = true" />
         </div>
 
         <!-- ...pad -->
         <div class="view-pad">
           <!-- heading -->
-          <input
-            v-model="noteHeading"
-            placeholder="Note title...."
-            type="text"
-            class="subject-heading px-7"
-          />
+          <input v-model="noteHeading" placeholder="Note title...." type="text" class="subject-heading px-7" />
 
           <FuzzyDate :datetime="note.created_at" v-slot="{ fuzzy }">
             <p class="px-7">
               Created by
-              <span class="bg-gray-100 rounded p-1">{{ author }}</span
-              >, {{ fuzzy }}
+              <span class="bg-gray-100 rounded p-1">{{ author }}</span>, {{ fuzzy }}
             </p>
           </FuzzyDate>
 
@@ -65,18 +52,14 @@
             <p class="text-gray-500 max-w-[200px] text-center">
               Couldnt find this note.
             </p>
-            <router-link
-              class="
+            <router-link class="
                 bg-primary-basic
                 p-2
                 bg-opacity-5
                 hover:bg-opacity-10
                 text-sm text-primary-basic
                 rounded-md
-              "
-              to="/"
-              >Go Home</router-link
-            >
+              " to="/">Go Home</router-link>
           </div>
         </div>
       </template>
@@ -85,16 +68,10 @@
     <!-- modals -->
     <!-- delete modal -->
     <Modal v-model="modals.delete" dim closeOnClickOutside closeOnEsc>
-      <ConfirmDialog
-        :noAction="() => (modals.delete = false)"
-        :yesAction="() => delete_note()"
-        :yesClass="['bg-red-400 hover:bg-red-500']"
-        :noClass="['bg-gray-200 hover:bg-gray-300 text-black']"
+      <ConfirmDialog :noAction="() => (modals.delete = false)" :yesAction="() => delete_note()"
+        :yesClass="['bg-red-400 hover:bg-red-500']" :noClass="['bg-gray-200 hover:bg-gray-300 text-black']"
         message="You cannot undo this action, are you sure you want to delete this note?"
-        :title="`Delete ${note ? note.name : 'Note'}`"
-        noText="No, Take me back"
-        yesText="Yes, Delete this note"
-      />
+        :title="`Delete ${note ? note.name : 'Note'}`" noText="No, Take me back" yesText="Yes, Delete this note" />
     </Modal>
 
     <!-- share modal -->
@@ -110,7 +87,7 @@ import Texteditor from "@/components/texteditor/index.vue";
 import FuzzyDate from "@/components/FuzzyDate.vue";
 import IconButton from "@/components/IconButton.vue";
 import useNote from "@/composables/useNotes";
-import { computed, ref } from "@vue/runtime-core";
+import { computed, onBeforeUnmount, onMounted, onUnmounted, ref } from "@vue/runtime-core";
 import EditModeSvg from "../assets/svgs/editModeSvg.vue";
 import LeftChevronSvg from "../assets/svgs/leftChevronSvg.vue";
 import EmptyStateSvg from "../assets/svgs/emptyStateSvg.vue";
@@ -173,6 +150,21 @@ export default {
       deleteNote(props.ld);
       router.push("/");
     };
+
+    const saveListener = (e) => {
+      if (e.ctrlKey && e.key === 's') {
+        e.preventDefault();
+        modals.value.share = true;
+      }
+    }
+
+    onMounted(() => {
+      document.addEventListener('keydown', saveListener)
+    })
+
+    onBeforeUnmount(() => {
+      document.removeEventListener('keydown', saveListener)
+    })
 
     return {
       note,
