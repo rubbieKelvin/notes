@@ -44,8 +44,8 @@ export default {
   @apply md:h-screen h-full flex items-center justify-center bg-gray-100;
 
   .board {
-    @apply overflow-clip w-full h-full;
-    @apply md:w-[70%] max-w-[1250px] md:h-[80%] max-h-[800px] bg-white;
+    @apply overflow-clip;
+    @apply w-[60%] max-w-[1000px] h-[80%] max-h-[800px] bg-white;
     @apply rounded-md border border-gray-200 flex;
 
     > .side {

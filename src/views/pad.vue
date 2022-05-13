@@ -5,16 +5,17 @@
         bg-white
         md:shadow-md
         rounded-t-md
-        h-screen
-        md:h-[90vh]
-        md:max-h-[90vh] max-w-[850px]
         w-full
+        h-screen
+        md:max-h-[90vh]
+        xl:max-w-[800px]
+        2xl:max-w-[850px]
         flex-col flex flex-grow
       "
     >
       <template v-if="note">
         <div
-          class="flex items-center px-5 py-2 border-b border-b-gray-200 gap-5"
+          class="flex items-center px-5 py-3 border-b border-b-gray-200 gap-5"
         >
           <IconButton class="w-[30px] h-[30px] hidden md:flex" @click="$router.push('/')">
             <LeftChevronSvg />
@@ -40,11 +41,11 @@
             v-model="noteHeading"
             placeholder="Note title...."
             type="text"
-            class="subject-heading mx-10"
+            class="subject-heading px-7"
           />
 
           <FuzzyDate :datetime="note.created_at" v-slot="{ fuzzy }">
-            <p class="px-10">
+            <p class="px-7">
               Created by
               <span class="bg-gray-100 rounded p-1">{{ author }}</span
               >, {{ fuzzy }}
@@ -52,7 +53,7 @@
           </FuzzyDate>
 
           <!-- ...editable -->
-          <Texteditor class="flex-grow" v-model="noteBody" />
+          <Texteditor class="flex-grow px-7" v-model="noteBody" />
         </div>
       </template>
 
@@ -187,7 +188,7 @@ export default {
 
 <style scoped>
 .view-pad {
-  @apply md:px-10 px-5 pt-5 flex flex-col;
+  @apply pt-5 flex flex-col;
   @apply gap-4 flex-grow h-[90%];
 }
 
