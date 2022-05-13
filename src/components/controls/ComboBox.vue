@@ -2,7 +2,7 @@
   <div
     ref="dom"
     tabindex="0"
-    class="border relative select-none rounded-md border-gray-200"
+    class="relative select-none rounded-md border-gray-200"
   >
     <slot :open="open" :selectedText="selectedText" />
     <div tabindex="0" ref="popup" class="popup">

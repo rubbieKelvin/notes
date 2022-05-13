@@ -5,7 +5,7 @@
       <input type="text" placeholder="Search Notes..." class="flex-grow outline-0 h-12 focus:outline-none"
         v-model="text" />
     </div>
-    <ComboBox :list="sortingOptions" :getDefault="() => savedItem" :getItemText="(i) => i || i.replace('_', ' ')"
+    <ComboBox class="md:border" :list="sortingOptions" :getDefault="() => savedItem" :getItemText="(i) => i || i.replace('_', ' ')"
       @selected="updateSortingSetting" v-slot="{ open, selectedText }">
       <div class="flex gap-1 items-center pl-2">
         <button class="px-2 py-1 hover:bg-gray-100 rounded-md" @click="flipSortOrder">
