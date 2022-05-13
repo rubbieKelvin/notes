@@ -44,11 +44,11 @@ export default {
   @apply md:h-screen h-full flex items-center justify-center bg-gray-100;
 
   .board {
-    @apply overflow-clip;
     @apply w-full lg:max-w-[1000px] h-full lg:max-h-[800px] bg-white;
     @apply rounded-md lg:border border-gray-200 flex;
 
     > .side {
+      @apply md:rounded-l-md;
       @apply w-[30%] bg-gray-50 border-r border-r-gray-200;
       @apply md:flex flex-col gap-4 hidden;
 

@@ -29,7 +29,7 @@
           <SortDescendingIcon v-else class="w-4 h-4 text-gray-500" />
         </button>
         <p
-          class="text-gray-400 py-2 pr-2 h-full text-sm font-semibold"
+          class="text-gray-400 py-2 gap-1 pr-2 h-full flex text-sm font-semibold"
           @click="open"
         >
           <span class="md:flex hidden">Sort:</span>
