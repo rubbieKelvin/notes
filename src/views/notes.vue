@@ -1,8 +1,22 @@
 <template>
   <div>
     <div class="flex flex-col h-28 border-b border-b-gray-200 pt-6 px-5">
-      <div class="flex flex-grow items-center">
+      <div class="flex flex-grow items-center gap-2">
         <h1 class="flex-grow text-3xl">Notes</h1>
+        <button @click="$refs.fileinput.click()" class="
+            flex
+            items-center
+            gap-3
+            font-semibold
+            bg-gray-100
+            hover:bg-gray-200
+            rounded-md
+            px-3
+            py-2
+          ">
+          <input type="file" ref="fileinput" style="display: none" accept="application/json" @change="fileChanged" />
+          <UploadIcon class="h-5 w-5" />
+        </button>
         <button @click="newNoteModal = true" class="
             flex
             items-center
@@ -16,7 +30,7 @@
             py-2
           ">
           <PlusIcon class="h-5 w-5" />
-          <span>Create a Note</span>
+          <!-- <span>Create a Note</span> -->
         </button>
       </div>
       <div class="tab">
@@ -47,9 +61,9 @@
         <BanIcon class="w-5 h-5" />
         <template v-if="searchText.length === 0">
           <p class="font-medium flex-grow">No notes in this folder</p>
-          <button @click="createNoteUnderCurrentFolder"
-            class="bg-primary-basic hover:bg-primary-vibrant rounded-md p-2">
-            <PlusIcon class="w-4 h-4 text-white" />
+          <button @click="newNoteModal = true" class="rounded-md p-1">
+            Create in this folder
+            <!-- <PlusIcon class="w-4 h-4 text-white" /> -->
           </button>
         </template>
         <p v-else class="font-medium flex-grow">
@@ -72,9 +86,10 @@
 </template>
 
 <script>
-import { PlusIcon, BanIcon } from "@heroicons/vue/outline";
+import { PlusIcon, BanIcon, UploadIcon } from "@heroicons/vue/outline";
 import NoteSearch from "@/components/panels/NoteSearch.vue";
 import useNotes from "@/composables/useNotes";
+import useDownload from "@/composables/useDownload";
 import { computed, ref, watch } from "@vue/runtime-core";
 import NoteItemDelegate from "@/components/NoteItemDelegate.vue";
 import Modal from "@/components/Modal.vue";
@@ -92,11 +107,14 @@ export default {
     Modal,
     NoteItemDelegate,
     CreateNoteModal,
+    UploadIcon,
   },
   setup() {
     const { push } = useRouter();
     const store = useStore();
-    const { notes, addNote, noteFolders, sort } = useNotes();
+    const { notes, addNote, noteFolders, sort, uploadNote } = useNotes();
+    const { readJSONFile } = useDownload();
+    const fileinput = ref(null);
 
     const newNoteModal = ref(false);
     const cn_modal = ref(null);
@@ -124,10 +142,19 @@ export default {
     watch(newNoteModal, (value) => {
       if (value) {
         window.requestAnimationFrame(() => cn_modal.value.focus());
-      } else {
-        cn_modal.value.reset()
       }
     });
+
+    const fileChanged = async (event) => {
+      const file = fileinput.value.files[0]
+      if (file) {
+        let content = await readJSONFile(file)
+        try {
+          content = JSON.parse(content)
+          uploadNote(content)
+        } catch { }
+      }
+    }
 
     const add_note = (title, folder) => {
       const note = addNote(title, folder);
@@ -136,11 +163,6 @@ export default {
     };
 
     const setSearch = (value) => (searchText.value = value);
-
-    const createNoteUnderCurrentFolder = () => {
-      cn_modal.value.setComboValue(activeMenu.value)
-      newNoteModal.value = true
-    }
 
     return {
       notes,
@@ -152,7 +174,8 @@ export default {
       newNoteModal,
       cn_modal,
       searchText,
-      createNoteUnderCurrentFolder
+      fileinput,
+      fileChanged
     };
   },
 };

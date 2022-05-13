@@ -120,6 +120,12 @@ export default function () {
       ),
   });
 
+  const uploadNote = (note) => {
+    const newNote = _note(note)
+    store.commit(UPDATE_NOTE, newNote);
+    return newNote;
+  }
+
   return {
     notes,
     addNote,
@@ -129,5 +135,6 @@ export default function () {
     createWelcomeNote,
     deleteNote,
     noteFolders,
+    uploadNote
   };
 }
