@@ -1,30 +1,32 @@
 <template>
   <div class="bg-gray-50 h-full md:min-h-screen flex justify-center items-end">
-    <div class="
-        bg-white
-        md:shadow-md
-        rounded-t-md
-        w-full
-        h-screen
-        xl:max-h-[90vh]
-        xl:max-w-[800px]
-        2xl:max-w-[850px]
-        flex-col flex flex-grow
-      ">
+    <div
+      class="bg-white md:shadow-md rounded-t-md w-full h-screen xl:max-h-[90vh] xl:max-w-[800px] 2xl:max-w-[850px] flex-col flex flex-grow"
+    >
       <template v-if="note">
-        <div class="flex items-center px-5 py-3 border-b border-b-gray-200 gap-5">
-          <IconButton class="w-[30px] h-[30px] hidden md:flex" @click="$router.push('/')">
+        <div
+          class="flex items-center px-5 py-3 border-b border-b-gray-200 gap-5"
+        >
+          <IconButton
+            class="w-[30px] h-[30px] hidden md:flex"
+            @click="$router.push('/')"
+          >
             <LeftChevronSvg />
           </IconButton>
 
           <div class="flex flex-grow gap-3 items-center">
             <h1 class="capitalize">{{ note.name }}</h1>
             <FuzzyDate :datetime="note.last_edited" v-slot="{ fuzzy }">
-              <p class="text-sm hidden md:flex text-gray-400">edited {{ fuzzy }}</p>
+              <p class="text-sm hidden md:flex text-gray-400">
+                edited {{ fuzzy }}
+              </p>
             </FuzzyDate>
           </div>
 
-          <NoteTools @click:delete="modals.delete = true" @click:share="modals.share = true" />
+          <NoteTools
+            @click:delete="modals.delete = true"
+            @click:share="modals.share = true"
+          />
         </div>
 
         <!-- ...pad -->
@@ -40,7 +42,8 @@
           <FuzzyDate :datetime="note.created_at" v-slot="{ fuzzy }">
             <p class="u-px">
               Created by
-              <span class="bg-gray-100 rounded p-1">{{ author }}</span>, {{ fuzzy }}
+              <span class="bg-gray-100 rounded p-1">{{ author }}</span
+              >, {{ fuzzy }}
             </p>
           </FuzzyDate>
 
@@ -57,14 +60,11 @@
             <p class="text-gray-500 max-w-[200px] text-center">
               Couldnt find this note.
             </p>
-            <router-link class="
-                bg-primary-basic
-                p-2
-                bg-opacity-5
-                hover:bg-opacity-10
-                text-sm text-primary-basic
-                rounded-md
-              " to="/">Go Home</router-link>
+            <router-link
+              class="bg-primary-basic p-2 bg-opacity-5 hover:bg-opacity-10 text-sm text-primary-basic rounded-md"
+              to="/"
+              >Go Home</router-link
+            >
           </div>
         </div>
       </template>
@@ -73,10 +73,16 @@
     <!-- modals -->
     <!-- delete modal -->
     <Modal v-model="modals.delete" dim closeOnClickOutside closeOnEsc>
-      <ConfirmDialog :noAction="() => (modals.delete = false)" :yesAction="() => delete_note()"
-        :yesClass="['bg-red-400 hover:bg-red-500']" :noClass="['bg-gray-200 hover:bg-gray-300 text-black']"
+      <ConfirmDialog
+        :noAction="() => (modals.delete = false)"
+        :yesAction="() => delete_note()"
+        :yesClass="['bg-red-400 hover:bg-red-500']"
+        :noClass="['bg-gray-200 hover:bg-gray-300 text-black']"
         message="You cannot undo this action, are you sure you want to delete this note?"
-        :title="`Delete ${note ? note.name : 'Note'}`" noText="No, Take me back" yesText="Yes, Delete this note" />
+        :title="`Delete ${note ? note.name : 'Note'}`"
+        noText="No, Take me back"
+        yesText="Yes, Delete this note"
+      />
     </Modal>
 
     <!-- share modal -->
@@ -157,19 +163,19 @@ export default {
     };
 
     const saveListener = (e) => {
-      if (e.ctrlKey && e.key === 's') {
+      if (e.ctrlKey && e.key === "s") {
         e.preventDefault();
         modals.value.share = true;
       }
-    }
+    };
 
     onMounted(() => {
-      document.addEventListener('keydown', saveListener)
-    })
+      document.addEventListener("keydown", saveListener);
+    });
 
     onBeforeUnmount(() => {
-      document.removeEventListener('keydown', saveListener)
-    })
+      document.removeEventListener("keydown", saveListener);
+    });
 
     return {
       note,
@@ -190,10 +196,10 @@ export default {
 }
 
 .subject-heading {
-  @apply font-medium text-5xl outline-none;
+  @apply font-medium text-4xl md:text-5xl outline-none;
 }
 
-.u-px{
+.u-px {
   @apply px-2 md:px-7;
 }
 </style>
