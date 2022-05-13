@@ -58,7 +58,7 @@ export default {
     );
 
     const open = () => popup.value.focus();
-    const close = () => dom.value.focus();
+    const close = () => dom.value?.focus();
 
     const select = (item) => {
       selectedText.value = props.getItemText(item);

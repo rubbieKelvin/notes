@@ -1,12 +1,14 @@
 <template>
-  <IconButton
-    title="more menu"
-    class="h-[30px] tools w-[30px] flex items-center justify-center"
-  >
+  <IconButton class="h-[30px] tools w-[30px] flex items-center justify-center">
     <MenuIcon class="w-[18px] h-[18px]" />
     <div class="popup" ref="popup" v-if="popupAlive">
       <button
-        class="py-1 rounded-md hover:bg-slate-100 text-sm text-left px-1 border-b-gray-500"
+        class="py-1 rounded-md text-sm text-left px-1 border-b-gray-500"
+        :class="[
+          signal.danger
+            ? 'hover:bg-red-500 hover:text-white'
+            : 'hover:bg-slate-100',
+        ]"
         v-for="signal in signals"
         :key="signal.emits"
         @click="$emit(signal.emits), hidepopup()"
@@ -45,7 +47,7 @@ const _signal = ({ name, emits, danger = false }) => ({ name, emits, danger });
 
 const signals = [
   _signal({ emits: "click:share", name: "Share note" }),
-  _signal({ emits: "click:delete", name: "Delete" }),
+  _signal({ emits: "click:delete", name: "Delete", danger: true }),
 ];
 
 export default {
