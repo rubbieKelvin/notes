@@ -171,7 +171,7 @@ export default {
         let content = await readJSONFile(file);
         try {
           content = JSON.parse(content);
-          if (!isValidNoteObject(content)) uploadNote(content);
+          if (isValidNoteObject(content)) uploadNote(content);
           else showError("cant upload corrupt json file");
         } catch {
           showError("cant upload corrupt json file");
