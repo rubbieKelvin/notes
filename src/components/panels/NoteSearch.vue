@@ -13,7 +13,7 @@
       class="md:border"
       :list="sortingOptions"
       :getDefault="() => savedItem"
-      :getItemText="(i) => i || i.replace('_', ' ')"
+      :getItemText="(i) => i?.replace('_', ' ')"
       @selected="updateSortingSetting"
       v-slot="{ open, selectedText }"
     >
@@ -53,7 +53,7 @@ import { ORDER, OPTIONS as SORTING_OPTIONS } from "@/constants/sorting";
 import { useStore } from "vuex";
 import { ref } from "@vue/reactivity";
 import { UPDATE_SETTINGS } from "@/constants/mutations";
-import { SETTING_KEYS } from "@/constants/settings";
+import { DEFAULT_SETTINGS, SETTING_KEYS } from "@/constants/settings";
 import { computed, watch } from "@vue/runtime-core";
 
 export default {
@@ -74,7 +74,9 @@ export default {
     };
 
     const order = computed(
-      () => store.state.settings[SETTING_KEYS.SORTING_ORDER]
+      () =>
+        store.state.settings[SETTING_KEYS.SORTING_ORDER] ||
+        DEFAULT_SETTINGS[SETTING_KEYS.SORTING_ORDER]
     );
 
     const flipSortOrder = () => {
