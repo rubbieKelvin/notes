@@ -3,21 +3,15 @@
     <div class="flex flex-col h-28 border-b border-b-gray-200 pt-6 px-5">
       <div class="flex flex-grow items-center gap-2">
         <h1 class="flex-grow text-3xl">Notes</h1>
+
         <button
-          @click="$refs.fileinput.click()"
+          @click="modals.upload = true"
           class="flex items-center gap-3 font-semibold bg-gray-100 hover:bg-gray-200 rounded-md px-3 py-2"
         >
-          <input
-            type="file"
-            ref="fileinput"
-            style="display: none"
-            accept="application/json"
-            @change="fileChanged"
-          />
           <UploadIcon class="h-5 w-5" />
         </button>
         <button
-          @click="newNoteModal = true"
+          @click="modals.newnote = true"
           class="flex items-center gap-3 font-semibold bg-primary-basic text-white hover:bg-primary-vibrant rounded-md px-3 py-2"
         >
           <PlusIcon class="h-5 w-5" />
@@ -72,24 +66,13 @@
     </div>
 
     <!-- modal -->
-    <Modal v-model="newNoteModal" dim closeOnClickOutside closeOnEsc>
+    <Modal v-model="modals.newnote" dim closeOnClickOutside closeOnEsc>
       <CreateNoteModal ref="cn_modal" :callback="add_note" />
     </Modal>
 
-    <!-- error -->
-    <Modal dim closeOnEsc closeOnClickOutside v-model="errorModal">
-      <div class="flex overflow-clip bg-white flex-col gap-3 rounded-md">
-        <h1 class="text-lg py-2 px-3 border-b border-b-gray-300">Error</h1>
-        <p class="px-3 py-1 text-gray-800">{{ error }}</p>
-        <div class="px-3 py-2 flex justify-end">
-          <button
-            @click="errorModal = false"
-            class="text-white rounded-md bg-primary-basic hover:bg-primary-vibrant px-3 py-1"
-          >
-            Close
-          </button>
-        </div>
-      </div>
+    <!-- upload -->
+    <Modal v-model="modals.upload" dim>
+      <UploadNote @signal:close="modals.upload = false" />
     </Modal>
   </div>
 </template>
@@ -98,7 +81,6 @@
 import { PlusIcon, BanIcon, UploadIcon } from "@heroicons/vue/outline";
 import NoteSearch from "@/components/panels/NoteSearch.vue";
 import useNotes from "@/composables/useNotes";
-import useDownload from "@/composables/useDownload";
 import { computed, ref, watch } from "@vue/runtime-core";
 import NoteItemDelegate from "@/components/NoteItemDelegate.vue";
 import Modal from "@/components/Modal.vue";
@@ -107,7 +89,7 @@ import CreateNoteModal from "@/components/modals/CreateNoteModal.vue";
 import { useStore } from "vuex";
 import { SETTING_KEYS } from "@/constants/settings";
 import { ORDER } from "@/constants/sorting";
-import useUtils from "@/composables/useUtils";
+import UploadNote from "@/components/modals/UploadNote.vue";
 
 export default {
   components: {
@@ -118,17 +100,17 @@ export default {
     NoteItemDelegate,
     CreateNoteModal,
     UploadIcon,
+    UploadNote,
   },
   setup() {
     const { push } = useRouter();
     const store = useStore();
-    const { notes, addNote, noteFolders, sort, uploadNote } = useNotes();
-    const { readJSONFile } = useDownload();
-    const { isValidNoteObject } = useUtils();
-    const fileinput = ref(null);
+    const { notes, addNote, noteFolders, sort } = useNotes();
 
-    const newNoteModal = ref(false);
-    const errorModal = ref(false);
+    const modals = ref({
+      newnote: false,
+      upload: false,
+    });
     const error = ref("");
     const cn_modal = ref(null);
     const searchText = ref("");
@@ -152,7 +134,7 @@ export default {
       return res;
     });
 
-    watch(newNoteModal, (value) => {
+    watch(modals.newnote, (value) => {
       if (value) {
         window.requestAnimationFrame(() => cn_modal.value.focus());
       } else {
@@ -160,28 +142,9 @@ export default {
       }
     });
 
-    const showError = (text) => {
-      error.value = "cant upload corrupt json file";
-      errorModal.value = true;
-    };
-
-    const fileChanged = async (event) => {
-      const file = fileinput.value.files[0];
-      if (file) {
-        let content = await readJSONFile(file);
-        try {
-          content = JSON.parse(content);
-          if (isValidNoteObject(content)) uploadNote(content);
-          else showError("cant upload corrupt json file");
-        } catch {
-          showError("cant upload corrupt json file");
-        }
-      }
-    };
-
     const add_note = (title, folder) => {
       const note = addNote(title, folder);
-      newNoteModal.value = false;
+      modals.newnote.value = false;
       push(`/${note.ld}`);
     };
 
@@ -189,7 +152,7 @@ export default {
 
     const createNoteUnderCurrentFolder = () => {
       cn_modal.value.setComboValue(activeMenu.value);
-      newNoteModal.value = true;
+      modals.newnote.value = true;
     };
 
     return {
@@ -199,14 +162,11 @@ export default {
       add_note,
       activeMenu,
       filteredNotes,
-      newNoteModal,
       cn_modal,
       searchText,
-      fileinput,
-      fileChanged,
       error,
-      errorModal,
       createNoteUnderCurrentFolder,
+      modals,
     };
   },
 };
