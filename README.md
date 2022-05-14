@@ -3,6 +3,8 @@
 
 Notes is a simple notes taking app that focuses on simplicity to reduce distractions.
 
+> See Live app [here](https://note-box.netlify.app/).
+
 [![Made in Nigeria](https://img.shields.io/badge/made%20in-nigeria-008751.svg?style=flat-square)](https://github.com/acekyd/made-in-nigeria)
 
 ![](.screenshots/window.png)
