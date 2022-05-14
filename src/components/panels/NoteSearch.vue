@@ -12,6 +12,7 @@
     <ComboBox
       class="md:border"
       :list="sortingOptions"
+      popupClasses="top-0 right-0"
       :getDefault="() => savedItem"
       :getItemText="(i) => i?.replace('_', ' ')"
       @selected="updateSortingSetting"

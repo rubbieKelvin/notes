@@ -5,7 +5,7 @@
     class="relative select-none rounded-md border-gray-200"
   >
     <slot :open="open" :selectedText="selectedText" />
-    <div tabindex="0" ref="popup" class="popup">
+    <div tabindex="0" ref="popup" class="popup" :class="popupClasses">
       <button
         v-for="item in list"
         :key="getItemText(item)"
@@ -26,6 +26,10 @@ export default {
     list: {
       type: Array,
       default: () => [],
+    },
+    popupClasses: {
+      type: String,
+      default: 'top-0 left-0'
     },
     getDefault: {
       type: Function,
@@ -75,7 +79,7 @@ export default {
 <style lang="scss" scoped>
 .popup {
   @apply absolute flex-col gap-2 rounded-md py-2 opacity-0 pointer-events-none;
-  @apply bg-white shadow-lg top-0 px-2 min-w-full left-0 flex;
+  @apply bg-white shadow-lg px-2 min-w-full flex;
   @apply focus:opacity-100 focus:pointer-events-auto focus-within:pointer-events-auto;
   @apply focus-within:opacity-100;
 }
