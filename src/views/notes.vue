@@ -134,7 +134,7 @@ export default {
       return res;
     });
 
-    watch(modals.newnote, (value) => {
+    watch(() => modals.value.newnote, (value) => {
       if (value) {
         window.requestAnimationFrame(() => cn_modal.value.focus());
       } else {
@@ -152,7 +152,7 @@ export default {
 
     const createNoteUnderCurrentFolder = () => {
       cn_modal.value.setComboValue(activeMenu.value);
-      modals.newnote.value = true;
+      modals.value.newnote = true;
     };
 
     return {
