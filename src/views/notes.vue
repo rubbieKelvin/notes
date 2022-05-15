@@ -144,7 +144,7 @@ export default {
 
     const add_note = (title, folder) => {
       const note = addNote(title, folder);
-      modals.newnote.value = false;
+      modals.value.newnote = false;
       push(`/${note.ld}`);
     };
 
