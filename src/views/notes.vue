@@ -60,7 +60,7 @@
     </div>
 
     <!-- notes -->
-    <div>
+    <div class="notes">
       <NoteItemDelegate v-for="note in filteredNotes" :key="note.ld" :data="note" />
     </div>
 
@@ -180,6 +180,10 @@ export default {
     >div {
       @apply rounded-md bg-primary-basic left-0 right-0 top-10;
     }
+  }
+
+  .notes{
+    @apply overflow-y-scroll;
   }
 }
 </style>
