@@ -127,10 +127,11 @@ export default {
       }
     });
 
-    const add_note = (title, folder) => {
+    const add_note = (title, folder, openImmediately) => {
       const note = addNote(title, folder);
       modals.value.newnote = false;
-      push(`/${note.ld}`);
+      if (openImmediately)
+        push(`/${note.ld}`);
     };
 
     const setSearch = (value) => (searchText.value = value);

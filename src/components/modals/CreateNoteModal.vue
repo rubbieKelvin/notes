@@ -31,6 +31,10 @@
           </div>
         </ComboBox>
       </div>
+      <div class="flex gap-2 items-center">
+        <input ref="check" type="checkbox" v-model="checked"/>
+        <span @click="$refs.check.click()">Open immediately</span>
+      </div>
 
       <!-- button -->
       <div class="flex items-center justify-end">
@@ -76,7 +80,8 @@ export default {
     const error = ref("");
     const text = ref("");
     const input = ref(null);
-    const combobox = ref(null)
+    const combobox = ref(null);
+    const checked = ref(true);
 
     const { noteFolders } = useNotes();
 
@@ -87,7 +92,7 @@ export default {
 
       if (title) {
         text.value = "";
-        props?.callback(title, folder.value.noteTypeKey);
+        props?.callback(title, folder.value.noteTypeKey, checked.value);
       } else {
         error.value = "Title cannot be empty";
       }
@@ -100,7 +105,7 @@ export default {
     });
 
 
-    return { error, text, fire, input, noteFolders, setFolder, folder, combobox };
+    return { error, text, fire, input, noteFolders, setFolder, folder, combobox,checked };
   },
 };
 </script>
