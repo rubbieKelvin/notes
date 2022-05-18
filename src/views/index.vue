@@ -20,7 +20,7 @@
         </div>
       </div>
       <div class="main">
-          <router-view/>
+          <router-view class="flex-grow"/>
       </div>
     </div>
   </div>
@@ -74,7 +74,7 @@ export default {
     }
 
     > .main{
-        @apply flex-grow;
+        @apply flex-grow flex;
     }
   }
 }
