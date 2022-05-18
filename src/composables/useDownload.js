@@ -7,7 +7,7 @@ export default () => {
    */
   const getJSONDownload = (noteObject) => {
     //Setting sensitive information to null
-    var noteObjectDuplicate = {...noteObject}
+    var noteObjectDuplicate = { ...noteObject }
     noteObjectDuplicate.id = null;
     noteObjectDuplicate.ld = null;
     noteObjectDuplicate.last_edited = null;
@@ -28,5 +28,17 @@ export default () => {
       },
     };
   };
-  return { getJSONDownload };
+
+  const readJSONFile = async (file) => {
+    if (file.type === 'application/json') {
+      try {
+        const value = await file.text()
+        return value
+      } catch(e) {
+        return null
+      }
+    }
+    return null
+  };
+  return { getJSONDownload, readJSONFile };
 };
