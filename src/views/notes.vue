@@ -1,31 +1,22 @@
 <template>
-  <div>
+  <div class="flex flex-col">
     <div class="flex flex-col h-28 border-b border-b-gray-200 pt-6 px-5">
       <div class="flex flex-grow items-center gap-2">
         <h1 class="flex-grow text-3xl">Notes</h1>
 
-        <button
-          @click="modals.upload = true"
-          class="flex items-center gap-3 font-semibold bg-gray-100 hover:bg-gray-200 rounded-md px-3 py-2"
-        >
+        <button @click="modals.upload = true"
+          class="flex items-center gap-3 font-semibold bg-gray-100 hover:bg-gray-200 rounded-md px-3 py-2">
           <UploadIcon class="h-5 w-5" />
         </button>
-        <button
-          @click="modals.newnote = true"
-          class="flex items-center gap-3 font-semibold bg-primary-basic text-white hover:bg-primary-vibrant rounded-md px-3 py-2"
-        >
+        <button @click="modals.newnote = true"
+          class="flex items-center gap-3 font-semibold bg-primary-basic text-white hover:bg-primary-vibrant rounded-md px-3 py-2">
           <PlusIcon class="h-5 w-5" />
         </button>
       </div>
       <div class="tab">
-        <button
-          class="capitalize"
-          @click="activeMenu = folder.enabled ? folder : activeMenu"
-          :class="{ active: activeMenu.name === folder.name }"
-          v-for="folder in noteFolders"
-          :key="folder.name"
-          :title="folder.enabled ? null : folder.disabledMessage"
-        >
+        <button class="capitalize" @click="activeMenu = folder.enabled ? folder : activeMenu"
+          :class="{ active: activeMenu.name === folder.name }" v-for="folder in noteFolders" :key="folder.name"
+          :title="folder.enabled ? null : folder.disabledMessage">
           <BanIcon v-if="!folder.enabled" />
           {{ folder.name }}
           <div class="" />
@@ -38,9 +29,7 @@
 
     <!-- empty banner -->
     <div v-if="filteredNotes.length === 0" class="p-3">
-      <div
-        class="flex items-center gap-3 text-primary-basic p-3 rounded-md bg-primary-basic bg-opacity-10"
-      >
+      <div class="flex items-center gap-3 text-primary-basic p-3 rounded-md bg-primary-basic bg-opacity-10">
         <BanIcon class="w-5 h-5" />
         <template v-if="searchText.length === 0">
           <p class="font-medium flex-grow">No notes in this folder</p>
@@ -172,28 +161,29 @@ export default {
 .tab {
   @apply flex gap-3;
 
-  > button {
+  >button {
     @apply flex items-center gap-2 font-semibold py-3 px-2 text-sm text-gray-400;
 
     > :deep(svg) {
       @apply w-4 h-4;
     }
 
-    > div {
+    >div {
       @apply h-4 absolute;
     }
   }
 
-  > button.active {
+  >button.active {
     @apply overflow-clip text-gray-700 relative;
 
-    > div {
+    >div {
       @apply rounded-md bg-primary-basic left-0 right-0 top-10;
     }
   }
 
-  .notes{
-    @apply overflow-y-scroll;
-  }
+}
+
+.notes {
+  @apply overflow-y-auto custom-scrollbar flex-grow h-0;
 }
 </style>
