@@ -32,8 +32,8 @@
         </ComboBox>
       </div>
       <div class="flex gap-2 items-center">
-        <input ref="check" type="checkbox" v-model="checked"/>
-        <span @click="$refs.check.click()">Open immediately</span>
+        <input ref="check" type="checkbox" v-model="checked" class="checked"/>
+        <span class=" cursor-default select-none" @click="$refs.check.click()">Open immediately</span>
       </div>
 
       <!-- button -->
@@ -109,3 +109,8 @@ export default {
   },
 };
 </script>
+<style lang="scss" scoped>
+.checked{
+  @apply h-4 w-4;
+}
+</style>
