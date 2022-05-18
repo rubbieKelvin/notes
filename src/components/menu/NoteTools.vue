@@ -3,7 +3,7 @@
     <MenuIcon class="w-[18px] h-[18px]" />
     <div class="popup" ref="popup" v-if="popupAlive">
       <button
-        class="py-1 rounded-md text-sm text-left px-1 border-b-gray-500"
+        class="py-2 rounded-md text-sm text-left px-2 border-b-gray-500"
         :class="[
           signal.danger
             ? 'hover:bg-red-500 hover:text-white'
@@ -25,7 +25,7 @@
 
   > .popup {
     @apply absolute bg-white shadow-md p-2 right-0 top-2;
-    @apply focus-within:flex flex-col gap-1 hidden min-w-[180px];
+    @apply focus-within:flex flex-col hidden min-w-[180px];
 
     &:hover {
       @apply flex;
