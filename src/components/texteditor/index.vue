@@ -37,7 +37,7 @@ import { EditorContent, useEditor, BubbleMenu } from "@tiptap/vue-3";
 import StaterKit from "@tiptap/starter-kit";
 import { watch, ref } from "@vue/runtime-core";
 import Placeholder from "@tiptap/extension-placeholder";
-import Image from "@/extensions/Image";
+import File from "@/extensions/File";
 import Link from "@tiptap/extension-link";
 import SelectMenu from "./SelectMenu.vue";
 import TaskList from '@tiptap/extension-task-list'
@@ -56,7 +56,7 @@ export default {
   setup(props, ctx) {
     const editor = useEditor({
       extensions: [
-        Image,
+        File,
         TaskList,
         TaskItem,
         Link.configure({

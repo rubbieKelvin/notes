@@ -1,22 +1,30 @@
 <template>
-  <IconButton class="h-[30px] tools w-[30px] flex items-center justify-center">
-    <MenuIcon class="w-[18px] h-[18px]" />
-    <div class="popup" ref="popup" v-if="popupAlive">
-      <button
-        class="py-2 rounded-md text-sm text-left px-2 border-b-gray-500"
-        :class="[
-          signal.danger
-            ? 'hover:bg-red-500 hover:text-white'
-            : 'hover:bg-slate-100',
-        ]"
-        v-for="signal in signals"
-        :key="signal.emits"
-        @click="$emit(signal.emits), hidepopup()"
-      >
-        {{ signal.name }}
-      </button>
-    </div>
-  </IconButton>
+  <div class="flex gap-3 items-center">
+    <IconButton class="w-[30px] h-[30px]" @click="addFile">
+      <PlusIcon class="w-[18px] h-[18px]" />
+    </IconButton>
+
+    <IconButton
+      class="h-[30px] tools w-[30px] flex items-center justify-center"
+    >
+      <MenuIcon class="w-[18px] h-[18px]" />
+      <div class="popup" ref="popup" v-if="popupAlive">
+        <button
+          class="py-2 rounded-md text-sm text-left px-2 border-b-gray-500"
+          :class="[
+            signal.danger
+              ? 'hover:bg-red-500 hover:text-white'
+              : 'hover:bg-slate-100',
+          ]"
+          v-for="signal in signals"
+          :key="signal.emits"
+          @click="$emit(signal.emits), hidepopup()"
+        >
+          {{ signal.name }}
+        </button>
+      </div>
+    </IconButton>
+  </div>
 </template>
 
 <style lang="scss" scoped>
@@ -40,7 +48,7 @@
 
 <script>
 import IconButton from "@/components/IconButton.vue";
-import { MenuIcon } from "@heroicons/vue/outline";
+import { MenuIcon, PlusIcon } from "@heroicons/vue/outline";
 import { ref } from "@vue/reactivity";
 
 const _signal = ({ name, emits, danger = false }) => ({ name, emits, danger });
@@ -52,7 +60,12 @@ const signals = [
 
 export default {
   emits: signals.map((i) => i.emits),
-  setup() {
+  props: {
+    editor: {
+      type: Object,
+    },
+  },
+  setup(props) {
     const popup = ref(null);
     const popupAlive = ref(true);
 
@@ -61,13 +74,19 @@ export default {
       window.setInterval(() => (popupAlive.value = true), 10);
     };
 
+    const addFile = () => {
+      const editor = props.editor;
+      editor.commands.addFile();
+    };
+
     return {
       signals,
       popup,
       popupAlive,
       hidepopup,
+      addFile,
     };
   },
-  components: { IconButton, MenuIcon },
+  components: { IconButton, MenuIcon, PlusIcon },
 };
 </script>

@@ -24,6 +24,7 @@
           </div>
 
           <NoteTools
+            :editor="editor"
             @click:delete="modals.delete = true"
             @click:share="modals.share = true"
           />
@@ -48,7 +49,7 @@
           </FuzzyDate>
 
           <!-- ...editable -->
-          <Texteditor class="flex-grow u-px" v-model="noteBody" />
+          <Texteditor ref="pad" class="flex-grow u-px" v-model="noteBody"/>
         </div>
       </template>
 
@@ -132,6 +133,7 @@ export default {
     const { Note, getAuthorFullName, deleteNote } = useNote();
     const note = Note(props.ld);
     const router = useRouter();
+    const pad = ref(null);
     const modals = ref({
       delete: false,
       share: false,
@@ -169,8 +171,11 @@ export default {
       }
     };
 
+    const editor = computed(() => pad.value?.editor ?? {})
+
     onMounted(() => {
       document.addEventListener("keydown", saveListener);
+      // console.log(editor.value)
     });
 
     onBeforeUnmount(() => {
@@ -184,6 +189,8 @@ export default {
       noteHeading,
       delete_note,
       modals,
+      editor,
+      pad
     };
   },
 };
