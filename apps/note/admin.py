@@ -1,4 +1,8 @@
 from django.contrib import admin
-from apps.note.models import Note
+from . import models
 
-admin.site.register(Note)
+admin.site.register([
+    models.Note,
+    models.NoteShare,
+    models.File
+])

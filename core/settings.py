@@ -117,5 +117,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'users.User'
 
 GRAPHENE = {
-    'SCHEMA': 'apps.gql.schema.schema'
+    'SCHEMA': 'apps.gql.schema.schema',
+    'SCHEMA_OUTPUT': 'notes.schema.json',
+    'SCHEMA_INDENT': 2,
 }

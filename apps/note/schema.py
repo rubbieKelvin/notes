@@ -1,14 +1,19 @@
 import graphene
-from graphql.execution.base import ResolveInfo
 from graphene_django import DjangoObjectType
-from apps.note.models import Note
-
-class NoteType(DjangoObjectType):
-    class Meta:
-        model = Note
+from . import models
+from . import types
+from . import mutation
 
 class Query(graphene.ObjectType):
-    notes = graphene.List(NoteType)
+    note = graphene.Field(types.NoteType, id=graphene.ID(required=True))
+    notes = graphene.List(types.NoteType)
 
-    def resolve_notes(self, info:ResolveInfo):
-        return Note.objects.all()
+    def resolve_note(self, info, id):
+        return models.Note.objects.get(id=id)
+
+    def resolve_notes(self, info):
+        return models.Note.objects.all()
+
+
+class Mutation(graphene.ObjectType):
+    upload_note = mutation.UploadNote.Field()
