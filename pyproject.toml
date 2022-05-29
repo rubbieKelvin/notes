@@ -10,6 +10,7 @@ psycopg2-binary = "^2.9.3"
 autopep8 = "^1.6.0"
 graphene-django = "^2.15.0"
 Django = "<4"
+django-graphql-jwt = "^0.3.4"
 
 [tool.poetry.dev-dependencies]
 
