@@ -1,4 +1,4 @@
 python manage.py makemigrations \
-    # note \
     authr;
+    # note \
 python manage.py migrate

@@ -19,3 +19,10 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+
+    @staticmethod
+    def create(email:str, password:str):
+        new = User(email=email)
+        new.set_password(password)
+        new.save()
+        return new
