@@ -1,212 +1,129 @@
 <template>
-  <div class="bg-gray-50 h-full md:min-h-screen flex justify-center items-end">
-    <div
-      class="bg-white md:shadow-md rounded-t-md w-full h-screen xl:max-h-[90vh] xl:max-w-[800px] 2xl:max-w-[850px] flex-col flex flex-grow"
-    >
-      <template v-if="note">
-        <div
-          class="flex items-center px-5 py-3 border-b border-b-gray-200 gap-5"
-        >
-          <IconButton
-            class="w-[30px] h-[30px] hidden md:flex"
-            @click="$router.push('/')"
-          >
-            <LeftChevronSvg />
-          </IconButton>
+  <div class="notepad">
+    <!-- heading -->
+    <div class="heading">
+      <div class="info">
+        <span class="title">Note Title</span>
+        <span class="descr">Edited 2 minutes ago, by rubbie.</span>
+      </div>
 
-          <div class="flex flex-grow gap-3 items-center">
-            <h1 class="capitalize">{{ note.name }}</h1>
-            <FuzzyDate :datetime="note.last_edited" v-slot="{ fuzzy }">
-              <p class="text-sm hidden md:flex text-gray-400">
-                edited {{ fuzzy }}
-              </p>
-            </FuzzyDate>
-          </div>
-
-          <NoteTools
-            :editor="editor"
-            @click:delete="modals.delete = true"
-            @click:share="modals.share = true"
-          />
-        </div>
-
-        <!-- ...pad -->
-        <div class="view-pad">
-          <!-- heading -->
-          <input
-            v-model="noteHeading"
-            placeholder="Note title...."
-            type="text"
-            class="subject-heading u-px"
-          />
-
-          <FuzzyDate :datetime="note.created_at" v-slot="{ fuzzy }">
-            <p class="u-px">
-              Created by
-              <span class="bg-gray-100 rounded p-1">{{ author }}</span
-              >, {{ fuzzy }}
-            </p>
-          </FuzzyDate>
-
-          <!-- ...editable -->
-          <Texteditor ref="pad" class="flex-grow u-px" v-model="noteBody"/>
-        </div>
-      </template>
-
-      <template v-else>
-        <div class="h-full flex flex-col gap-4 items-center justify-center">
-          <EmptyStateSvg />
-          <div class="flex gap-2 flex-col items-center">
-            <h1 class="text-5xl">404</h1>
-            <p class="text-gray-500 max-w-[200px] text-center">
-              Couldnt find this note.
-            </p>
-            <router-link
-              class="bg-primary-basic p-2 bg-opacity-5 hover:bg-opacity-10 text-sm text-primary-basic rounded-md"
-              to="/"
-              >Go Home</router-link
-            >
-          </div>
-        </div>
-      </template>
+      <div class="more-menu">
+        <button class="hover:bg-gray-100 p-2 rounded-md">
+          <menu-icon class="w-6 h-6" />
+        </button>
+      </div>
     </div>
+    <!-- tools -->
+    <div class="tools">
+      <!-- <Combobox
+        :list="FONTS"
+        :resolver="resolveSelectedFont"
+        v-model="selectedFont"
+      >
+        <template v-slot:display="{ text }">
+          <div
+            class="min-w-[50px] flex items-center gap-4 cursor-default hover:bg-gray-100 px-2 rounded-md"
+          >
+            <p>{{ text }}</p>
+            <ChevronDownIcon class="w-5 h-5" />
+          </div>
+        </template>
+        <template v-slot:options="{}">
+          <div floater></div>
+        </template>
+      </Combobox>
 
-    <!-- modals -->
-    <!-- delete modal -->
-    <Modal v-model="modals.delete" dim closeOnClickOutside closeOnEsc>
-      <ConfirmDialog
-        :noAction="() => (modals.delete = false)"
-        :yesAction="() => delete_note()"
-        :yesClass="['bg-red-400 hover:bg-red-500']"
-        :noClass="['bg-gray-200 hover:bg-gray-300 text-black']"
-        message="You cannot undo this action, are you sure you want to delete this note?"
-        :title="`Delete ${note ? note.name : 'Note'}`"
-        noText="No, Take me back"
-        yesText="Yes, Delete this note"
-      />
-    </Modal>
+      <div class="divider" /> -->
 
-    <!-- share modal -->
-    <Modal v-model="modals.share" dim closeOnClickOutside closeOnEsc>
-      <ShareNote :note="note" @close:modal="modals.share = false" />
-    </Modal>
+      <!-- ... -->
+      <button :title="tool.name" v-for="tool in padtools" :key="tool.name">
+        <icon :name="tool.icon" class="w-5 h-5" />
+      </button>
+
+      <!-- ... -->
+      <!-- <div class="divider" /> -->
+
+      <!-- ... -->
+      <button :title="tool.name" v-for="tool in notetools" :key="tool.name">
+        <icon :name="tool.icon" class="w-5 h-5" />
+      </button>
+    </div>
   </div>
 </template>
 
-<script>
-import DetailItem from "@/components/DetailItem.vue";
-import Texteditor from "@/components/texteditor/index.vue";
-import FuzzyDate from "@/components/FuzzyDate.vue";
-import IconButton from "@/components/IconButton.vue";
-import useNote from "@/composables/useNotes";
-import { computed, onBeforeUnmount, onMounted, ref } from "@vue/runtime-core";
-import EditModeSvg from "../assets/svgs/editModeSvg.vue";
-import LeftChevronSvg from "../assets/svgs/leftChevronSvg.vue";
-import EmptyStateSvg from "../assets/svgs/emptyStateSvg.vue";
-import { useRouter } from "vue-router";
-import Modal from "@/components/Modal.vue";
-import ConfirmDialog from "@/components/modals/ConfirmDialog.vue";
-import NoteTools from "@/components/menu/NoteTools.vue";
-import ShareNote from "@/components/modals/ShareNote.vue";
+<style lang="scss" scoped>
+.notepad {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  .heading {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+    @apply px-6 py-[14px] border-b border-b-wall;
 
-export default {
-  props: {
-    ld: {
-      type: String,
-      default: null,
-    },
-  },
-  components: {
-    IconButton,
-    EditModeSvg,
-    LeftChevronSvg,
-    EmptyStateSvg,
-    DetailItem,
-    Texteditor,
-    FuzzyDate,
-    Modal,
-    ConfirmDialog,
-    NoteTools,
-    ShareNote,
-  },
-  setup(props) {
-    const { Note, getAuthorFullName, deleteNote } = useNote();
-    const note = Note(props.ld);
-    const router = useRouter();
-    const pad = ref(null);
-    const modals = ref({
-      delete: false,
-      share: false,
-    });
-
-    const author = getAuthorFullName(note.value?.author);
-
-    const noteHeading = computed({
-      get() {
-        return note.value.name;
-      },
-      set(name) {
-        note.value = { name };
-      },
-    });
-
-    const noteBody = computed({
-      get() {
-        return note.value.body;
-      },
-      set(body) {
-        note.value = { body };
-      },
-    });
-
-    const delete_note = () => {
-      deleteNote(props.ld);
-      router.push("/");
-    };
-
-    const saveListener = (e) => {
-      if (e.ctrlKey && e.key === "s") {
-        e.preventDefault();
-        modals.value.share = true;
+    .info {
+      @apply flex flex-col flex-grow;
+      .title {
+        @apply font-medium text-xl;
       }
-    };
+      .descr {
+        @apply text-sm text-slate-400;
+      }
+    }
+  }
 
-    const editor = computed(() => pad.value?.editor ?? {})
-
-    onMounted(() => {
-      document.addEventListener("keydown", saveListener);
-      // console.log(editor.value)
-    });
-
-    onBeforeUnmount(() => {
-      document.removeEventListener("keydown", saveListener);
-    });
-
-    return {
-      note,
-      noteBody,
-      author,
-      noteHeading,
-      delete_note,
-      modals,
-      editor,
-      pad
-    };
-  },
-};
-</script>
-
-<style scoped>
-.view-pad {
-  @apply md:pt-5 pt-2 flex flex-col;
-  @apply gap-4 flex-grow h-[90%];
-}
-
-.subject-heading {
-  @apply font-medium text-4xl md:text-5xl outline-none;
-}
-
-.u-px {
-  @apply px-2 md:px-7;
+  .tools {
+    @apply px-6 border-b border-b-wall py-[0.65rem] flex gap-3;
+    > .divider {
+      @apply border-r border-r-wall;
+    }
+    > button {
+      @apply p-2 hover:bg-gray-100 rounded-md text-slate-700;
+    }
+  }
 }
 </style>
+
+<script lang="ts">
+import { defineComponent, ref } from "vue";
+import { MenuIcon, ChevronDownIcon } from "@heroicons/vue/outline";
+import Icon from "@/icons/index.vue";
+import {
+  PAD_TOOLS,
+  FONTS,
+  FontType,
+  ToolType,
+  NOTE_TOOLS,
+} from "@/constants/index";
+import Combobox from "@/components/controls/Combobox.vue";
+import { EditorContent, useEditor, JSONContent } from "@tiptap/vue-3";
+// import StarterKit from "@tiptap/starter-kit"
+
+export default defineComponent({
+  components: { MenuIcon, Icon, Combobox, ChevronDownIcon, EditorContent },
+  setup() {
+    const selectedFont = ref(0);
+    const content = ref<JSONContent>({ type: "doc", content: [] });
+    const editor = useEditor({
+      extensions: [],
+      content: content.value,
+      onUpdate: () => {
+        // i stoped here trying to get the typing right
+        content.value = editor.value?.getJSON() 
+      }
+    });
+
+    const resolveSelectedFont = (item: FontType): string => item.name;
+
+    const padtools = ref<ToolType[]>([]);
+    padtools.value = PAD_TOOLS();
+
+    const notetools = ref<ToolType[]>([]);
+    notetools.value = NOTE_TOOLS();
+
+    return { padtools, selectedFont, FONTS, resolveSelectedFont, notetools };
+  },
+});
+</script>

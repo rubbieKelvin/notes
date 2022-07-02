@@ -1,6 +1,6 @@
 <template>
   <!-- base router -->
-  <router-view class="text-base" />
+  <router-view class="text-base h-full" />
 </template>
 
 <script>
