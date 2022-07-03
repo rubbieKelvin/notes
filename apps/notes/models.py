@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from django.db import models
 from django.utils import timezone
-from apps.authr.models import User  # TODO: remove
+from apps.authr.models.user import User  # TODO: remove
 
 
 def _default_note_body():

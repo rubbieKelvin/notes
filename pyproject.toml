@@ -8,10 +8,14 @@ license = "MIT"
 [tool.poetry.dependencies]
 python = "^3.10"
 Django = "<4"
-graphene-django = "^2.15.0"
-django-graphql-jwt = "^0.3.4"
 psycopg2-binary = "^2.9.3"
+djangorestframework = "^3.13.1"
+django-cors-headers = "^3.13.0"
+django-environ = "^0.9.0"
+Markdown = "^3.3.7"
 autopep8 = "^1.6.0"
+typing-extensions = "^4.3.0"
+ipython = "^8.4.0"
 
 [tool.poetry.dev-dependencies]
 
