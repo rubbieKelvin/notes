@@ -11,6 +11,8 @@ class User(AbstractBaseUser, PermissionsMixin, ModelMixin):
     email = models.EmailField('email address', unique=True)
     name = models.CharField(null=True, max_length=30)
     date_joined = models.DateTimeField(default=timezone.now)
+    is_staff = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=False)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
@@ -31,8 +33,9 @@ class User(AbstractBaseUser, PermissionsMixin, ModelMixin):
         new.save()
         return new
 
-    def update(self, email: str, password: str) -> Self:
-        self.email = email
-        self.set_password(password)
+    def update(self, name: str|None, email: str|None, password: str|None) -> Self:
+        self.email = email or self.email
+        self.name = name or self.name
+        if password: self.set_password(password)
         self.save()
         return self
