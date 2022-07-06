@@ -92,7 +92,7 @@ class object_(type_):
             v.name = f"{self.name}[{k}]"
             v.session = self.session
 
-            if not v.validate(value[k]):
+            if not v.validate(value.get(k)):
                 self.session.valid = False
                 return False
 

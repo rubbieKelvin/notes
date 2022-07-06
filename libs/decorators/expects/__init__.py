@@ -2,6 +2,7 @@ from .types import type_
 from typing import Callable
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework import status
 from django.http.request import QueryDict
 
 def expects(typing: type_, autoreject:bool=False):
@@ -14,7 +15,7 @@ def expects(typing: type_, autoreject:bool=False):
             if (not typing.validate(data)) and autoreject:
                 return Response(data=dict(
                     error=typing.session.error or "invalid value",
-                ))
+                ), status=status.HTTP_400_BAD_REQUEST)
 
             try:
                 return func(request, typing.session, *args, **kwargs)

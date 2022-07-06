@@ -29,6 +29,7 @@ class User(AbstractBaseUser, PermissionsMixin, ModelMixin):
     @staticmethod
     def create(email: str, password: str) -> Self:
         new = User(email=email)
+        new.is_active = True
         new.set_password(password)
         new.save()
         return new

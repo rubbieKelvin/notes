@@ -5,4 +5,4 @@ from apps.authr.models.user import User
 class UserSr(ModelSerializer):
     class Meta:
         model = User
-        fields = '__all__'
+        exclude = ["password"]
