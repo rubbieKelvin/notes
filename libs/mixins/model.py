@@ -14,9 +14,10 @@ class ModelMixin:
     def update() -> Self:
         pass
 
-    def delete() -> None:
+    @staticmethod
+    def find(*queries: models.Q) -> models.QuerySet[Self]:
         pass
 
     @staticmethod
-    def find(*queries: models.Q) -> models.QuerySet[Self]:
+    def all() -> models.QuerySet(Self):
         pass

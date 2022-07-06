@@ -34,9 +34,14 @@ class User(AbstractBaseUser, PermissionsMixin, ModelMixin):
         new.save()
         return new
 
-    def update(self, name: str|None, email: str|None, password: str|None) -> Self:
+    def update(self, name: str|None, email: str|None, password: str|None, is_active: bool|None=None) -> Self:
         self.email = email or self.email
         self.name = name or self.name
+        if is_active != None: self.is_active = is_active
         if password: self.set_password(password)
         self.save()
         return self
+
+    @staticmethod
+    def all() -> models.QuerySet(Self):
+        return User.objects.filter(is_active=True)
