@@ -70,9 +70,10 @@ class boolean(type_):
         return True
 
 class object_(type_):
-    def __init__(self, value, optional:bool=False) -> None:
+    def __init__(self, value, optional:bool=False, allow_unknown_keys:bool=False) -> None:
         super().__init__([], optional)
         self.typing = value
+        self.allow_unknown_keys = allow_unknown_keys
 
     def validate(self, value: dict) -> bool:
         if self.optional and value==None: return True
@@ -81,10 +82,11 @@ class object_(type_):
                 self.session.setinvalid(f"{self.name} should be an object")
             return False
 
-        if not set(value.keys()).issubset(self.typing.keys()):
-            extra = (set(value.keys()) - set(self.typing.keys())).pop()
-            self.session.setinvalid(f"{self.name} has an unnecessary key \"{extra}\"")
-            return False
+        if not self.allow_unknown_keys:
+            if not set(value.keys()).issubset(self.typing.keys()):
+                extra = (set(value.keys()) - set(self.typing.keys())).pop()
+                self.session.setinvalid(f"{self.name} has an unnecessary key \"{extra}\"")
+                return False
 
         for k, v in self.typing.items():
             v: type_
@@ -105,7 +107,7 @@ class array(type_):
 
     def validate(self, value: list) -> bool:
         if self.optional and value==None: return True
-        if type(value) != list and not super().validate(value):
+        if type(value) != list or not super().validate(value):
             if self.session.valid:
                 self.session.setinvalid(f"{self.name} should be an array")
             return False

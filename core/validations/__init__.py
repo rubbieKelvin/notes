@@ -1,4 +1,5 @@
 import re
+from django.core.validators import slug_re
 
 def email(text: str) -> bool:
     if not text: return False
@@ -9,3 +10,6 @@ def password(text: str) -> bool:
     if not text: return False
     return len(text) > 5
 
+def slug(text: str) -> bool:
+    if not text: return False
+    return bool(slug_re.fullmatch(text))
