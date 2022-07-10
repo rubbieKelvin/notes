@@ -27,20 +27,27 @@ export default createRouter({
           ],
         },
         {
-          path: "/notes",
+          path: "mynotes",
           component: () => import("@/pages/app/notes.vue"),
           children: [
-            {
-              path: "",
-              component: () => import("@/pages/app/emptypad.vue"),
-            },
-            {
-              path: ":ld",
-              component: () => import("@/pages/app/pad.vue"),
-              props: true,
-            },
+            { path: "", component: () => import("@/pages/app/emptypad.vue") },
           ],
         },
+        // {
+        //   path: "/notes",
+        //   component: () => import("@/pages/app/notes.vue"),
+        //   children: [
+        //     {
+        //       path: "",
+        //       component: () => import("@/pages/app/emptypad.vue"),
+        //     },
+        //     {
+        //       path: ":ld",
+        //       component: () => import("@/pages/app/pad.vue"),
+        //       props: true,
+        //     },
+        //   ],
+        // },
       ],
     },
   ],

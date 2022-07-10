@@ -47,14 +47,12 @@ import { ApplicationDataContext } from "@/constants/types";
 import ProcessButton from "./ProcessButton.vue";
 import Icon from "@/packages/heroicons";
 import { user_logout } from "@/packages/api";
-import { useRouter } from "vue-router";
 
 export default {
   setup() {
     const ctx = inject("ctx") as Ref<ApplicationDataContext>;
     const open = ref(false);
     const edits = ref({ name: "" });
-    const router = useRouter();
 
     const logout = async () => {
       await user_logout();

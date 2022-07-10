@@ -10,10 +10,10 @@
         <router-link
           class="link"
           :to="ql.link"
-          v-for="ql in QUICK_LINKS"
+          v-for="ql in QuickLinks"
           :key="ql.name"
         >
-          <Icons :name="ql.icon" />
+          <Icon class="w-6 h-6" v-if="ql.icon" :name="ql.icon" />
           <span>{{ ql.name }}</span>
         </router-link>
       </div>
@@ -49,12 +49,12 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import AccountWidget from "@/components/AccountWidget.vue";
-import Icons from "@/icons/index.vue";
-import { QUICK_LINKS } from "@/constants/index";
+import Icon from "@/packages/heroicons"
+import { QuickLinks } from '@/constants/links';
 
 export default defineComponent({
   setup() {},
-  data: () => ({ QUICK_LINKS }),
-  components: { AccountWidget, Icons },
+  data: () => ({ QuickLinks }),
+  components: { AccountWidget, Icon },
 });
 </script>

@@ -5,24 +5,24 @@
       <p class="title">Notes</p>
       <div class="buttons">
         <button>
-          <plus-icon class="w-5 h-5 text-white" />
+          <icon name="PlusIcon" class="w-5 h-5 text-white" />
         </button>
       </div>
     </div>
 
     <!-- search -->
     <div class="search">
-      <search-icon class="icon" />
+      <Icon name="SearchIcon" class="icon" />
       <input type="text" placeholder="Search notes..." />
-      <sort-descending-icon class="icon button" />
+      <!-- <sort-descending-icon class="icon button" /> -->
     </div>
 
     <!-- notes -->
     <div class="notelist">
       <!-- note item -->
-      <router-link v-for="i in 100" :key="i" class="noteitem" :to="`/notes/${i}/`">
+      <router-link v-for="note in notes" :key="note.id" class="noteitem" :to="`/app/mynotes/${note.slug}/`">
         <span class="date">2 Months ago</span>
-        <span class="title">Nuclear war is unlikely to cause human extinction</span>
+        <span class="title">{{note.name}}</span>
         <span class="descr">A number of people have claimed that a full-scale nuclear war is likely to cause human...</span>
         <span class="edited">Last edited 2 minutes ago</span>
       </router-link>
@@ -31,16 +31,20 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
-import {
-  PlusIcon,
-  SearchIcon,
-  SortDescendingIcon,
-} from "@heroicons/vue/outline";
+import { computed, defineComponent, inject, Ref } from "@vue/runtime-core";
+import Icon from '@/packages/heroicons'
+import { ApplicationDataContext } from "@/constants/types";
 
 export default defineComponent({
-  components: { PlusIcon, SearchIcon, SortDescendingIcon },
+  components: { Icon },
+
+  setup(){
+    const ctx = inject('ctx') as Ref<ApplicationDataContext>
+    const notes = computed(() => ctx.value.notes)
+    return {notes, ctx}
+  }
 });
+
 </script>
 
 <style lang="scss" scoped>

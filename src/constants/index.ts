@@ -1,15 +1,3 @@
-interface QuickLink {
-  name: string;
-  icon: string;
-  link: string;
-}
-
-export const QUICK_LINKS = <QuickLink[]>[
-  { name: "All Notes", icon: "note", link: "/notes/" },
-  { name: "Timeline", icon: "clock", link: "/" },
-  { name: "Trash", icon: "trash", link: "/" },
-];
-
 export interface ToolType {
   name: string;
   icon: string;
@@ -47,4 +35,4 @@ export const FONTS = <FontType[]>[
   { name: "Open Sans" },
 ];
 
-export const TOKEN_STORE_KEY = 'x-auth'
+export const TOKEN_STORE_KEY = "x-auth";
