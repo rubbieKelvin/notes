@@ -1,7 +1,7 @@
 <template>
   <div class="sidebar h-full">
     <!-- author -->
-    <UserWidget class="mx-6" />
+    <AccountWidget class="mx-6" />
 
     <!-- quicklinks -->
     <div class="block">
@@ -48,13 +48,13 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import UserWidget from "@/components/UserWidget.vue";
+import AccountWidget from "@/components/AccountWidget.vue";
 import Icons from "@/icons/index.vue";
 import { QUICK_LINKS } from "@/constants/index";
 
 export default defineComponent({
   setup() {},
   data: () => ({ QUICK_LINKS }),
-  components: { UserWidget, Icons },
+  components: { AccountWidget, Icons },
 });
 </script>

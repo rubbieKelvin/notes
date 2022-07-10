@@ -2,7 +2,7 @@ module.exports = {
   content: ["./index.html", "./src/**/*.{vue,js,ts,jsx,tsx}"],
   theme: {
     fontFamily: {
-      sans: "Inter UI",
+      sans: "Poppins",
       serif: "Mulish",
     },
     fontSize: {
@@ -19,7 +19,7 @@ module.exports = {
     extend: {
       colors: {
         primary: {
-          basic: "#007AFF",
+          basic: "#1a73e8",
           vibrant: "#0040DD",
         },
         wall: "#c1c4c8",

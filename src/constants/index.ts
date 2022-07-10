@@ -46,3 +46,5 @@ export const FONTS = <FontType[]>[
   { name: "Roboto" },
   { name: "Open Sans" },
 ];
+
+export const TOKEN_STORE_KEY = 'x-auth'

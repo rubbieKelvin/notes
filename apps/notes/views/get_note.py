@@ -22,8 +22,15 @@ class BodylessNoteSr(NoteSr):
 def _get_notes(basequery:models.Q|None=None) -> Callable[[Request], Response]:
     def inner(request: Request) -> Response:
         search = request.query_params.get('search', '').strip()
+        size = request.query_params.get('size', '')
+
+        if size and size.isdigit:
+            size = max(int(size), 1)
+        else:
+            size = 30
+
         paginator = PageNumberPagination()
-        paginator.page_size = 30
+        paginator.page_size = size
         notes: models.QuerySet[Note] = Note.find(basequery or models.Q(author=request.user))
         if search and len(search) >= 3:
             notes = notes.filter(

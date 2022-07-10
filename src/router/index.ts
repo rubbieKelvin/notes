@@ -5,26 +5,38 @@ export default createRouter({
   routes: [
     {
       path: "/",
-      component: () => import("../views/index.vue"),
+      component: () => import('@/pages/index.vue')
+    },
+    {
+      path: '/signup',
+      component: () => import('@/pages/signup.vue')
+    },
+    {
+      path: '/login',
+      component: () => import('@/pages/login.vue')
+    },
+    {
+      path: "/app",
+      component: () => import("@/pages/app/index.vue"),
       children: [
         {
-          path: "/",
-          component: () => import("../views/notes.vue"),
+          path: "",
+          component: () => import("@/pages/app/notes.vue"),
           children: [
-            { path: "", component: () => import("../views/emptypad.vue") },
+            { path: "", component: () => import("@/pages/app/emptypad.vue") },
           ],
         },
         {
           path: "/notes",
-          component: () => import("../views/notes.vue"),
+          component: () => import("@/pages/app/notes.vue"),
           children: [
             {
               path: "",
-              component: () => import("../views/emptypad.vue"),
+              component: () => import("@/pages/app/emptypad.vue"),
             },
             {
               path: ":ld",
-              component: () => import("../views/pad.vue"),
+              component: () => import("@/pages/app/pad.vue"),
               props: true,
             },
           ],

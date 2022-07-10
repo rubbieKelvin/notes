@@ -6,12 +6,12 @@ import './styles/index.css'
 import './styles/editor-styles.scss'
 
 import router from './router'
-import store from './store'
+import { createPinia } from 'pinia'
 
 const app = createApp(App)
+const pinia = createPinia()
 
 // plugins
 app.use(router)
-app.use(store)
-
+app.use(pinia)
 app.mount('#app')
