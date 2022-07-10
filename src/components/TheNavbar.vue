@@ -73,8 +73,9 @@ a {
 </style>
 
 <script lang="ts">
-import { NavbarLinkType, NavLinks } from "@/constants/links";
+import { NavLinks } from "@/constants/links";
 import { NAVBAR_STATES } from "@/constants/states";
+import { NavbarLinkType } from "@/constants/types";
 import { computed, ComputedRef, ref } from "vue-demi";
 
 export default {

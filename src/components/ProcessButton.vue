@@ -1,7 +1,7 @@
 <template>
   <button :disabled="loading" @click="onclick" class=" transition-all duration-200">
-    <Icon v-if="error" name="ExclamationIcon" class="w-6 h-6"/>
-    <slot v-if="!loading"> Button </slot>
+    <Icon v-if="error && !loading" name="ExclamationIcon" class="w-6 h-6"/>
+    <slot v-if="!loading" :error="error" :loading="loading"> Button </slot>
     <svg
     v-if="loading"
       class="animate-spin w-6 h-6"

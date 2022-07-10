@@ -32,6 +32,13 @@ export const user_signup = async (
   return data as types.ResponseError;
 };
 
+export const user_logout = async (): Promise<void> => {
+  const headers = auth_header();
+  if (!headers) return;
+  localStorage.removeItem(TOKEN_STORE_KEY);
+  await fetch(url("account/logout/"), { headers, method: 'post' });
+};
+
 export const user_login = async (
   email: string,
   password: string
