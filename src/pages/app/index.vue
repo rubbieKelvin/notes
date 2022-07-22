@@ -8,18 +8,14 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import Sidebar from "@/layouts/Sidebar.vue";
-import useAccountStore from "@/store/useAccountStore";
-import { onMounted, provide, ref, Ref } from "@vue/runtime-core";
-import { ApplicationDataContext } from "@/constants/types";
-import { get_my_notes, get_user } from "@/packages/api";
+import { onMounted, provide } from "@vue/runtime-core";
+import { get_user } from "@/packages/api";
+import useApplicationContext from "@/packages/utils/useApplicationContext"
 
 export default defineComponent({
   components: { Sidebar },
   beforeRouteEnter(to: any, from: any, next: any) {
-    const account = useAccountStore();
-    console.log({ account });
-    account
-      .getUser()
+    get_user()
       .then((user) => {
         if (user) return next();
         next("/login");
@@ -27,19 +23,11 @@ export default defineComponent({
       .catch(() => next("/login"));
   },
   setup() {
-    const ctx: Ref<ApplicationDataContext> = ref({
-      user: null,
-      notes: [],
-    });
+    const ctx = useApplicationContext()
 
     onMounted(async () => {
-      // get user
-      const user = await get_user()
-      ctx.value.user = user
-
-      // notes
-      const notes = await get_my_notes()
-      ctx.value.notes = notes
+      await ctx.value.updateUser()
+      await ctx.value.updateNotes()
     });
 
     provide("ctx", ctx);

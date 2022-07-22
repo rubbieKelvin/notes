@@ -90,7 +90,7 @@ export default defineComponent({
   }
 
   .notelist{
-    @apply flex flex-col h-0 flex-grow overflow-y-scroll gap-2 pt-2;
+    @apply flex flex-col h-0 flex-grow overflow-y-scroll gap-2;
 
     .noteitem{
       @apply px-6 flex gap-2 flex-col py-2 bg-white hover:bg-gray-100;

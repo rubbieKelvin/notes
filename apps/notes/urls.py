@@ -11,6 +11,7 @@ urlpatterns = [
     path('delete/<str:id>/', delete_note.view),
     path('', get_note.get_my_notes),
     path('public/', get_note.get_public_notes),
+    path('q/', get_note.raw_note_query),
     path('<str:id>/', get_note.get_note),
-    path('copy/<str:id>/', duplicate_note.view)
+    path('copy/<str:id>/', duplicate_note.view),
 ]

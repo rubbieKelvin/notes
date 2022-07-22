@@ -1,3 +1,5 @@
+import { JSONContent } from '@tiptap/vue-3'
+
 export interface User {
     id: number,
     last_login: string|null,
@@ -20,10 +22,7 @@ export interface Note {
     last_edited: string,
     archived: boolean,
     slug: string,
-    body?: {
-        type: 'doc',
-        content: any[],
-    }
+    body?: JSONContent,
 }
 
 export interface SignupResponse {
