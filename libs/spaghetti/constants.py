@@ -33,3 +33,6 @@ RAW_QUERY_MAPPING = {
     QUERY_RELATIONSHIPS["INSENSITIVE_CONTAINS"]: dict(negate=False, ext="__icontains"),
     QUERY_RELATIONSHIPS["REGEX"]: dict(negate=False, ext="__regex"),
 }
+
+class ERRORS:
+    INVALID_REQUEST_BODY="INVALID_REQUEST_BODY"

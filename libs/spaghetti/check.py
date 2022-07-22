@@ -1,4 +1,7 @@
 from .validations import type_
+from .constants import ERRORS
+from .templates import errorTemplate
+
 from typing import Callable
 from django.http.request import QueryDict
 
@@ -7,24 +10,19 @@ from rest_framework.response import Response
 from rest_framework import status
 
 
-def expects(typing: type_, autoreject: bool = False):
+def expects(typing: type_):
     def dec(func: Callable[[Request], Response]):
         def inner(request: Request, *args, **kwargs) -> Response:
             data = request.data
             if type(data) == QueryDict:
                 data = request.data.dict()
 
-            if (not typing.validate(data)) and autoreject:
-                return Response(data=dict(
-                    error=typing.session.error or "invalid value",
-                ), status=status.HTTP_400_BAD_REQUEST)
+            if not typing.validate(data):
+                return Response(errorTemplate(
+                        typing.session.error or "invalid value",
+                        code=ERRORS.INVALID_REQUEST_BODY),
+                    status=status.HTTP_400_BAD_REQUEST)
 
-            try:
-                return func(request, typing.session, *args, **kwargs)
-            except TypeError as e:
-                e.args = (
-                    *e.args, "[TIP] Make room for validation session in your view function")
-                raise e
-
+            return func(request, *args, **kwargs)
         return inner
     return dec
