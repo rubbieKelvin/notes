@@ -4,8 +4,8 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
-from libs.decorators.expects import expects
-from libs.decorators.expects import types
+from libs.spaghetti.check import expects
+from libs.spaghetti import types
 
 from apps.notes.models.note import Note
 from apps.notes.sr.notes import NoteSr
@@ -15,8 +15,8 @@ from apps.notes.sr.notes import NoteSr
 @expects(types.object_(dict(
     name=types.string(validations=[lambda x:(2<len(x or '')<60)]),
     private=types.boolean(optional=True),
-)), autoreject=True)
-def view(request:Request, e) -> Response:
+)))
+def view(request:Request) -> Response:
     name = request.data.get('name')
     private = request.data.get('private', True)
     user = request.user

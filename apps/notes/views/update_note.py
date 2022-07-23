@@ -4,8 +4,8 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
-from libs.decorators.expects import expects
-from libs.decorators.expects import types
+from libs.spaghetti.check import expects
+from libs.spaghetti import types
 
 from apps.notes.models.note import Note
 from apps.notes.sr.notes import NoteSr
@@ -25,8 +25,8 @@ from core import validations
         type=types.string(validations=[lambda x:x=='doc']),
         content=types.array(types.type_())
     ), optional=True)
-)), autoreject=True)
-def view(request:Request, e, id: str) -> Response:
+)))
+def view(request:Request, id: str) -> Response:
     name = request.data.get('name')
     private = request.data.get('private')
     archived = request.data.get('archived')
