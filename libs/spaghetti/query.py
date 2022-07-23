@@ -53,14 +53,28 @@ def mapQ(query: dict, parent: str | None = None, join: bool = True) -> Q | list[
     return _and_rel(res) if join else res
 
 
-# TODO: added a way to manage specific key permissions, maybe with exclude keys for certain conditions
-def requestMapQuery(request: Request) -> Q:
+def _cleanupKeys(data, struct):
+    for key, item in struct:
+        if not (key in data):
+            continue
+
+        if type(item) == bool:
+            if item:
+                del data[key]
+        elif type(item) == dict:
+            if (type(data[key]) == list):
+                [_cleanupKeys(item, struct[key]) for item in data[key]]
+            else:
+                _cleanupKeys(data[key], struct[key])
+
+def requestMapQuery(request: Request, exclude:dict=None) -> Q:
     query = request.query_params.get('query', '')
     if not query: return Q()
 
     try:
-        query = json.loads(query)
+        query: dict = json.loads(query)
         if type(query) == dict:
+            if exclude: _cleanupKeys(query, exclude)
             return mapQ(query)
     except JSONDecodeError:
         pass
