@@ -17,7 +17,7 @@ from django.db.models import Q
 @expects(validations.object_(dict(
     email=validations.string(validations=[validations.email]),
     password=validations.string(validations=[validations.password])
-)), autoreject=True)
+)))
 def view(request: Request) -> Response:
     # get body
     email = request.data.get('email')

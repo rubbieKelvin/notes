@@ -7,18 +7,18 @@ from rest_framework import status
 from apps.authr.models import User
 from apps.authr.sr.user import UserSr
 
-from libs.decorators.expects import expects
-from libs.decorators.expects import types
+from libs.spaghetti.check import expects
+from libs.spaghetti import validations
 
 from core import validations
 from django.db.utils import IntegrityError
 
 @api_view(['post'])
-@expects(types.object_(dict(
-    email=types.string(validations=[validations.email]),
-    password=types.string(validations=[validations.password])
-)), autoreject=True)
-def view(request: Request, expectation: types.Session) -> Response:
+@expects(validations.object_(dict(
+    email=validations.string(validations=[validations.email]),
+    password=validations.string(validations=[validations.password])
+)))
+def view(request: Request) -> Response:
     """ creates a user.
     """
     email = request.data.get('email')

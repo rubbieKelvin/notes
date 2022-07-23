@@ -47,7 +47,10 @@ def keyPickFromRequestStruct(request: Request, data: T) -> T:
         return data
 
 
-class StructSelectPagination(PageNumberPagination):
+class KeyPickPageNumberPagination(PageNumberPagination):
+    max_page_size = 100
+    page_size = 30
+
     def get_paginated_response(self, data):
         return Response({
             'links': {
