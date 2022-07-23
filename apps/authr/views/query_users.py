@@ -15,7 +15,7 @@ from libs.spaghetti.picker import KeyPickPageNumberPagination
 def view(request: Request) -> Response:
     pagination = KeyPickPageNumberPagination()
 
-    query = requestMapQuery(request)
+    query = requestMapQuery(request, exclude=dict())
     users = User.find(query)
     
     paginated_query_set = pagination.paginate_queryset(users, request)

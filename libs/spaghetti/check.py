@@ -1,4 +1,4 @@
-from .validations import type_
+from .types import type_
 from .constants import ERRORS
 from .templates import errorTemplate
 

@@ -8,15 +8,15 @@ from apps.authr.models import User
 from apps.authr.sr.user import UserSr
 
 from libs.spaghetti.check import expects
-from libs.spaghetti import validations
+from libs.spaghetti import types
 
 from core import validations
 from django.db.utils import IntegrityError
 
 @api_view(['post'])
-@expects(validations.object_(dict(
-    email=validations.string(validations=[validations.email]),
-    password=validations.string(validations=[validations.password])
+@expects(types.object_(dict(
+    email=types.string(validations=[validations.email]),
+    password=types.string(validations=[validations.password])
 )))
 def view(request: Request) -> Response:
     """ creates a user.

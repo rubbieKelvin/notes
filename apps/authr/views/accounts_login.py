@@ -5,7 +5,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework import status
 
 from libs.spaghetti.check import expects
-from libs.spaghetti import validations
+from libs.spaghetti import types
 
 from core import validations
 from apps.authr.models.user import User
@@ -14,9 +14,9 @@ from django.db.models import Q
 
 
 @api_view(['post'])
-@expects(validations.object_(dict(
-    email=validations.string(validations=[validations.email]),
-    password=validations.string(validations=[validations.password])
+@expects(types.object_(dict(
+    email=types.string(validations=[validations.email]),
+    password=types.string(validations=[validations.password])
 )))
 def view(request: Request) -> Response:
     # get body
