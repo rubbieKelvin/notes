@@ -53,6 +53,7 @@ def mapQ(query: dict, parent: str | None = None, join: bool = True) -> Q | list[
     return _and_rel(res) if join else res
 
 
+# TODO: added a way to manage specific key permissions, maybe with exclude keys for certain conditions
 def requestMapQuery(request: Request) -> Q:
     query = request.query_params.get('query', '')
     if not query: return Q()
