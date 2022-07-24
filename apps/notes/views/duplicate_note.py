@@ -8,6 +8,7 @@ from apps.notes.models.note import Note
 from apps.notes.sr.notes import NoteSr
 
 from django.db import models
+from libs.spaghetti.templates import errorTemplate
 
 @api_view(['post'])
 @permission_classes([IsAuthenticated])
@@ -18,7 +19,9 @@ def view(request:Request, id: str) -> Response:
         models.Q(private=False, archived=False))).first()
 
     if not note:
-        return Response({'error': 'couldnt find note'}, status=status.HTTP_404_NOT_FOUND)
+        return Response(
+            errorTemplate('couldnt find note'),
+            status=status.HTTP_404_NOT_FOUND)
 
     new_note: Note = Note.create(
         name=f"{note.name}-Copy",

@@ -25,17 +25,12 @@ class Note(models.Model, ModelMixin):
 
     @staticmethod
     def create(name: str, private: bool, author, body:dict|None=None) -> Self:
-        usernotes: models.QuerySet[Note] = Note.find(models.Q(author=author))
-        last: Note = usernotes.last()
-        hunch_of_last_id: str = str(last.id)[:8]
-
-        slug = f"note-{usernotes.count()}-{hunch_of_last_id}" if last else "my-first-note"
         note = Note(
             name=name,
             private=private,
             author=author,
             body=body or dict(type='doc', content=[]),
-            slug=slug,)
+            slug=str(uuid.uuid4()),)
 
         note.save()
         return note
@@ -44,14 +39,13 @@ class Note(models.Model, ModelMixin):
     def find(*queries: models.Q) -> models.QuerySet[Self]:
         return Note.objects.filter(*queries)
 
-    def update(self, name:str|None=None, archived:bool|None=None, private:bool|None=None, slug:str|None=None, body:dict|None=None) -> Self:
+    def update(self, name:str|None=None, archived:bool|None=None, private:bool|None=None, slug:str|None=None, body:dict|None=None):
         self.name = name or self.name
         if private != None: self.private = private
         if archived != None: self.archived = archived
         self.slug = slug or self.slug
         self.body = body or self.body
         self.save()
-        return self
 
     @staticmethod
     def all() -> models.QuerySet(Self):

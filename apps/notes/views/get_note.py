@@ -7,6 +7,7 @@ from rest_framework import status
 from apps.notes.models.note import Note
 from apps.notes.sr.notes import NoteSr
 
+from libs.spaghetti.templates import errorTemplate
 from libs.spaghetti.query import requestMapQuery
 from libs.spaghetti.picker import KeyPickPageNumberPagination
 
@@ -27,8 +28,11 @@ def get_note(request: Request, id: str) -> Response:
         (models.Q(author=request.user) |
          models.Q(private=False, archived=False))
     ).first()
+
     if not note:
-        return Response({'error': 'note not found'}, status=status.HTTP_404_NOT_FOUND)
+        return Response(
+            errorTemplate('note not found'),
+            status=status.HTTP_404_NOT_FOUND)
     return Response(NoteSr(note).data)
 
 

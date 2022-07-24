@@ -6,6 +6,7 @@ from rest_framework import status
 
 from libs.spaghetti.check import expects
 from libs.spaghetti import types
+from libs.spaghetti.templates import errorTemplate
 
 from apps.notes.models.note import Note
 from apps.notes.sr.notes import NoteSr
@@ -25,5 +26,5 @@ def view(request:Request) -> Response:
         note = Note.create(name, private, user)
         return Response(NoteSr(note).data)
     except:
-        return Response({'error': "There was an error creating note"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(errorTemplate("There was an error creating note"), status=status.HTTP_400_BAD_REQUEST)
 

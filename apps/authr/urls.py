@@ -10,5 +10,5 @@ urlpatterns = [
     path('login/', accounts_login.view),
     path('me/', accounts_profile.view),
     path('logout/', accounts_logout.view),
-    path('q/', query_users.view)
+    path('query/', query_users.view)
 ]

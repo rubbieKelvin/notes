@@ -11,7 +11,7 @@ class ModelMixin:
     def create() -> Self:
         pass
 
-    def update() -> Self:
+    def update():
         pass
 
     @staticmethod
