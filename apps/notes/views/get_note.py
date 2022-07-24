@@ -14,12 +14,6 @@ from libs.spaghetti.picker import KeyPickPageNumberPagination
 from django.db import models
 
 
-class BodylessNoteSr(NoteSr):
-    class Meta(NoteSr.Meta):
-        exclude = ['body']
-        fields = None
-
-
 @api_view()
 @permission_classes([IsAuthenticated])
 def get_note(request: Request, id: str) -> Response:
@@ -39,9 +33,14 @@ def get_note(request: Request, id: str) -> Response:
 @api_view()
 @permission_classes([IsAuthenticated])
 def raw_note_query(request: Request) -> Response:
+    order_by = request.query_params.get('order_by')
     paginator = KeyPickPageNumberPagination()
     query = requestMapQuery(request, exclude={'body': True})
-    notes: models.QuerySet[Note] = Note.find(query)
+    notes: models.QuerySet[Note] = Note.find(query & (
+        models.Q(author=request.user) |
+        models.Q(private=False, archived=False)))
+    if order_by:
+        notes = notes.order_by(order_by)
 
     data = paginator.paginate_queryset(notes, request)
-    return paginator.get_paginated_response(BodylessNoteSr(data, many=True).data)
+    return paginator.get_paginated_response(NoteSr(data, many=True).data)

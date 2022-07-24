@@ -1,3 +1,4 @@
+import { PaginatedFetch } from "@/packages/api/types";
 import { Note, User } from "@/packages/api/types/models";
 
 export interface ApplicationDataContext {

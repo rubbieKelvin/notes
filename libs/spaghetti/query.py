@@ -53,8 +53,8 @@ def mapQ(query: dict, parent: str | None = None, join: bool = True) -> Q | list[
     return _and_rel(res) if join else res
 
 
-def _cleanupKeys(data, struct):
-    for key, item in struct:
+def _cleanupKeys(data, struct:dict):
+    for key, item in struct.items():
         if not (key in data):
             continue
 

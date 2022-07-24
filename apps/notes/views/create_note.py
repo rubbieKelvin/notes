@@ -19,12 +19,15 @@ from apps.notes.sr.notes import NoteSr
 )))
 def view(request:Request) -> Response:
     name = request.data.get('name')
+    slug = request.data.get('slug', None)
     private = request.data.get('private', True)
     user = request.user
 
     try:
-        note = Note.create(name, private, user)
+        note = Note.create(name=name, private=private, author=user, slug=slug)
         return Response(NoteSr(note).data)
     except:
-        return Response(errorTemplate("There was an error creating note"), status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            errorTemplate("There was an error creating note"),
+            status=status.HTTP_400_BAD_REQUEST)
 

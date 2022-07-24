@@ -6,6 +6,7 @@ from typing import TypeVar
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
+from collections import OrderedDict
 
 T = TypeVar('T', dict, list)
 
@@ -19,7 +20,8 @@ def keyPick(obj: dict, struct: dict) -> dict:
                 res[key] = obj.get(key)
         elif type(value) == dict:
             obj_val = obj.get(key, {})
-            if type(obj_val) == dict:
+
+            if type(obj_val) in [dict, OrderedDict]:
                 res[key] = keyPick(obj_val, value)
             elif type(obj_val) == list:
                 res[key] = [keyPick(i, value) for i in obj_val]
@@ -50,9 +52,11 @@ def keyPickFromRequestStruct(request: Request, data: T) -> T:
 class KeyPickPageNumberPagination(PageNumberPagination):
     max_page_size = 100
     page_size = 30
+    page_size_query_param = 'page_size'
 
     def get_paginated_response(self, data):
         return Response({
+            '__typename': 'paginated_response',
             'links': {
                 'next': self.get_next_link(),
                 'previous': self.get_previous_link()

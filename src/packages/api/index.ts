@@ -2,13 +2,14 @@ import * as models from "./types/models";
 import * as types from "./types";
 import { TOKEN_STORE_KEY } from "@/constants";
 
-const url = (path: string): string => `http://localhost:8000/${path}`;
+export const url = (path: string): URL => new URL(`http://localhost:8000/${path}`);
 
-export const auth_header = (): Headers | null => {
+export const auth_header = (content_type?: string): Headers | null => {
   const token = localStorage.getItem(TOKEN_STORE_KEY);
   if (!token) return null;
   const header = new Headers();
-  header.append("Authorization", `Token ${token}`);
+  header.set("Authorization", `Token ${token}`);
+  if (content_type) header.set("Content-Type", content_type);
   return header;
 };
 
@@ -36,7 +37,7 @@ export const user_logout = async (): Promise<void> => {
   const headers = auth_header();
   if (!headers) return;
   localStorage.removeItem(TOKEN_STORE_KEY);
-  await fetch(url("account/logout/"), { headers, method: 'post' });
+  await fetch(url("account/logout/"), { headers, method: "post" });
 };
 
 export const user_login = async (
@@ -60,8 +61,7 @@ export const user_login = async (
 };
 
 export const get_user = async (): Promise<models.User | null> => {
-  const headers = auth_header();
-  headers?.append("Content-Type", "application/json");
+  const headers = auth_header("application/json");
   if (!headers) return null;
 
   const response = await fetch(url("account/me/"), {
@@ -75,30 +75,58 @@ export const get_user = async (): Promise<models.User | null> => {
   return null;
 };
 
-export const get_my_notes = async (): Promise<models.Note[]> => {
-  interface Response {
-    count: number;
-    next: string | null;
-    previous: string | null;
-    results: models.Note[];
-  }
+// export const get_my_notes = async (user: models.User): Promise<models.Note[]> => {
+//   interface Response {
+//     count: number;
+//     next: string | null;
+//     previous: string | null;
+//     results: models.Note[];
+//   }
 
-  const headers = auth_header();
-  headers?.append("Content-Type", "application/json");
-  if (!headers) return [];
+//   const headers = auth_header("application/json");
+//   if (!headers) return [];
 
-  let res = <models.Note[]>[];
+//   let res = <models.Note[]>[];
 
-  const _ = async (url_: string | null) => {
-    const response = await fetch(url_ || url("notes/"), { headers });
-    if (response.status !== 200) return;
+//   const _ = async (url_: string | null) => {
+//     const url_obj = url_ ? new URL(url_) : url('notes/')
+    
+//     url_obj.searchParams.set('query', JSON.stringify({
+//       author: {
+//         _eq: user.id
+//       }
+//     }))
 
-    const data: Response = await response.json();
-    res = [...res, ...data.results];
+//     const response = await fetch(url_obj, { headers });
+//     if (response.status !== 200) return;
 
-    if (data.next) _(data.next);
-  };
+//     const data: Response = await response.json();
+//     res = [...res, ...data.results];
 
-  await _(null);
-  return res;
+//     if (data.next) _(data.next);
+//   };
+
+//   await _(null);
+//   return res;
+// };
+
+export const create_note = async (
+  name: string,
+  is_private: boolean,
+  slug: string
+): Promise<models.Note | types.ResponseError | null> => {
+  const headers = auth_header("application/json");
+  if (!headers) return null;
+
+  const response = await fetch(url("notes/create/"), {
+    headers,
+    body: JSON.stringify({
+      name,
+      private: is_private,
+      slug,
+    }),
+  });
+
+  const data: models.Note | types.ResponseError = await response.json();
+  return data;
 };

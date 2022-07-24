@@ -24,13 +24,13 @@ class Note(models.Model, ModelMixin):
         return f"{self.author.email}/{self.slug}"
 
     @staticmethod
-    def create(name: str, private: bool, author, body:dict|None=None) -> Self:
+    def create(name: str, private: bool, author, slug:str=None, body:dict=None) -> Self:
         note = Note(
             name=name,
             private=private,
             author=author,
             body=body or dict(type='doc', content=[]),
-            slug=str(uuid.uuid4()),)
+            slug=slug or str(uuid.uuid4()),)
 
         note.save()
         return note

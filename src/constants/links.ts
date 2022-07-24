@@ -1,5 +1,10 @@
 import { NAVBAR_STATES } from "./states";
 import { NavbarLinkType, QuickLink } from "./types";
+import { url } from '@/packages/api'
+
+export const QUERY = {
+  NOTES: url('notes/query/')
+}
 
 export const NavLinks: Record<string, NavbarLinkType> = {
   [NAVBAR_STATES.DEFAULT]: {
