@@ -20,7 +20,7 @@ export default () => {
         if (!paginator) {
           const url = QUERY.NOTES
           url.searchParams.set('page_size', '100')
-          url.searchParams.set('order_by', 'last_edited')
+          url.searchParams.set('order_by', '-last_edited')
 
           paginator = await fetchQuery({
             url,
