@@ -4,9 +4,11 @@
   "version": "0.0.0",
   "scripts": {
     "frontend": "vite",
-    "backend": "python manage.py runserver",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "backend": "python manage.py runserver",
+    "migrate": "python manage.py makemigrations; python manage.py migrate",
+    "createsuperuser": "export DJANGO_SUPERUSER_PASSWORD=admin; python manage.py createsuperuser --noinput --username admin"
   },
   "dependencies": {
     "@heroicons/vue": "^1.0.6",
