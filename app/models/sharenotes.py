@@ -12,4 +12,6 @@ class Shared(models.Model):
     shared_with = models.ForeignKey(
         "app.User", on_delete=models.CASCADE, related_name="shared_notes"
     )
-    date_shared = models.DateTimeField(auto_now_add=True)
+    date_created = models.DateTimeField(auto_now_add=True)
+    last_updated = models.DateTimeField(auto_now=True)
+    revoked = models.BooleanField(default=False)

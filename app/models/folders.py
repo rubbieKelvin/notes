@@ -11,3 +11,15 @@ class Folder(models.Model):
     )
     date_created = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
+    is_deleted = models.BooleanField(default=False)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=("name", "is_deleted", "owner"),
+                name="unique_folder_name_per_user",
+            )
+        ]
+
+    def __str__(self) -> str:
+        return self.name

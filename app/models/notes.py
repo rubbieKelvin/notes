@@ -17,3 +17,11 @@ class Note(models.Model):
     tags = models.ManyToManyField("app.Tag", related_name="notes")
     is_deleted = models.BooleanField(default=False)
     is_archived = models.BooleanField(default=False)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=("title", "is_deleted", "author"),
+                name="unique_note_name_per_user",
+            )
+        ]
