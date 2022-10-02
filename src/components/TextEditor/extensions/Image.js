@@ -1,6 +1,6 @@
 import { Node } from "@tiptap/core";
 import { VueNodeViewRenderer } from "@tiptap/vue-3";
-import Image from "@/components/texteditor/Image.vue";
+import Image from "./Image.vue";
 
 // TODO: fix this extension
 export default Node.create({

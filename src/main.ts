@@ -3,6 +3,7 @@ import App from "./App.vue";
 
 import "./styles/fonts.css";
 import "./styles/index.css";
+import "./styles/editor.scss";
 
 import router from "./router";
 

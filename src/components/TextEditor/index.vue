@@ -1,62 +1,35 @@
 <template>
-  <div class="root">
-    <bubble-menu
-      :editor="editor"
-      v-if="editor"
-      :tippy-options="{ duration: 100 }"
-    >
-      <SelectMenu :editor="editor" />
-    </bubble-menu>
+  <div class="texteditor">
     <editor-content :editor="editor" />
   </div>
 </template>
 
-<style lang="scss" scoped>
-.root {
-  height: 0;
-  overflow-y: auto;
-  @apply custom-scrollbar px-10;
-
-  div {
-    height: 100%;
-  }
-}
-
-.floating {
-  pointer-events: all;
-  @apply flex gap-2 bg-gray-50 rounded-md p-1 mt-12 -ml-3;
-
-  button {
-    @apply hover:bg-gray-200 text-sm p-1 rounded-md;
-  }
-}
-</style>
-
-<script>
-import { EditorContent, useEditor, BubbleMenu } from "@tiptap/vue-3";
+<script lang="ts">
+import {
+  EditorContent,
+  useEditor,
+  BubbleMenu,
+  JSONContent,
+} from "@tiptap/vue-3";
 import StaterKit from "@tiptap/starter-kit";
-import { watch, ref } from "@vue/runtime-core";
+import { watch, ref, defineComponent } from "vue";
 import Placeholder from "@tiptap/extension-placeholder";
-import Image from "@/extensions/Image";
 import Link from "@tiptap/extension-link";
-import SelectMenu from "./SelectMenu.vue";
-import TaskList from '@tiptap/extension-task-list'
-import TaskItem from '@tiptap/extension-task-item'
+import TaskList from "@tiptap/extension-task-list";
+import TaskItem from "@tiptap/extension-task-item";
 
-export default {
+export default defineComponent({
   name: "TextEditor",
   components: {
     EditorContent,
     BubbleMenu,
-    SelectMenu,
   },
   props: {
-    modelValue: Object,
+    modelValue: Object as () => JSONContent,
   },
   setup(props, ctx) {
     const editor = useEditor({
       extensions: [
-        Image,
         TaskList,
         TaskItem,
         Link.configure({
@@ -84,16 +57,19 @@ export default {
       ],
       content: props.modelValue,
       onUpdate: () => {
-        ctx.emit("update:modelValue", editor.value.getJSON());
+        ctx.emit("update:modelValue", editor?.value?.getJSON());
       },
     });
 
     watch(
       () => props.modelValue,
       (value) => {
-        if (JSON.stringify(editor.value.getJSON()) === JSON.stringify(value))
+        if (
+          JSON.stringify(editor?.value?.getJSON()) === JSON.stringify(value) ||
+          !value
+        )
           return;
-        editor.value.commands.setContent(value, false);
+        editor?.value?.commands.setContent(value, false);
       }
     );
 
@@ -102,5 +78,16 @@ export default {
     });
     return { editor, tippyOptions };
   },
-};
+});
 </script>
+
+<style lang="scss" scoped>
+.texteditor {
+  overflow-y: auto;
+  @apply custom-scrollbar px-10;
+
+  div {
+    height: 100%;
+  }
+}
+</style>

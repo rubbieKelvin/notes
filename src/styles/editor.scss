@@ -1,0 +1,98 @@
+.ProseMirror {
+  height: 100%;
+  outline: none;
+
+  > * + * {
+    margin-top: 0.75em;
+  }
+
+  a {
+    @apply text-blue-500 underline cursor-default;
+  }
+
+  p > code {
+    background-color: rgba(#616161, 0.1);
+    color: #616161;
+    padding: 2px 2px;
+    @apply rounded;
+  }
+
+  h1,
+  h2 {
+    @apply border-b border-b-gray-200;
+  }
+
+  h1,
+  h2 {
+    @apply pb-3;
+  }
+
+  h1 {
+    font-size: x-large;
+  }
+
+  h2 {
+    font-size: larger;
+  }
+
+  h3 {
+    font-size: medium;
+    @apply font-bold;
+  }
+
+  blockquote {
+    border-left: 3px solid black;
+    @apply bg-gray-100 rounded-sm;
+    @apply py-2 px-3;
+  }
+
+  ul {
+    list-style-type: circle;
+    padding-left: 2em;
+  }
+
+  ul[data-type="taskList"] {
+    list-style-type: none;
+    padding-left: 1em;
+
+    li {
+      @apply flex gap-3 items-center hover:bg-inherit mb-1;
+      > label {
+        display: flex;
+        align-items: center;
+
+        > input[type="checkbox"] {
+          height: 17px;
+          width: 17px;
+        }
+      }
+    }
+  }
+
+  ol {
+    list-style-type: decimal;
+    padding-left: 2em;
+  }
+
+  li {
+    @apply mb-0.5 hover:bg-gray-50;
+  }
+
+  p.empty-node,
+  p.editor-empty {
+    color: red;
+  }
+
+  .empty-node::before,
+  .editor-empty::before {
+    content: attr(data-placeholder);
+    float: left;
+    color: #adb5bd;
+    pointer-events: none;
+    height: 0;
+  }
+}
+
+div#tippy-2[data-tippy-root] {
+  pointer-events: none;
+}
