@@ -1,0 +1,72 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+button,
+a {
+  cursor: default;
+}
+
+button {
+  user-select: none;
+}
+
+::selection {
+  @apply bg-blue-100;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+@layer components {
+  .input-text {
+    @apply rounded px-4 py-3 outline-gray-200;
+    @apply focus:outline-primary-basic outline-2 outline;
+  }
+
+  label.label {
+    @apply text-sm text-primary-vibrant flex;
+  }
+
+  label.label > .text {
+    @apply flex-grow uppercase;
+  }
+
+  label.label > .error {
+    @apply text-red-500 text-xs font-medium;
+  }
+}
+
+@layer utilities {
+  .custom-scrollbar {
+    position: relative;
+    scrollbar-gutter: stable both-edges;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-transparent;
+    border-radius: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-gray-200;
+    border-radius: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-300;
+    border-radius: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:active {
+    /* background: rgb(68, 68, 68); */
+    @apply bg-gray-400;
+    border-radius: 6px;
+  }
+}
