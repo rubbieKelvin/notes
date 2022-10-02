@@ -1,5 +1,14 @@
 import { createApp } from "vue";
 import App from "./App.vue";
-import "./styles/fonts.css";
 
-createApp(App).mount("#app");
+import "./styles/fonts.css";
+import "./styles/index.css";
+
+import router from "./router";
+
+const app = createApp(App);
+
+// plugins
+app.use(router);
+
+app.mount("#app");

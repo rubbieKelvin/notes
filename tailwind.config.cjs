@@ -5,6 +5,13 @@ module.exports = {
     fontFamily: {
       sans: "Google Sans",
     },
+    extend: {
+      colors: {
+        stroke: "#DEDEDE",
+        fadedFill: "#F9F9F9",
+        hover: "#EEF5FA",
+      },
+    },
   },
   plugins: [],
 };
