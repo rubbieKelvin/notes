@@ -14,7 +14,7 @@
 import { defineComponent } from "vue";
 import AppHeader from "@/components/layout/Header.vue";
 import MainNav from "@/components/layout/SideMenu/index.vue";
-import ApplicationMenu from "@/components/layout/ApplicationMenu.vue";
+import ApplicationMenu from "@/components/layout/ApplicationMenu/index.vue";
 import TextEditor from "@/components/TextEditor/index.vue";
 
 export default defineComponent({

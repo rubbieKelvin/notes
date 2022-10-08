@@ -2,5 +2,10 @@ import { createRouter, createWebHistory } from "vue-router";
 
 export default createRouter({
   history: createWebHistory(),
-  routes: [],
+  routes: [
+    {
+      path: "",
+      component: () => import("./notes.vue"),
+    },
+  ],
 });

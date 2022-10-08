@@ -1,8 +1,9 @@
 <template>
   <div class="flex gap-10 px-6 py-3 border-b border-stroke items-center">
     <div class="h-min">
-      <h1 class="inline-flex gap-2">
-        <NewspaperIcon class="w-6 h-6" /><span>OpenNotes</span>
+      <h1 class="inline-flex gap-2 text-black">
+        <NewspaperIcon class="w-5 h-5" />
+        <span class="select-none">OpenNotes</span>
       </h1>
     </div>
     <div class="flex-grow">

@@ -1,5 +1,5 @@
 <template>
-  <div class="texteditor">
+  <div class="texteditor bg-red-50">
     <editor-content :editor="editor" />
   </div>
 </template>

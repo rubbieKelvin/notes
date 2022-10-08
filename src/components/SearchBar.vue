@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="border border-stroke flex items-center gap-2 px-3 rounded-md">
-      <MagnifyingGlassIcon class="w-6 h-6" />
+      <MagnifyingGlassIcon class="w-5 h-5" />
       <input
         type="text"
         class="w-full py-2 outline-none"

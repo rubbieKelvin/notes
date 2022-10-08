@@ -8,8 +8,9 @@ module.exports = {
     extend: {
       colors: {
         stroke: "#DEDEDE",
+        fadedStroke: "#F4F4F4",
         fadedFill: "#F9F9F9",
-        hover: "#EEF5FA",
+        hover: "#F0F0F0",
       },
     },
   },
