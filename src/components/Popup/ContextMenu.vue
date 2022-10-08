@@ -8,7 +8,7 @@
       <slot name="trigger" :open="open" />
     </template>
     <div
-      class="min-w-[220px] w-max bg-white py-1 rounded-md border border-stroke transition-all duration-150"
+      class="min-w-[220px] w-max bg-white pt-1 rounded-md border border-stroke transition-all duration-150"
     >
       <!-- heading -->
       <div
@@ -70,24 +70,57 @@
         </p>
       </div>
       <!-- list -->
-      <div v-else class="max-h-[50vh] overflow-y-auto">
+      <div v-else class="max-h-[50vh] overflow-y-auto pb-1">
         <template v-for="item in current" :key="item.id">
           <!-- normal -->
           <div
             v-if="item.type === 'NORMAL' || !item.type"
-            @click="itemClicked(item)"
-            class="px-2 py-1 hover:text-black hover:bg-hover transition-colors flex gap-1 items-center"
+            @click="!item.disabled && itemClicked(item)"
+            class="px-2 py-1 transition-colors flex gap-1 items-center relative"
+            :class="{
+              'hover:text-black hover:bg-hover': !item.disabled,
+              'text-gray-400': !!item.disabled,
+            }"
+            :disabled="!!item.disabled"
           >
-            <Icon v-if="item.icon" :name="item.icon" class="w-6 h-6" />
-            <div v-else-if="listHasIcon(current)" class="w-6 h-6" />
-            <p style="font-size: 14px" class="select-none flex-grow">
-              {{ item.title }}
-            </p>
+            <!-- icon -->
+            <Icon v-if="item.icon" :name="item.icon" class="w-5 h-5" />
+            <div v-else-if="listHasIcon(current)" class="w-5 h-5" />
+            <!-- text -->
+            <div class="flex-grow">
+              <p style="font-size: 14px" class="select-none">
+                {{ item.title }}
+              </p>
+              <p v-if="item.subtitle" class="text-sm text-gray-500">
+                {{ item.subtitle }}
+              </p>
+            </div>
+            <!-- badge -->
+            <div
+              v-if="item.badgeText"
+              class="text-xs font-medium border bg-white border-stroke py-0.5 px-1.5 rounded-full"
+            >
+              {{ item.badgeText }}
+            </div>
+            <!-- chevron -->
             <Icon
               v-if="item.children"
               name="ChevronRightIcon"
               class="w-4 h-4"
             />
+
+            <template v-if="item.link">
+              <template v-if="typeof item.link === 'string'">
+                <a
+                  v-if="isExternalUrl(item.link)"
+                  :href="item.link"
+                  target="_blank"
+                  class="overlay-link"
+                />
+                <router-link v-else class="overlay-link" :to="item.link" />
+              </template>
+              <router-link v-else class="overlay-link" :to="item.link" />
+            </template>
           </div>
           <!-- separator -->
           <div
@@ -213,7 +246,12 @@ export default defineComponent({
       return !!list.find((item) => !!item.icon);
     }
 
+    function isExternalUrl(url: string) {
+      return /^http(s?):\/\//.test(url);
+    }
+
     function itemClicked(item: MenuItem) {
+      if (item.link) return;
       if (item.children) {
         navigation.value.history.push(item);
       } else {
@@ -229,7 +267,15 @@ export default defineComponent({
       itemClicked,
       visible,
       reloadMenuItems,
+      isExternalUrl,
     };
   },
 });
 </script>
+
+<style lang="scss" scoped>
+.overlay-link {
+  position: absolute;
+  @apply top-0 bottom-0 right-0 left-0;
+}
+</style>

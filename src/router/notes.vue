@@ -11,11 +11,10 @@ import PageHeader from "@/components/layout/ApplicationMenu/PageHeader.vue";
 import { MenuItem } from "@/types";
 
 const menu: Array<MenuItem> = [
-  { id: 0, title: "Delete" },
-  { id: 1, title: "Dup", type: "HEADER" },
+  { id: 0, title: "Delete", disabled: true },
   { id: 2, title: "Me", icon: "FaceSmileIcon" },
   { id: 3, title: "Might" },
-  { id: 4, title: "Mion" },
+  { id: 4, title: "Google", link: "https://google.com" },
   { id: 5, type: "SEPARATOR" },
   {
     id: 6,
@@ -31,13 +30,13 @@ const menu: Array<MenuItem> = [
         children: [
           { id: 71, title: "Delete" },
           { id: 81, title: "Dup", type: "HEADER" },
-          { id: 91, title: "Me" },
+          { id: 91, title: "Me", disabled: true },
           { id: 110, type: "SEPARATOR" },
           { id: 111, title: "Hello" },
           {
             id: 121,
             title: "Something",
-            fetchMessage: 'getting btc stock prices from btc api',
+            fetchMessage: "getting btc stock prices from btc api",
             children: async () => {
               const res = await fetch(
                 "https://api.blockchain.com/v3/exchange/symbols",
@@ -48,6 +47,7 @@ const menu: Array<MenuItem> = [
                 {
                   status: string;
                   id: number;
+                  counter_currency: string;
                 }
               > = await res.json();
 
@@ -57,6 +57,7 @@ const menu: Array<MenuItem> = [
                 result.push({
                   id: ent.id,
                   title: key,
+                  badgeText: ent.counter_currency,
                   subtitle: ent.status,
                 })
               );

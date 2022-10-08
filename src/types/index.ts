@@ -10,7 +10,7 @@ export type MenuItem = {
   badgeText?: string;
   action?: () => any;
   disabled?: boolean;
-  link?: string;
+  link?: string | { name: string; params: Record<string, string> };
   colors?: {
     bg?: string;
     fg?: string;

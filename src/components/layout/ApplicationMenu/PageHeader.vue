@@ -5,9 +5,9 @@
       <template v-slot:trigger="{ open }">
         <button
           @click="open"
-          class="hover:bg-hover w-7 h-7 rounded-md border border-fadedStroke"
+          class="hover:bg-hover p-1 rounded-md border border-stroke"
         >
-          <EllipsisVerticalIcon class="w-6 h-6" />
+          <EllipsisVerticalIcon class="w-5 h-5" />
         </button>
       </template>
     </ContextMenu>
