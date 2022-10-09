@@ -9,6 +9,7 @@ export const useToasts = () => {
 
     const meta = {
       progress: 0,
+      timerId: -1,
     };
 
     toast.meta = meta;
@@ -17,20 +18,25 @@ export const useToasts = () => {
     const start = new Date().getTime();
 
     if (timeout) {
-      const timeout_timer = setInterval(() => {
+      meta.timerId = setInterval(() => {
         const now = new Date().getTime();
         meta.progress = ((now - start) / timeout) * 100;
 
         if (now - start > timeout) {
           removeToast(toast.id);
-          clearInterval(timeout_timer);
         }
       }, 50);
     }
   }
 
   function removeToast(id: symbol | number | string) {
-    toasts.value = toasts.value.filter((toast) => toast.id !== id);
+    const toast = toasts.value.find((t) => t.id === id);
+    if (toast) {
+      if (toast?.meta?.timerId) {
+        clearInterval(toast.meta.timerId);
+      }
+      toasts.value = toasts.value.filter((toast) => toast.id !== id);
+    }
   }
 
   return { toasts, addToast, removeToast };

@@ -5,6 +5,7 @@ export default createRouter({
   routes: [
     {
       path: "",
+      name: "Notes",
       component: () => import("./notes.vue"),
     },
   ],

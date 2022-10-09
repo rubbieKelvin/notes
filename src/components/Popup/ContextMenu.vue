@@ -76,7 +76,7 @@
           <div
             v-if="item.type === 'NORMAL' || !item.type"
             @click="!item.disabled && itemClicked(item)"
-            class="px-2 py-1 transition-colors flex gap-1 items-center relative"
+            class="px-2 py-1 transition-colors flex gap-1 items-center relative select-none"
             :class="{
               'hover:text-black hover:bg-hover': !item.disabled,
               'text-gray-400': !!item.disabled,
@@ -84,14 +84,16 @@
             :disabled="!!item.disabled"
           >
             <!-- icon -->
-            <Icon v-if="item.icon" :name="item.icon" class="w-5 h-5" />
+            <div v-if="item.icon">
+              <Icon :name="item.icon" class="w-5 h-5" />
+            </div>
             <div v-else-if="listHasIcon(current)" class="w-5 h-5" />
             <!-- text -->
             <div class="flex-grow">
-              <p style="font-size: 14px" class="select-none">
+              <p style="font-size: 14px" class="">
                 {{ item.title }}
               </p>
-              <p v-if="item.subtitle" class="text-sm text-gray-500">
+              <p v-if="item.subtitle" class="text-xs text-gray-500">
                 {{ item.subtitle }}
               </p>
             </div>

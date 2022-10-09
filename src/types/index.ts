@@ -1,6 +1,7 @@
 import { IconName } from "@/components/Icon/types";
 
 export type MenuItemType = "NORMAL" | "SEPARATOR" | "HEADER";
+export type RouteName = "Notes";
 
 export type MenuItem = {
   id: string | number | symbol;
@@ -10,7 +11,7 @@ export type MenuItem = {
   badgeText?: string;
   action?: () => any;
   disabled?: boolean;
-  link?: string | { name: string; params: Record<string, string> };
+  link?: string | { name: RouteName; params?: Record<string, string> };
   colorClasses?: {
     bg?: string;
     fg?: string;
@@ -41,4 +42,10 @@ export type ToastData = {
     bg: string;
   };
   meta?: Record<string, any>;
+};
+
+export type LocalData = {
+  __type: string;
+  data: any;
+  date_added: string;
 };

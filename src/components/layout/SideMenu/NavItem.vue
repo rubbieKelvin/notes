@@ -1,20 +1,23 @@
 <template>
-  <div class="flex gap-2 hover:bg-hover select-none px-3 py-2 rounded-md">
-    <Icon :name="icon" class="w-5 h-5 text-black" />
-    <span class="capitalize">{{ title }}</span>
-  </div>
+  <router-link
+    v-if="item.link && typeof item.link === 'object'"
+    :to="item.link"
+    class="flex gap-2 hover:bg-hover select-none px-3 py-2 rounded-md"
+  >
+    <Icon v-if="item.icon" :name="item.icon" class="w-5 h-5 text-black" />
+    <span class="capitalize">{{ item.title }}</span>
+  </router-link>
 </template>
 
 <script lang="ts">
 import { defineComponent } from "vue";
 import Icon from "@/components/Icon";
-import { IconName } from "@/components/Icon/types";
+import { MenuItem } from "@/types";
 
 export default defineComponent({
   components: { Icon },
   props: {
-    icon: { type: String as () => IconName, required: true },
-    title: { type: String, required: true },
+    item: { type: Object as () => MenuItem, required: true },
   },
   setup() {},
 });

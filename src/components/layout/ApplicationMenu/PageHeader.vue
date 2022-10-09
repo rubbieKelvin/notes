@@ -3,10 +3,7 @@
     <h2 class="flex-grow text-black">{{ title }}</h2>
     <ContextMenu :list="menu" alignRight>
       <template v-slot:trigger="{ open }">
-        <button
-          @click="open"
-          class="hover:bg-hover p-1 rounded-md border border-stroke"
-        >
+        <button @click="open" class="btn p-1">
           <EllipsisVerticalIcon class="w-5 h-5" />
         </button>
       </template>

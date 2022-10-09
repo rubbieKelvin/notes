@@ -2,9 +2,9 @@
   <div class="fixed bottom-0 left-0">
     <div class="p-4 flex flex-col gap-2" :key="tick">
       <div
-        v-for="toast in data"
+        v-for="toast in toasts"
         :key="toast.id"
-        class="bg-gray-200 text-black overflow-clip rounded-md"
+        class="bg-gray-100 text-black overflow-clip rounded-md border border-stroke"
       >
         <!-- content -->
         <div class="flex items-center gap-4 py-2 px-4 min-w-[350px]">
@@ -45,14 +45,24 @@
 <script lang="ts">
 import Icon from "./Icon";
 import { ToastData } from "@/types";
-import { defineComponent, inject, onMounted, onUnmounted, ref, Ref } from "vue";
+import {
+  computed,
+  defineComponent,
+  inject,
+  onMounted,
+  onUnmounted,
+  ref,
+  Ref,
+} from "vue";
 
 export default defineComponent({
   components: { Icon },
   setup() {
     const data = inject("toasts") as Ref<ToastData[]>;
-    const tick = ref(0);
     let tick_timer: number | null = null;
+    const tick = ref(0);
+
+    const toasts = computed(() => [...data.value].reverse());
 
     onMounted(() => {
       tick_timer = setInterval(() => {
@@ -65,7 +75,7 @@ export default defineComponent({
       if (tick_timer !== null) clearInterval(tick_timer);
     });
 
-    return { data, tick };
+    return { toasts, tick };
   },
 });
 </script>
