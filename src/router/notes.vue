@@ -1,7 +1,11 @@
 <template>
   <div>
     <PageHeader title="Notes" :menu="menu" />
-    <div>Hello wrapper</div>
+    <div>
+      <div v-for="note in notes" :key="note.id">
+        {{ note.title }}
+      </div>
+    </div>
     <NewNoteDialog v-model="modals.newnote" />
   </div>
 </template>
@@ -11,10 +15,12 @@ import { computed, ComputedRef, defineComponent, inject, ref, Ref } from "vue";
 import PageHeader from "@/components/layout/ApplicationMenu/PageHeader.vue";
 import { MenuItem, ToastData } from "@/types";
 import NewNoteDialog from "@/components/Dialog/NewNoteDialog.vue";
+import { Note } from "@/types/models";
 
 export default defineComponent({
   components: { PageHeader, NewNoteDialog },
   setup() {
+    const notes = inject("notes") as Ref<Note[]>;
     const toasts = inject("toasts") as Ref<ToastData[]>;
     const modals = ref({
       newnote: false,
@@ -36,7 +42,7 @@ export default defineComponent({
         },
       ]
     );
-    return { menu, toasts, modals };
+    return { menu, toasts, modals, notes };
   },
 });
 </script>

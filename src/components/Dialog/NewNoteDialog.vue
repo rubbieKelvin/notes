@@ -13,6 +13,7 @@
         <div class="form-input-wrapper">
           <label class="text-input-label">title</label>
           <input
+            v-model="data.title"
             class="text-input"
             type="text"
             placeholder="Title"
@@ -21,7 +22,7 @@
           />
         </div>
         <div class="flex justify-end">
-          <button class="btn px-4 py-2">Create</button>
+          <button class="btn px-4 py-2" @click="create">Create</button>
         </div>
       </div>
     </div>
@@ -33,6 +34,7 @@ import { computed, defineComponent, Ref, ref, watch } from "vue";
 import Dialog from "./index.vue";
 import Icon from "@/components/Icon";
 import { useFocus } from "@vueuse/core";
+import { useNotesManager } from "@/utils/api/notes";
 
 export default defineComponent({
   components: { Dialog, Icon },
@@ -41,7 +43,9 @@ export default defineComponent({
   },
   emits: ["update:modelValue"],
   setup(props, { emit }) {
+    const noteManager = useNotesManager();
     const noteTitleRef: Ref<HTMLInputElement | null> = ref(null);
+    const data = ref({ title: "" });
     const visible = computed({
       get() {
         return props.modelValue;
@@ -60,7 +64,11 @@ export default defineComponent({
         noteTitleFocus.value = true;
       }
     });
-    return { visible, noteTitleRef };
+    const create = async () => {
+      await noteManager.createNote(data.value.title);
+      visible.value = false;
+    };
+    return { visible, noteTitleRef, data, create };
   },
 });
 </script>

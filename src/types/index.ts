@@ -44,8 +44,10 @@ export type ToastData = {
   meta?: Record<string, any>;
 };
 
-export type LocalData = {
+export interface ModelHandler<Model> {
   __type: string;
-  data: any;
-  date_added: string;
-};
+  all: () => Array<Model>;
+  find: (func: (model: Model) => boolean) => Model | null;
+  add: (data: Model) => void;
+  delete: (func: (model: Model) => boolean) => void;
+}

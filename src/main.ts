@@ -6,20 +6,11 @@ import "./styles/index.css";
 import "./styles/editor.scss";
 
 import router from "./router";
-import { LocalData, ToastData } from "./types";
+import provider from "./provider";
 
 const app = createApp(App);
-const toasts: Ref<ToastData[]> = ref([]);
-const modelstore: Ref<LocalData[]> = ref([]);
-
-try {
-  modelstore.value = JSON.parse(
-    localStorage.getItem("opennotes.local") ?? "[]"
-  ) as LocalData[];
-} catch {}
 
 // plugins
+provider(app);
 app.use(router);
-app.provide("toasts", toasts);
-app.provide("modelstore", modelstore);
 app.mount("#app");

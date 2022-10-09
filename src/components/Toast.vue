@@ -1,6 +1,6 @@
 <template>
   <div class="fixed bottom-0 left-0">
-    <div class="p-4 flex flex-col gap-2" :key="tick">
+    <div class="p-4 flex flex-col gap-2">
       <div
         v-for="toast in toasts"
         :key="toast.id"
@@ -33,6 +33,7 @@
           class="w-full bg-black bg-opacity-20 h-1"
         >
           <div
+            :key="tick"
             :style="{ width: `${toast.meta.progress}%` }"
             class="bg-red-500 h-1"
           />
