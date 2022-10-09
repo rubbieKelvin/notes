@@ -3,7 +3,7 @@ import { IconName } from "@/components/Icon/types";
 export type MenuItemType = "NORMAL" | "SEPARATOR" | "HEADER";
 
 export type MenuItem = {
-  id: string | number;
+  id: string | number | symbol;
   title?: string;
   subtitle?: string;
   icon?: IconName;
@@ -11,7 +11,7 @@ export type MenuItem = {
   action?: () => any;
   disabled?: boolean;
   link?: string | { name: string; params: Record<string, string> };
-  colors?: {
+  colorClasses?: {
     bg?: string;
     fg?: string;
     badge: string;
@@ -22,4 +22,23 @@ export type MenuItem = {
     | (() => Array<MenuItem>)
     | (() => Promise<Array<MenuItem>>);
   type?: MenuItemType;
+};
+
+export type ToastData = {
+  id: symbol | number | string;
+  icon?: IconName;
+  title?: string;
+  desciption?: string;
+  timeout?: number | false;
+  persistent?: boolean;
+  actions?: Array<{
+    title: string;
+    action: () => any;
+    colorClasses?: { fg?: string; bg?: string };
+  }>;
+  colorClasses?: {
+    fg?: string;
+    bg: string;
+  };
+  meta?: Record<string, any>;
 };
