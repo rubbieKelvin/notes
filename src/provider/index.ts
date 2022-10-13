@@ -3,10 +3,17 @@ import { ToastData } from "@/types";
 import { Note } from "@/types/models";
 import { localModels } from "@/utils/localModel";
 
-export default (app: App) => {
-  const toasts: Ref<ToastData[]> = ref([]);
-  const notes: Ref<Note[]> = ref(localModels.note.all());
+export type Ctx = {
+  note: string | null;
+  notes: Array<Note>;
+  toasts: Array<ToastData>;
+};
 
-  app.provide("toasts", toasts);
-  app.provide("notes", notes);
+export default (app: App) => {
+  const ctx: Ref<Ctx> = ref({
+    note: null,
+    toasts: [],
+    notes: localModels.note.all(),
+  });
+  app.provide("ctx", ctx);
 };

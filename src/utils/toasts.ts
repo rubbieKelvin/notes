@@ -1,8 +1,13 @@
+import { Ctx } from "@/provider";
 import { ToastData } from "@/types";
-import { inject, Ref } from "vue";
+import { computed, inject, Ref } from "vue";
 
 export const useToasts = () => {
-  const toasts = inject("toasts") as Ref<ToastData[]>;
+  const ctx = inject("ctx") as Ref<Ctx>;
+  const toasts = computed({
+    get: () => ctx.value.toasts,
+    set: (v) => (ctx.value.toasts = v),
+  });
 
   function addToast(toast: ToastData) {
     toasts.value.push(toast);

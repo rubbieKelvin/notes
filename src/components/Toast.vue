@@ -55,19 +55,20 @@ import {
   ref,
   Ref,
 } from "vue";
+import { Ctx } from "@/provider";
 
 export default defineComponent({
   components: { Icon },
   setup() {
-    const data = inject("toasts") as Ref<ToastData[]>;
+    const ctx = inject("ctx") as Ref<Ctx>;
     let tick_timer: number | null = null;
     const tick = ref(0);
 
-    const toasts = computed(() => [...data.value].reverse());
+    const toasts = computed(() => [...ctx.value.toasts].reverse());
 
     onMounted(() => {
       tick_timer = setInterval(() => {
-        if (data.value.find((toast) => !!toast.timeout))
+        if (ctx.value.toasts.find((toast) => !!toast.timeout))
           tick.value = tick.value === 0 ? 1 : 0;
       }, 50);
     });

@@ -1,11 +1,17 @@
 import { Note } from "@/types/models";
 import { v4 as uuid4 } from "uuid";
 import { localModels } from "@/utils/localModel";
-import { inject, Ref } from "vue";
+import { computed, inject, Ref } from "vue";
 import { useToasts } from "@/utils/toasts";
+import { Ctx } from "@/provider";
 
 export const useNotesManager = () => {
-  const notes = inject("notes") as Ref<Note[]>;
+  const ctx = inject("ctx") as Ref<Ctx>;
+  const notes = computed({
+    get: () => ctx.value.notes,
+    set: (v) => (ctx.value.notes = v),
+  });
+
   const toasts = useToasts();
   const createNote = async (title: string): Promise<Note> => {
     // create note over api or local

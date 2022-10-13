@@ -42,12 +42,13 @@ import NewNoteDialog from "@/components/Dialog/NewNoteDialog.vue";
 import { Note } from "@/types/models";
 import slug from "@/utils/slug";
 import { useTimeAgo } from "@vueuse/core";
+import { Ctx } from "@/provider";
 
 export default defineComponent({
   components: { PageHeader, NewNoteDialog },
   setup() {
-    const notes = inject("notes") as Ref<Note[]>;
-    const toasts = inject("toasts") as Ref<ToastData[]>;
+    const ctx = inject("ctx") as Ref<Ctx>;
+    const notes = computed(() => ctx.value.notes);
     const modals = ref({
       newnote: false,
     });
@@ -73,7 +74,7 @@ export default defineComponent({
     const fuzzy = (datetime: string): string => {
       return useTimeAgo(new Date(datetime)).value;
     };
-    return { menu, toasts, modals, notes, slug, fuzzy };
+    return { menu, modals, notes, slug, fuzzy };
   },
 });
 </script>
