@@ -72,70 +72,72 @@
       <!-- list -->
       <div v-else class="max-h-[50vh] overflow-y-auto pb-1">
         <template v-for="item in current" :key="item.id">
-          <!-- normal -->
-          <div
-            v-if="item.type === 'NORMAL' || !item.type"
-            @click="!item.disabled && itemClicked(item)"
-            class="px-2 py-1 transition-colors flex gap-1 items-center relative select-none"
-            :class="{
-              'hover:text-black hover:bg-hover': !item.disabled,
-              'text-gray-400': !!item.disabled,
-            }"
-            :disabled="!!item.disabled"
-          >
-            <!-- icon -->
-            <div v-if="item.icon">
-              <Icon :name="item.icon" class="w-5 h-5" />
-            </div>
-            <div v-else-if="listHasIcon(current)" class="w-5 h-5" />
-            <!-- text -->
-            <div class="flex-grow">
-              <p style="font-size: 14px" class="">
-                {{ item.title }}
-              </p>
-              <p v-if="item.subtitle" class="text-xs text-gray-500">
-                {{ item.subtitle }}
-              </p>
-            </div>
-            <!-- badge -->
+          <template v-if="!item.hidden">
+            <!-- normal -->
             <div
-              v-if="item.badgeText"
-              class="text-xs font-medium border bg-white border-stroke py-0.5 px-1.5 rounded-full"
+              v-if="item.type === 'NORMAL' || !item.type"
+              @click="!item.disabled && itemClicked(item)"
+              class="px-2 py-1 transition-colors flex gap-1 items-center relative select-none"
+              :class="{
+                'hover:text-black hover:bg-hover': !item.disabled,
+                'text-gray-400': !!item.disabled,
+              }"
+              :disabled="!!item.disabled"
             >
-              {{ item.badgeText }}
-            </div>
-            <!-- chevron -->
-            <Icon
-              v-if="item.children"
-              name="ChevronRightIcon"
-              class="w-4 h-4"
-            />
+              <!-- icon -->
+              <div v-if="item.icon">
+                <Icon :name="item.icon" class="w-5 h-5" />
+              </div>
+              <div v-else-if="listHasIcon(current)" class="w-5 h-5" />
+              <!-- text -->
+              <div class="flex-grow">
+                <p style="font-size: 14px" class="">
+                  {{ item.title }}
+                </p>
+                <p v-if="item.subtitle" class="text-xs text-gray-500">
+                  {{ item.subtitle }}
+                </p>
+              </div>
+              <!-- badge -->
+              <div
+                v-if="item.badgeText"
+                class="text-xs font-medium border bg-white border-stroke py-0.5 px-1.5 rounded-full"
+              >
+                {{ item.badgeText }}
+              </div>
+              <!-- chevron -->
+              <Icon
+                v-if="item.children"
+                name="ChevronRightIcon"
+                class="w-4 h-4"
+              />
 
-            <template v-if="item.link">
-              <template v-if="typeof item.link === 'string'">
-                <a
-                  v-if="isExternalUrl(item.link)"
-                  :href="item.link"
-                  target="_blank"
-                  class="overlay-link"
-                />
+              <template v-if="item.link">
+                <template v-if="typeof item.link === 'string'">
+                  <a
+                    v-if="isExternalUrl(item.link)"
+                    :href="item.link"
+                    target="_blank"
+                    class="overlay-link"
+                  />
+                  <router-link v-else class="overlay-link" :to="item.link" />
+                </template>
                 <router-link v-else class="overlay-link" :to="item.link" />
               </template>
-              <router-link v-else class="overlay-link" :to="item.link" />
-            </template>
-          </div>
-          <!-- separator -->
-          <div
-            v-else-if="item.type === 'SEPARATOR'"
-            class="w-[96%] mx-auto h-[1px] bg-stroke"
-          />
-          <!-- header -->
-          <p
-            v-if="item.type === 'HEADER'"
-            class="px-2 text-xs font-bold uppercase"
-          >
-            {{ item.title || "Section" }}
-          </p>
+            </div>
+            <!-- separator -->
+            <div
+              v-else-if="item.type === 'SEPARATOR'"
+              class="w-[96%] mx-auto h-[1px] bg-stroke"
+            />
+            <!-- header -->
+            <p
+              v-if="item.type === 'HEADER'"
+              class="px-2 text-xs font-bold uppercase"
+            >
+              {{ item.title || "Section" }}
+            </p>
+          </template>
         </template>
       </div>
     </div>

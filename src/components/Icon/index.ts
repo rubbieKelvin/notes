@@ -1,9 +1,17 @@
 import * as icons from "@heroicons/vue/24/outline";
-import { h } from "vue";
+import { defineComponent, h } from "vue";
 import { IconName } from "./types";
 
-export default function (props: {name: IconName}) {
-  const icon = icons[props.name];
-  if (!icon) return
-  return h(icon);
-}
+export default defineComponent({
+  name: "HeroIcon",
+  props: {
+    name: { type: String as () => IconName, required: true },
+  },
+  setup(props) {
+    return () => {
+      const icon = icons[props.name];
+      if (!icon) return h("div", "Invalid icon");
+      return h(icon);
+    };
+  },
+});

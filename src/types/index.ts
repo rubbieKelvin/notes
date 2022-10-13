@@ -11,6 +11,7 @@ export type MenuItem = {
   badgeText?: string;
   action?: () => any;
   disabled?: boolean;
+  hidden?: boolean;
   link?: string | { name: RouteName; params?: Record<string, string> };
   colorClasses?: {
     bg?: string;

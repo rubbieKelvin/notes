@@ -19,6 +19,7 @@
             placeholder="Title"
             ref="noteTitleRef"
             autofocus
+            @keypress.enter="create"
           />
         </div>
         <div class="flex justify-end">

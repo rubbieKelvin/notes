@@ -8,5 +8,10 @@ export default createRouter({
       name: "Notes",
       component: () => import("./notes.vue"),
     },
+    {
+      path: "/@:username/:title",
+      name: "Note",
+      component: () => import("./notes.vue"),
+    },
   ],
 });
