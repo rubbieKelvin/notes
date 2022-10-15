@@ -4,8 +4,8 @@
       <div
         v-for="toast in toasts"
         :key="toast.id"
-        class="text-black overflow-clip rounded-md border border-stroke"
-        :class="toast.colorClasses?.bg || 'bg-gray-100'"
+        class="text-white overflow-clip rounded-md border border-stroke"
+        :class="toast.colorClasses?.bg || 'bg-black'"
       >
         <!-- content -->
         <div class="flex items-center gap-4 py-2 px-4 min-w-[350px]">
@@ -45,7 +45,7 @@
             :key="tick"
             :style="{ width: `${toast.meta.progress}%` }"
             class="h-1"
-            :class="toast.colorClasses?.accent || 'bg-red-500'"
+            :class="toast.colorClasses?.accent || 'bg-white'"
           />
         </div>
       </div>

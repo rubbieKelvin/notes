@@ -1,6 +1,37 @@
 <template>
-  <div class="texteditor bg-red-50">
-    <editor-content :editor="editor" />
+  <div class="texteditor">
+    <!-- heading -->
+    <div class="texteditor-heading">
+      <div class="flex">
+        <div class="flex-grow py-2">
+          <h1 class="font-medium text-xl">Heading</h1>
+          <p class="text-gray-500 text-sm">by local, one week ago</p>
+        </div>
+        <div class="flex gap-2 items-center">
+          <button class="btn p-1 h-min">
+            <Icon name="StarIcon" class="w-5 h-5" />
+          </button>
+          <button class="btn p-1 h-min">
+            <Icon class="w-5 h-5" name="EllipsisVerticalIcon" />
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- tags -->
+    <div class="texteditor-tags">
+      <button
+        class="btn flex items-center justify-center text-sm p-0.5 group"
+        title="add tags"
+      >
+        <Icon name="PlusIcon" class="h-5 w-5" />
+      </button>
+    </div>
+
+    <!-- input -->
+    <div class="texteditor-input">
+      <editor-content :editor="editor" />
+    </div>
   </div>
 </template>
 
@@ -17,12 +48,14 @@ import Placeholder from "@tiptap/extension-placeholder";
 import Link from "@tiptap/extension-link";
 import TaskList from "@tiptap/extension-task-list";
 import TaskItem from "@tiptap/extension-task-item";
+import Icon from "@/components/Icon";
 
 export default defineComponent({
   name: "TextEditor",
   components: {
     EditorContent,
     BubbleMenu,
+    Icon,
   },
   props: {
     modelValue: Object as () => JSONContent,
@@ -83,11 +116,28 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .texteditor {
-  overflow-y: auto;
-  @apply custom-scrollbar px-10;
+  display: flex;
+  flex-direction: column;
+  @apply gap-4;
 
-  div {
-    height: 100%;
+  &-heading {
+    @apply px-2;
+  }
+
+  &-tags {
+    display: flex;
+    gap: 4px;
+    @apply px-2;
+  }
+
+  &-input {
+    flex-grow: 1;
+    overflow-y: auto;
+    @apply custom-scrollbar h-1 px-1;
+
+    div {
+      height: 100%;
+    }
   }
 }
 </style>
