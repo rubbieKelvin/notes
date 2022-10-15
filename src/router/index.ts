@@ -9,7 +9,7 @@ export default createRouter({
       component: () => import("./notes.vue"),
     },
     {
-      path: "/@:username/:title",
+      path: "/@:username/:identifier",
       name: "Note",
       component: () => import("./notes.vue"),
     },

@@ -17,7 +17,7 @@ export const useNotesManager = () => {
     // create note over api or local
     // local
     const note: Note = {
-      id: `local.${uuid4()}`,
+      id: `l-${uuid4()}`,
       title,
       description: null,
       author: null,

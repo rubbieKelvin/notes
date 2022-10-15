@@ -39,8 +39,9 @@ export type ToastData = {
     colorClasses?: { fg?: string; bg?: string };
   }>;
   colorClasses?: {
-    fg?: string;
-    bg: string;
+    fg?: string | Array<string>;
+    bg?: string | Array<string>;
+    accent?: string | Array<string>;
   };
   meta?: Record<string, any>;
 };

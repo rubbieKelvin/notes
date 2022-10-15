@@ -1,16 +1,25 @@
 <template>
-  <div class="fixed bottom-0 left-0">
+  <div class="fixed bottom-5 left-0">
     <div class="p-4 flex flex-col gap-2">
       <div
         v-for="toast in toasts"
         :key="toast.id"
-        class="bg-gray-100 text-black overflow-clip rounded-md border border-stroke"
+        class="text-black overflow-clip rounded-md border border-stroke"
+        :class="toast.colorClasses?.bg || 'bg-gray-100'"
       >
         <!-- content -->
         <div class="flex items-center gap-4 py-2 px-4 min-w-[350px]">
-          <Icon v-if="toast.icon" :name="toast.icon" class="w-6 h-6" />
+          <Icon
+            v-if="toast.icon"
+            :name="toast.icon"
+            class="w-6 h-6"
+            :class="toast.colorClasses?.fg || ''"
+          />
 
-          <div class="flex flex-grow flex-col min-w-[120px]">
+          <div
+            class="flex flex-grow flex-col min-w-[120px]"
+            :class="toast.colorClasses?.fg || ''"
+          >
             <p class="">{{ toast.title }}</p>
             <p class="text-sm text-gray-400">{{ toast.desciption }}</p>
           </div>
@@ -35,7 +44,8 @@
           <div
             :key="tick"
             :style="{ width: `${toast.meta.progress}%` }"
-            class="bg-red-500 h-1"
+            class="h-1"
+            :class="toast.colorClasses?.accent || 'bg-red-500'"
           />
         </div>
       </div>

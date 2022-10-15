@@ -12,7 +12,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, Ref, ref } from "vue";
+import { defineComponent, ref } from "vue";
 import AppHeader from "@/components/layout/Header.vue";
 import MainNav from "@/components/layout/SideMenu/index.vue";
 import ApplicationMenu from "@/components/layout/ApplicationMenu/index.vue";

@@ -4,7 +4,7 @@ import { Note } from "@/types/models";
 import { localModels } from "@/utils/localModel";
 
 export type Ctx = {
-  note: string | null;
+  note: Note | null;
   notes: Array<Note>;
   toasts: Array<ToastData>;
 };
