@@ -3,7 +3,7 @@ import { v4 as uuid4 } from "uuid";
 import { localModels } from "@/utils/localModel";
 import { computed, inject, Ref } from "vue";
 import { useToasts } from "@/utils/toasts";
-import { Ctx } from "@/provider";
+import { Ctx } from "@/plugins/context";
 
 export const useNotesManager = () => {
   const ctx = inject("ctx") as Ref<Ctx>;
@@ -18,7 +18,7 @@ export const useNotesManager = () => {
     // local
     const note: Note = {
       id: `l-${uuid4()}`,
-      title,
+      title: title.trim(),
       description: null,
       author: null,
       date_created: new Date().toISOString(),

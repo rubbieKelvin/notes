@@ -1,4 +1,4 @@
-import { Ctx } from "@/provider";
+import { Ctx } from "@/plugins/provider";
 import { ToastData } from "@/types";
 import { computed, inject, Ref } from "vue";
 

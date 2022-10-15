@@ -6,11 +6,13 @@ import "./styles/index.css";
 import "./styles/editor.scss";
 
 import router from "./router";
-import provider from "./provider";
+import context from "./plugins/context";
+import shortcuts from "./plugins/shortcuts";
 
 const app = createApp(App);
 
 // plugins
-provider(app);
 app.use(router);
+app.use(context);
+app.use(shortcuts);
 app.mount("#app");

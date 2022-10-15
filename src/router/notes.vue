@@ -22,7 +22,7 @@ import PageHeader from "@/components/layout/ApplicationMenu/PageHeader.vue";
 import { MenuItem } from "@/types";
 import NewNoteDialog from "@/components/Dialog/NewNoteDialog.vue";
 import slug from "@/utils/slug";
-import { Ctx } from "@/provider";
+import { Ctx } from "@/plugins/context";
 import { useRoute } from "vue-router";
 import { useToasts } from "@/utils/toasts";
 import NotesItem from "./components/NotesItem.vue";

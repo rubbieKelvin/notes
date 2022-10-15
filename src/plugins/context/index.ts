@@ -9,11 +9,13 @@ export type Ctx = {
   toasts: Array<ToastData>;
 };
 
-export default (app: App) => {
-  const ctx: Ref<Ctx> = ref({
-    note: null,
-    toasts: [],
-    notes: localModels.note.all(),
-  });
-  app.provide("ctx", ctx);
+export default {
+  install: (app: App) => {
+    const ctx: Ref<Ctx> = ref({
+      note: null,
+      toasts: [],
+      notes: localModels.note.all(),
+    });
+    app.provide("ctx", ctx);
+  },
 };

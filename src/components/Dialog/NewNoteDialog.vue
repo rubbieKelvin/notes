@@ -61,6 +61,7 @@ export default defineComponent({
     });
 
     watch(visible, () => {
+      data.value.title = "";
       if (visible.value) {
         noteTitleFocus.value = true;
       }
