@@ -1,13 +1,5 @@
 <template>
-  <router-link
-    :to="{
-      name: 'Note',
-      params: {
-        username: note.author ? note.author.username : '@local',
-        identifier: note.id,
-      },
-    }"
-  >
+  <router-link :to="noteRoute(note)">
     <div class="p-2 hover:bg-hover w-full">
       <div>
         <div>
@@ -34,6 +26,7 @@
 
 <script lang="ts">
 import { Note } from "@/types/models";
+import { noteRoute } from "@/utils/useNavigation";
 import { useTimeAgo } from "@vueuse/core";
 import { defineComponent } from "vue";
 
@@ -46,6 +39,7 @@ export default defineComponent({
       fuzzy: (datetime: string): string => {
         return useTimeAgo(new Date(datetime)).value;
       },
+      noteRoute,
     };
   },
 });

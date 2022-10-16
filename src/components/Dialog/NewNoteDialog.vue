@@ -36,6 +36,8 @@ import Dialog from "./index.vue";
 import Icon from "@/components/Icon";
 import { useFocus } from "@vueuse/core";
 import { useNotesManager } from "@/utils/api/notes";
+import { noteRoute } from "@/utils/useNavigation";
+import { useRouter } from "vue-router";
 
 export default defineComponent({
   components: { Dialog, Icon },
@@ -47,6 +49,8 @@ export default defineComponent({
     const noteManager = useNotesManager();
     const noteTitleRef: Ref<HTMLInputElement | null> = ref(null);
     const data = ref({ title: "" });
+    const router = useRouter();
+
     const visible = computed({
       get() {
         return props.modelValue;
@@ -67,8 +71,9 @@ export default defineComponent({
       }
     });
     const create = async () => {
-      await noteManager.createNote(data.value.title);
+      const note = await noteManager.createNote(data.value.title);
       visible.value = false;
+      router.push(noteRoute(note));
     };
     return { visible, noteTitleRef, data, create };
   },

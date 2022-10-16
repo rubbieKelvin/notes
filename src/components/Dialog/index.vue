@@ -15,8 +15,9 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, ref } from "vue";
+import { computed, defineComponent, ref, watch } from "vue";
 import { onClickOutside, onKeyDown } from "@vueuse/core";
+import { keybindingListening } from "@/plugins/shortcuts";
 
 export default defineComponent({
   name: "Dialog",
@@ -29,6 +30,7 @@ export default defineComponent({
   emits: ["update:modelValue"],
   setup(props, { emit }) {
     const body = ref(null);
+    const kb = keybindingListening();
 
     const visible = computed({
       get() {
@@ -50,6 +52,14 @@ export default defineComponent({
         e.preventDefault();
         visible.value = false;
       }
+    });
+
+    watch(visible, (v) => {
+      if (v && props.escape) {
+        window.requestAnimationFrame(() => (kb.value = false));
+      }
+
+      kb.value = true;
     });
 
     return { visible, body };

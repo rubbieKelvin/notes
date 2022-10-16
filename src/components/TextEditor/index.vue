@@ -8,7 +8,9 @@
           <input type="text" v-model="current.heading" />
           <p class="text-gray-500 text-sm">by local, one week ago</p>
         </div>
+
         <div class="flex gap-2 items-center">
+          <button v-if="unsaved">Changes made</button>
           <button class="btn p-1 h-min">
             <Icon name="StarIcon" class="w-5 h-5" />
           </button>
@@ -63,6 +65,7 @@ import { useToasts } from "@/utils/toasts";
 import { Note } from "@/types/models";
 import { provideContext } from "@/plugins/context";
 import { useNotesManager } from "@/utils/api/notes";
+import { useRouter } from "vue-router";
 
 export default defineComponent({
   name: "TextEditor",
@@ -79,9 +82,19 @@ export default defineComponent({
     const ctx = provideContext();
 
     const keybindings = useKeybinding("editor");
+    const unsaved = ref(false);
 
+    const router = useRouter();
     const { updateNote } = useNotesManager();
-    const { addToast, removeToast, updateToast } = useToasts();
+    const { addToast, removeToast } = useToasts();
+
+    function changesMade() {
+      return (
+        current.value.heading !== ctx.value.note?.title ||
+        JSON.stringify(current.value.content) !==
+          JSON.stringify(ctx.value.note?.content)
+      );
+    }
 
     const tippyOptions = ref({
       duration: 100,
@@ -127,6 +140,10 @@ export default defineComponent({
     });
 
     async function save() {
+      if (!changesMade()) return;
+
+      unsaved.value = false;
+
       const toast = addToast({
         id: Symbol(),
         title: "Saving note",
@@ -149,6 +166,7 @@ export default defineComponent({
 
       keybindings.bind("closenote", "escape", () => {
         ctx.value.note = null;
+        router.push({ name: "Notes" });
       });
     });
 
@@ -157,19 +175,41 @@ export default defineComponent({
     });
 
     watch(
+      () => current.value.heading,
+      () => {
+        unsaved.value = changesMade();
+      }
+    );
+
+    watch(
       () => ctx.value.note,
       (note) => {
         if (note === null) {
           current.value.heading = "";
           current.value.content = {};
         } else {
-          (current.value.heading = note.title),
-            (current.value.content = note.content);
+          unsaved.value = changesMade();
+          current.value.heading = note.title;
+          current.value.content = note.content;
         }
       }
     );
 
-    return { editor, tippyOptions, current, save };
+    watch(
+      () => current.value.content,
+      (value) => {
+        unsaved.value = changesMade();
+
+        if (
+          JSON.stringify(editor?.value?.getJSON()) === JSON.stringify(value) ||
+          !value
+        )
+          return;
+        editor?.value?.commands.setContent(value, false);
+      }
+    );
+
+    return { editor, tippyOptions, current, save, unsaved };
   },
 });
 </script>

@@ -20,6 +20,7 @@
 </template>
 
 <script lang="ts">
+import { keybindingListening } from "@/plugins/shortcuts";
 import { onClickOutside, onKeyDown } from "@vueuse/core";
 import { computed, defineComponent, ref, watch } from "vue";
 
@@ -33,6 +34,7 @@ export default defineComponent({
   setup(props, { emit }) {
     let _visible = ref(false);
     const popup = ref(null);
+    const kb = keybindingListening();
 
     watch(
       () => props.modelValue,
@@ -61,6 +63,14 @@ export default defineComponent({
         e.preventDefault();
         visible.value = false;
       }
+    });
+
+    watch(visible, (v) => {
+      if (v && props.escape) {
+        window.requestAnimationFrame(() => (kb.value = false));
+      }
+
+      kb.value = true;
     });
 
     return { visible, popup };

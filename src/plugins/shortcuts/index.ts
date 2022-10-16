@@ -1,4 +1,4 @@
-import { App, ref, Ref } from "vue";
+import { App, inject, ref, Ref } from "vue";
 import { onKeyStroke } from "@vueuse/core";
 
 export type KeyboardShortcut = {
@@ -7,12 +7,21 @@ export type KeyboardShortcut = {
   callback: (event: KeyboardEvent) => any;
 };
 
+export const keybindingListening = () => {
+  return inject("keybindingListening") as Ref<boolean>;
+};
+
 export default {
   install: (app: App) => {
+    const listening = ref(true);
     const keybindings: Ref<Array<KeyboardShortcut>> = ref([]);
+
     app.provide("keybindings", keybindings);
+    app.provide("keybindingListening", listening);
 
     onKeyStroke(true, (e) => {
+      if (!listening.value) return;
+
       const sequence = Array.from(
         new Set(
           [
