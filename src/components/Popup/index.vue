@@ -52,7 +52,8 @@ export default defineComponent({
     });
 
     onClickOutside(popup, (e) => {
-      window.requestAnimationFrame(() => (visible.value = false));
+      if (visible.value)
+        window.requestAnimationFrame(() => (visible.value = false));
     });
 
     onKeyDown("Escape", (e) => {

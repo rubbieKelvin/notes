@@ -1,5 +1,5 @@
 <template>
-  <Dialog v-model="visible">
+  <Dialog v-model="visible" dim escape closeOnClickOutside>
     <div
       class="bg-white border border-stroke py-2 rounded-md min-w-[400px] flex gap-3 flex-col"
     >

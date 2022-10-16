@@ -24,10 +24,10 @@ export type MenuItem = {
     | (() => Array<MenuItem>)
     | (() => Promise<Array<MenuItem>>);
   type?: MenuItemType;
+  keybinding?: Array<string>;
 };
 
-export type ToastData = {
-  id: symbol | number | string;
+export type ToastDataUpdate = {
   icon?: IconName;
   title?: string;
   desciption?: string;
@@ -46,10 +46,15 @@ export type ToastData = {
   meta?: Record<string, any>;
 };
 
+export interface ToastData extends ToastDataUpdate {
+  id: symbol | number | string;
+}
+
 export interface ModelHandler<Model> {
   __type: string;
   all: () => Array<Model>;
   find: (func: (model: Model) => boolean) => Model | null;
   add: (data: Model) => void;
+  update: (func: (model: Model) => boolean, update: Model) => void;
   delete: (func: (model: Model) => boolean) => void;
 }

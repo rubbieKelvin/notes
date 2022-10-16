@@ -4,7 +4,8 @@
     <div class="texteditor-heading">
       <div class="flex">
         <div class="flex-grow py-2">
-          <h1 class="font-medium text-xl">Heading</h1>
+          <!-- <h1 class="font-medium text-xl">Heading</h1> -->
+          <input type="text" v-model="current.heading" />
           <p class="text-gray-500 text-sm">by local, one week ago</p>
         </div>
         <div class="flex gap-2 items-center">
@@ -43,12 +44,25 @@ import {
   JSONContent,
 } from "@tiptap/vue-3";
 import StaterKit from "@tiptap/starter-kit";
-import { watch, ref, defineComponent } from "vue";
+import {
+  watch,
+  ref,
+  defineComponent,
+  onMounted,
+  onUnmounted,
+  computed,
+  Ref,
+} from "vue";
 import Placeholder from "@tiptap/extension-placeholder";
 import Link from "@tiptap/extension-link";
 import TaskList from "@tiptap/extension-task-list";
 import TaskItem from "@tiptap/extension-task-item";
 import Icon from "@/components/Icon";
+import useKeybinding from "@/plugins/shortcuts/useKeybinding";
+import { useToasts } from "@/utils/toasts";
+import { Note } from "@/types/models";
+import { provideContext } from "@/plugins/context";
+import { useNotesManager } from "@/utils/api/notes";
 
 export default defineComponent({
   name: "TextEditor",
@@ -59,8 +73,25 @@ export default defineComponent({
   },
   props: {
     modelValue: Object as () => JSONContent,
+    note: { type: Object as () => Note, required: true },
   },
-  setup(props, ctx) {
+  setup(props) {
+    const ctx = provideContext();
+
+    const keybindings = useKeybinding("editor");
+
+    const { updateNote } = useNotesManager();
+    const { addToast, removeToast, updateToast } = useToasts();
+
+    const tippyOptions = ref({
+      duration: 100,
+    });
+
+    const current: Ref<{ heading: string; content: JSONContent }> = ref({
+      heading: props.note.title,
+      content: props.note.content,
+    });
+
     const editor = useEditor({
       extensions: [
         TaskList,
@@ -88,28 +119,57 @@ export default defineComponent({
           },
         }),
       ],
-      content: props.modelValue,
+      content: current.value.content,
       onUpdate: () => {
-        ctx.emit("update:modelValue", editor?.value?.getJSON());
+        const content = editor?.value?.getJSON();
+        if (content) current.value.content = content;
       },
     });
 
+    async function save() {
+      const toast = addToast({
+        id: Symbol(),
+        title: "Saving note",
+        desciption: `saving ${current.value.heading} to local`,
+      });
+
+      // find note's index in ctx
+      await updateNote(props.note.id, {
+        title: current.value.heading,
+        content: current.value.content,
+      });
+
+      setTimeout(() => removeToast(toast.id), 3000);
+    }
+
+    onMounted(() => {
+      keybindings.bind("savenote", "control+s", () => {
+        save();
+      });
+
+      keybindings.bind("closenote", "escape", () => {
+        ctx.value.note = null;
+      });
+    });
+
+    onUnmounted(() => {
+      keybindings.unbind();
+    });
+
     watch(
-      () => props.modelValue,
-      (value) => {
-        if (
-          JSON.stringify(editor?.value?.getJSON()) === JSON.stringify(value) ||
-          !value
-        )
-          return;
-        editor?.value?.commands.setContent(value, false);
+      () => ctx.value.note,
+      (note) => {
+        if (note === null) {
+          current.value.heading = "";
+          current.value.content = {};
+        } else {
+          (current.value.heading = note.title),
+            (current.value.content = note.content);
+        }
       }
     );
 
-    const tippyOptions = ref({
-      duration: 100,
-    });
-    return { editor, tippyOptions };
+    return { editor, tippyOptions, current, save };
   },
 });
 </script>

@@ -16,6 +16,15 @@ export const model = <Model>(name: string): ModelHandler<Model> => ({
     const all = this.all();
     return all.find(func) ?? null;
   },
+  update(func, data) {
+    const all = this.all();
+    const instance = all.find(func);
+
+    if (!instance) return;
+    const i = all.findIndex(func);
+    all[i] = { ...instance, ...data };
+    localStorage.setItem(this.__type, JSON.stringify(all));
+  },
   add(data) {
     const all = this.all();
     all.push(data);

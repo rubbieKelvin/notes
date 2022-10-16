@@ -1,10 +1,10 @@
-import { Ctx } from "@/plugins/provider";
-import { ToastData } from "@/types";
+import { Ctx } from "@/plugins/context";
+import { ToastData, ToastDataUpdate } from "@/types";
 import { computed, inject, Ref } from "vue";
 
 export const useToasts = () => {
   const ctx = inject("ctx") as Ref<Ctx>;
-  const toasts = computed({
+  const toasts = computed<ToastData[]>({
     get: () => ctx.value.toasts,
     set: (v) => (ctx.value.toasts = v),
   });
@@ -32,6 +32,7 @@ export const useToasts = () => {
         }
       }, 50);
     }
+    return toast;
   }
 
   function removeToast(id: symbol | number | string) {
@@ -44,5 +45,16 @@ export const useToasts = () => {
     }
   }
 
-  return { toasts, addToast, removeToast };
+  function updateToast(id: symbol | number | string, update: ToastDataUpdate) {
+    const toast = toasts.value.find((t) => t.id === id);
+    if (toast) {
+      toasts.value[toasts.value.findIndex((t) => t.id == id)] = {
+        ...toast,
+        ...update,
+        id,
+      };
+    }
+  }
+
+  return { toasts, addToast, removeToast, updateToast };
 };

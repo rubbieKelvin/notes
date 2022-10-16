@@ -105,6 +105,11 @@
               >
                 {{ item.badgeText }}
               </div>
+              <!-- keybindings -->
+              <KeyboardShortcut
+                v-if="item.keybinding"
+                :sequence="item.keybinding"
+              />
               <!-- chevron -->
               <Icon
                 v-if="item.children"
@@ -151,6 +156,7 @@ import { defineComponent, Ref, ref, watch } from "vue";
 import Popup from "./index.vue";
 import { onKeyDown } from "@vueuse/core";
 import { v4 as uuid4 } from "uuid";
+import KeyboardShortcut from "@/components/KeyboardShortcut.vue";
 
 export default defineComponent({
   props: {
@@ -160,7 +166,7 @@ export default defineComponent({
       required: true,
     },
   },
-  components: { Popup, Icon },
+  components: { Popup, Icon, KeyboardShortcut },
   setup(props) {
     const visible = ref(false);
     const navigation: Ref<{

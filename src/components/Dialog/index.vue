@@ -7,7 +7,7 @@
     }"
   >
     <div v-if="visible" class="w-full h-full flex items-center justify-center">
-      <div class="pointer-events-auto">
+      <div ref="body" class="pointer-events-auto">
         <slot />
       </div>
     </div>
@@ -15,16 +15,21 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent } from "vue";
+import { computed, defineComponent, ref } from "vue";
+import { onClickOutside, onKeyDown } from "@vueuse/core";
 
 export default defineComponent({
   name: "Dialog",
   props: {
     dim: Boolean,
+    escape: Boolean,
+    closeOnClickOutside: Boolean,
     modelValue: Boolean,
   },
   emits: ["update:modelValue"],
   setup(props, { emit }) {
+    const body = ref(null);
+
     const visible = computed({
       get() {
         return props.modelValue;
@@ -33,7 +38,21 @@ export default defineComponent({
         emit("update:modelValue", val);
       },
     });
-    return { visible };
+
+    onClickOutside(body, (e) => {
+      if (visible.value && props.closeOnClickOutside) {
+        window.requestAnimationFrame(() => (visible.value = false));
+      }
+    });
+
+    onKeyDown("Escape", (e) => {
+      if (visible.value && props.escape) {
+        e.preventDefault();
+        visible.value = false;
+      }
+    });
+
+    return { visible, body };
   },
 });
 </script>

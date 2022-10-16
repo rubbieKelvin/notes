@@ -46,6 +46,7 @@ export default defineComponent({
           title: "Create note",
           icon: "PlusIcon",
           action: () => (modals.value.newnote = true),
+          keybinding: ["ctrl", "alt", "n"],
         },
         {
           id: Symbol(),
@@ -88,7 +89,8 @@ export default defineComponent({
             }
           }
         }
-      }
+      },
+      { immediate: true }
     );
 
     return { menu, modals, notes, slug };
