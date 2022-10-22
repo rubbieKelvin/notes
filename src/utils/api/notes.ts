@@ -28,7 +28,7 @@ export const useNotesManager = () => {
       last_updated: new Date().toISOString(),
       folder: null,
       tags: [],
-      content: { type: "doc" },
+      content: { type: "doc", content: [{ type: "paragraph" }] },
       is_archived: false,
     };
     localModels.note.add(note);

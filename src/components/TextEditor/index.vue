@@ -4,13 +4,12 @@
     <div class="texteditor-heading">
       <div class="flex">
         <div class="flex-grow py-2">
-          <!-- <h1 class="font-medium text-xl">Heading</h1> -->
           <input type="text" v-model="current.heading" />
           <p class="text-gray-500 text-sm">by local, one week ago</p>
         </div>
 
         <div class="flex gap-2 items-center">
-          <button v-if="unsaved">Changes made</button>
+          <button v-if="unsaved" class="btn p-1 text-sm">Changes made</button>
           <button class="btn p-1 h-min">
             <Icon name="StarIcon" class="w-5 h-5" />
           </button>
@@ -24,10 +23,11 @@
     <!-- tags -->
     <div class="texteditor-tags">
       <button
-        class="btn flex items-center justify-center text-sm p-0.5 group"
+        class="btn flex items-center justify-center text-sm py-0.5 px-1 group"
         title="add tags"
       >
         <Icon name="PlusIcon" class="h-5 w-5" />
+        <span class="text-sm">Tags</span>
       </button>
     </div>
 
@@ -46,15 +46,7 @@ import {
   JSONContent,
 } from "@tiptap/vue-3";
 import StaterKit from "@tiptap/starter-kit";
-import {
-  watch,
-  ref,
-  defineComponent,
-  onMounted,
-  onUnmounted,
-  computed,
-  Ref,
-} from "vue";
+import { watch, ref, defineComponent, onMounted, onUnmounted, Ref } from "vue";
 import Placeholder from "@tiptap/extension-placeholder";
 import Link from "@tiptap/extension-link";
 import TaskList from "@tiptap/extension-task-list";
@@ -218,7 +210,7 @@ export default defineComponent({
 .texteditor {
   display: flex;
   flex-direction: column;
-  @apply gap-4;
+  @apply gap-2;
 
   &-heading {
     @apply px-2;
@@ -233,7 +225,7 @@ export default defineComponent({
   &-input {
     flex-grow: 1;
     overflow-y: auto;
-    @apply custom-scrollbar h-1 px-1;
+    @apply custom-scrollbar h-1 px-2;
 
     div {
       height: 100%;
