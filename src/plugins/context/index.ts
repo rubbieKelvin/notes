@@ -1,9 +1,10 @@
 import { App, inject, ref, Ref } from "vue";
 import { ToastData } from "@/types";
-import { Note } from "@/types/models";
+import { Note, User } from "@/types/models";
 import { localModels } from "@/utils/localModel";
 
 export type Ctx = {
+  user: User | null;
   note: Note | null;
   notes: Array<Note>;
   toasts: Array<ToastData>;
@@ -16,6 +17,7 @@ export const provideContext = () => {
 export default {
   install: (app: App) => {
     const ctx: Ref<Ctx> = ref({
+      user: null,
       note: null,
       toasts: [],
       notes: localModels.note.all(),

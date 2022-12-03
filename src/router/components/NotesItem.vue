@@ -1,27 +1,29 @@
 <template>
-  <router-link :to="noteRoute(note)">
-    <div class="p-2 hover:bg-hover w-full">
-      <div>
+  <ContextMenuWrapper>
+    <router-link :to="noteRoute(note)">
+      <div class="p-2 hover:bg-hover w-full">
         <div>
-          <div class="">
-            <p class="text-lg capitalize">
-              {{ note.title }}
-            </p>
-            <p v-if="note.description">{{ note.description }}</p>
-            <p
-              v-else-if="note.author === null"
-              class="text-xs bg-gray-200 w-min px-1 rounded"
-            >
-              local
+          <div>
+            <div class="">
+              <p class="text-lg capitalize">
+                {{ note.title }}
+              </p>
+              <p v-if="note.description">{{ note.description }}</p>
+              <p
+                v-else-if="note.author === null"
+                class="text-xs bg-gray-200 w-min px-1 rounded"
+              >
+                local
+              </p>
+            </div>
+            <p class="text-xs text-gray-600">
+              {{ fuzzy(note.last_updated) }}
             </p>
           </div>
-          <p class="text-xs text-gray-600">
-            {{ fuzzy(note.last_updated) }}
-          </p>
         </div>
       </div>
-    </div>
-  </router-link>
+    </router-link>
+  </ContextMenuWrapper>
 </template>
 
 <script lang="ts">
@@ -29,11 +31,13 @@ import { Note } from "@/types/models";
 import { noteRoute } from "@/utils/useNavigation";
 import { useTimeAgo } from "@vueuse/core";
 import { defineComponent } from "vue";
+import ContextMenuWrapper from "@/components/Popup/ContextMenuWrapper.vue";
 
 export default defineComponent({
   props: {
     note: { type: Object as () => Note, required: true },
   },
+  components: { ContextMenuWrapper },
   setup() {
     return {
       fuzzy: (datetime: string): string => {

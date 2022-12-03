@@ -16,6 +16,7 @@ typing-extensions = "^4.4.0"
 
 [tool.poetry.group.dev.dependencies]
 ipython = "^8.5.0"
+toml = "^0.10.2"
 
 [build-system]
 requires = ["poetry-core"]

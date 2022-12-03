@@ -13,5 +13,9 @@ export default createRouter({
       name: "Note",
       component: () => import("./notes.vue"),
     },
+    // {
+    //   path: "/kc",
+    //   component: () => 
+    // }
   ],
 });
