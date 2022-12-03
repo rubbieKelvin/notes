@@ -333,7 +333,7 @@ django-rest-framework = "^0.1.0"
 type = "git"
 url = "https://github.com/rubbieKelvin/UntitledQL.git"
 reference = "HEAD"
-resolved_reference = "3569c1d2394e26361029538c6a54d7fd71fe2b66"
+resolved_reference = "10f8a178196860e64eaafaec47fde4ff4edc8656"
 
 [[package]]
 name = "wcwidth"

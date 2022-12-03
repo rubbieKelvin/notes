@@ -16,6 +16,10 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
+from api.uqlc import Config
+from uql.views import UQLView
+
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path("admin/", admin.site.urls),  # admin
+    path("uql/", UQLView(Config).as_view()),  # uql
 ]
