@@ -10,7 +10,7 @@ class Note(models.Model):
     id = models.UUIDField(default=uuid4, primary_key=True)
     title = models.CharField(max_length=150, null=False)
     content = models.JSONField(default=defaultContent)
-    readable_id = models.BigIntegerField(null=True, default=None)
+    readable_id = models.BigIntegerField(null=True, default=None, blank=True)
     author = models.ForeignKey(
         "api.User", on_delete=models.CASCADE, related_name="notes"
     )
@@ -27,4 +27,4 @@ class Note(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self) -> str:
-        return f"NOTE-{self.readable_id}"
+        return f"{self.author.username}/NOTE-{self.readable_id}"
