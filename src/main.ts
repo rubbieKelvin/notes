@@ -11,4 +11,5 @@ const app = createApp(App);
 
 // plugins
 app.use(router);
+
 app.mount("#app");

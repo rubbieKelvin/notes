@@ -65,3 +65,12 @@ def logout(request: Request, args: dict):
         token.delete()
 
     return
+
+
+@permission_classes([IsAuthenticated])
+@intent()
+def me(request: Request, args: dict):
+    user: User = request.user
+    mconf = typing.cast(ModelConfig, ModelConfig.getConfig(User))
+    sr = mconf.createSerializerClass(resolveUserRole(user))
+    return sr(user).data

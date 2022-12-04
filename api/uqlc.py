@@ -10,13 +10,14 @@ from .modelc import notes
 
 
 class Config(UQLConfig):
-    raiseExceptions = True
+    raiseExceptions = False
     models: list[ModelConfig] = [users.config, notes.config]
     functions: list[IntentFunction] = [
         # ...
         authentication.login,
         authentication.signup,
         authentication.logout,
+        authentication.me,
     ]
 
     @staticmethod

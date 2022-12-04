@@ -12,6 +12,7 @@ Django = "^4.1.1"
 djangorestframework = "^3.14.0"
 typing-extensions = "^4.4.0"
 uql = {git = "https://github.com/rubbieKelvin/UntitledQL.git"}
+django-cors-headers = "^3.13.0"
 
 
 [tool.poetry.group.dev.dependencies]
