@@ -6,11 +6,12 @@ from .models.users import User
 from .utils.userroles import resolveUserRole
 from .functions import authentication
 from .modelc import users
+from .modelc import notes
 
 
 class Config(UQLConfig):
     raiseExceptions = True
-    models: list[ModelConfig] = [users.config]
+    models: list[ModelConfig] = [users.config, notes.config]
     functions: list[IntentFunction] = [
         # ...
         authentication.login,
