@@ -1,6 +1,6 @@
 import axios from "axios";
 import { createSharedComposable, useLocalStorage } from "@vueuse/core";
-import { Ref, ref } from "vue";
+import { computed, Ref, ref } from "vue";
 import { AuthenticatedUserResponse, LoginResponse } from "./types/response";
 import { User } from "./types/models";
 
@@ -18,19 +18,20 @@ const uqlIntentBody = (
   args,
 });
 
-export default createSharedComposable(() => {
+export default function () {
   // constants
   const url = import.meta.env.VITE_UQL_BASE;
 
   // refs
   const user: Ref<User | null> = ref(null);
   const token: Ref<string | null> = useLocalStorage("x-t", null);
-
+  const isAuthenticated = computed(() => user.value !== null);
   const authHeader = () => ({ Authorization: `Token ${token.value}` });
 
   // return
   return {
     user,
+    isAuthenticated,
     auth: {
       login: async (
         username: string,
@@ -105,6 +106,7 @@ export default createSharedComposable(() => {
           });
 
           const data = response.data as AuthenticatedUserResponse;
+          user.value = data.data;
           return data.data;
         }
 
@@ -112,4 +114,4 @@ export default createSharedComposable(() => {
       },
     },
   };
-});
+}
