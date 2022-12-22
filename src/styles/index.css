@@ -3,7 +3,8 @@
 @tailwind utilities;
 
 html,
-body {
+body,
+#app {
   height: 100%;
   color: #323232;
 }

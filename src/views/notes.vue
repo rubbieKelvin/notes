@@ -1,12 +1,12 @@
 <template>
-  <div>
+  <div class="h-full flex flex-col">
     <!-- top -->
     <div class="flex items-center gap-3 p-2">
       <h1>Notes</h1>
       <button
         v-if="isAuthenticated"
         class="bg-gray-200 p-2"
-        @click="auth.logout()"
+        @click="functions.auth.logout()"
       >
         Logout
       </button>
@@ -35,20 +35,7 @@
           placeholder="password"
           v-model="fields.login.password"
         />
-        <button
-          class="bg-gray-200 p-1 mr-2"
-          @click="
-            auth
-              .login(fields.login.username, fields.login.password)
-              .then(() => {
-                modal = null;
-                fields.login.username = '';
-                fields.login.password = '';
-              })
-          "
-        >
-          Submit
-        </button>
+        <button class="bg-gray-200 p-1 mr-2" @click="doLogin">Submit</button>
       </div>
 
       <!-- close button -->
@@ -56,30 +43,41 @@
     </div>
 
     <!-- body -->
-    <div v-if="isAuthenticated" class="flex gap-3 p-3">
-      <!-- notes list -->
-      <div class="border-r border-gray-300 p-3">
-        <button class="bg-gray-200 p-2 hover:bg-gray-300 active:bg-gray-400">
-          Add Note
-        </button>
-      </div>
+    <div class="flex gap-3 p-3 flex-grow">
+      <template v-if="isAuthenticated">
+        <!-- notes list -->
+        <div class="border-r border-gray-300 p-3">
+          <button class="bg-gray-200 p-2 hover:bg-gray-300 active:bg-gray-400">
+            Add Note
+          </button>
+          <div class="min-w-[200px]">
+            <p v-for="note in notes" :key="note.id">{{ note.title }}</p>
+          </div>
+        </div>
 
-      <!-- opened note -->
-      <div></div>
+        <!-- opened note -->
+        <div></div>
+      </template>
+    </div>
+
+    <!-- stats -->
+    <div v-if="errorText" class="bg-red-600 p-2 text-white">
+      <p>⚠ {{ errorText }}</p>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, Ref, ref } from "vue";
+import { defineComponent, onMounted, Ref, ref, watch } from "vue";
 import useUqlClient from "@/composables/useUqlClient";
 
 export default defineComponent({
   setup() {
-    const { isAuthenticated, auth, user } = useUqlClient();
+    let errTimout: number | null = null;
+    const { isAuthenticated, functions, user, notes } = useUqlClient();
 
-    const tr = computed(() => true);
     const modal: Ref<string | null> = ref(null);
+    const errorText = ref("");
     const fields = ref({
       login: {
         username: "",
@@ -87,7 +85,44 @@ export default defineComponent({
       },
     });
 
-    return { tr, isAuthenticated, user, auth, modal, fields };
+    const doLogin = () => {
+      functions.auth
+        .login(fields.value.login.username, fields.value.login.password)
+        .then(() => {
+          modal.value = null;
+          fields.value.login.username = "";
+          fields.value.login.password = "";
+        })
+        .catch(() => {
+          errorText.value = "Error signing up";
+        });
+    };
+
+    watch(errorText, () => {
+      if (errorText.value) {
+        if (errTimout) clearTimeout(errTimout);
+
+        errTimout = setTimeout(() => {
+          errorText.value = "";
+          errTimout = null;
+        }, 2000);
+      }
+    });
+
+    onMounted(() => {
+      functions.auth.getAuthenticatedUser();
+    });
+
+    return {
+      doLogin,
+      isAuthenticated,
+      user,
+      notes,
+      functions,
+      errorText,
+      modal,
+      fields,
+    };
   },
 });
 </script>
