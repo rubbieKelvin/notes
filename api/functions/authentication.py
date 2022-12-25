@@ -3,8 +3,11 @@ import typing
 from api.models.users import User
 from api.utils.userroles import resolveUserRole
 
-from uql.model import ModelConfig
-from uql.decorators.intent import intent
+from uql import getUserRole
+from uql.functions import ApiFunction
+from uql.models import ExposedModel
+from uql.utils import dto
+from uql.models.serializers import createSerializerClass
 
 from rest_framework.request import Request
 from rest_framework.authtoken.models import Token
@@ -12,7 +15,16 @@ from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
 
 
-@intent(requiredArgs=("username", "password"))
+@ApiFunction.decorator(
+    rule=dto.Dictionary(
+        {
+            "username": dto.String(
+                min_length=4, allow_whitespace=False, allow_special_characters=False
+            ),
+            "password": dto.String(min_length=6),
+        }
+    )
+)
 def signup(request: Request, args: dict):
     username = typing.cast(str, args["username"]).strip()
     password: str = args["password"]
@@ -30,13 +42,13 @@ def signup(request: Request, args: dict):
     # token
     token: Token = Token.objects.create(user=user)
 
-    mconf = typing.cast(ModelConfig, ModelConfig.getConfig(User))
-
-    sr = mconf.createSerializerClass(resolveUserRole(user))
+    sr = createSerializerClass(getUserRole(user), ExposedModel.getExposedModel(User))
     return {"user": sr(user).data, "token": token.key}
 
 
-@intent(requiredArgs=("username", "password"))
+@ApiFunction.decorator(
+    rule=dto.Dictionary({"username": dto.String(), "password": dto.String()})
+)
 def login(request: Request, args: dict):
     username = args["username"]
     password = args["password"]
@@ -46,9 +58,7 @@ def login(request: Request, args: dict):
     if not user.check_password(password):
         raise PermissionError("Invalid password", 400)
 
-    mconf = typing.cast(ModelConfig, ModelConfig.getConfig(User))
-
-    sr = mconf.createSerializerClass(resolveUserRole(user))
+    sr = createSerializerClass(getUserRole(user), ExposedModel.getExposedModel(User))
 
     token, _ = Token.objects.get_or_create(user=user)
 
@@ -56,7 +66,7 @@ def login(request: Request, args: dict):
 
 
 @permission_classes([IsAuthenticated])
-@intent()
+@ApiFunction.decorator()
 def logout(request: Request, args: dict):
     user: User = request.user
     token = Token.objects.filter(user=user).first()
@@ -68,9 +78,10 @@ def logout(request: Request, args: dict):
 
 
 @permission_classes([IsAuthenticated])
-@intent()
+@ApiFunction.decorator()
 def me(request: Request, args: dict):
     user: User = request.user
-    mconf = typing.cast(ModelConfig, ModelConfig.getConfig(User))
-    sr = mconf.createSerializerClass(resolveUserRole(user))
+    # mconf = typing.cast(ModelConfig, ModelConfig.getConfig(User))
+    # sr = mconf.createSerializerClass(resolveUserRole(user))
+    sr = createSerializerClass(getUserRole(user), ExposedModel.getExposedModel(User))
     return sr(user).data

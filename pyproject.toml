@@ -11,8 +11,8 @@ python = "^3.10"
 Django = "^4.1.1"
 djangorestframework = "^3.14.0"
 typing-extensions = "^4.4.0"
-uql = {git = "https://github.com/rubbieKelvin/UntitledQL.git"}
 django-cors-headers = "^3.13.0"
+uql = {git = "https://github.com/rubbieKelvin/UntitledQL.git", rev = "dev/v1"}
 
 
 [tool.poetry.group.dev.dependencies]

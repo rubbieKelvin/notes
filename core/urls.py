@@ -16,10 +16,25 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from api.uqlc import Config
-from uql.views import UQLView
+from uql.views import createUQLView
+from api.functions import authentication
+
+from api.emo import exposedmodels
 
 urlpatterns = [
     path("admin/", admin.site.urls),  # admin
-    path("uql/", UQLView(Config).as_view()),  # uql
+    path(
+        "uql/",
+        createUQLView(
+            models=exposedmodels,
+            functions=[
+                # ...
+                authentication.login,
+                authentication.logout,
+                authentication.signup,
+                authentication.me,
+            ],
+            raiseExceptions=False,
+        ).as_view(),
+    ),  # uql
 ]

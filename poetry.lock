@@ -329,7 +329,7 @@ python-versions = ">=2"
 
 [[package]]
 name = "uql"
-version = "0.1.1"
+version = "1.0.1"
 description = "Application layer for building Django apps with a breeze"
 category = "main"
 optional = false
@@ -343,8 +343,8 @@ django-rest-framework = "^0.1.0"
 [package.source]
 type = "git"
 url = "https://github.com/rubbieKelvin/UntitledQL.git"
-reference = "HEAD"
-resolved_reference = "51b1337a3510d3c2605a4c8b8b266721b1ab94f0"
+reference = "dev/v1"
+resolved_reference = "02257a0c0eb4b7216154d6bb95004392f42875f0"
 
 [[package]]
 name = "wcwidth"
@@ -357,7 +357,7 @@ python-versions = "*"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "fb298a1ca7a75273a1213f3bad8c3a0c830fc72903736c652ad64f36de4f0b9b"
+content-hash = "660a0280727d5d37c2b209122cd7d746c83e64613eeaa158e898490075f09bbf"
 
 [metadata.files]
 appnope = [
