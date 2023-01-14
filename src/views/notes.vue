@@ -1,128 +1,55 @@
 <template>
-  <div class="h-full flex flex-col">
-    <!-- top -->
-    <div class="flex items-center gap-3 p-2">
-      <h1>Notes</h1>
-      <button
-        v-if="isAuthenticated"
-        class="bg-gray-200 p-2"
-        @click="functions.auth.logout()"
-      >
-        Logout
-      </button>
-      <button v-else class="bg-gray-200 p-2" @click="modal = 'login'">
-        Login
-      </button>
-      <span class="flex-grow"></span>
-      <p v-if="isAuthenticated">
-        signed in as <b>{{ user?.username }}</b>
-      </p>
-    </div>
-
-    <!-- popups -->
-    <div class="p-2 border-b border-gray-200 flex" v-if="modal !== null">
-      <!-- login -->
-      <div v-if="modal == 'login'" class="flex-grow">
-        <input
-          class="outline-0"
-          type="text"
-          placeholder="username"
-          v-model="fields.login.username"
-        />
-        <input
-          class="outline-0"
-          type="password"
-          placeholder="password"
-          v-model="fields.login.password"
-        />
-        <button class="bg-gray-200 p-1 mr-2" @click="doLogin">Submit</button>
+  <div class="">
+    <!-- heading -->
+    <div class="p-5 flex flex-col gap-6 h-[8%]">
+      <h1 class="font-medium text-2xl">All Notes</h1>
+      <div>
+        <router-link
+          :to="{ name: 'NewNote' }"
+          class="py-1 px-2 border border-stroke rounded-md"
+        >
+          New note
+        </router-link>
       </div>
-
-      <!-- close button -->
-      <button class="bg-red-200 p-1" @click="modal = null">Close</button>
     </div>
 
-    <!-- body -->
-    <div class="flex gap-3 p-3 flex-grow">
-      <template v-if="isAuthenticated">
-        <!-- notes list -->
-        <div class="border-r border-gray-300 p-3">
-          <button class="bg-gray-200 p-2 hover:bg-gray-300 active:bg-gray-400">
-            Add Note
-          </button>
-          <div class="min-w-[200px]">
-            <p v-for="note in notes" :key="note.id">{{ note.title }}</p>
+    <!-- list -->
+    <div class="flex flex-col flex-grow overflow-y-scroll h-[92%]">
+      <!-- item -->
+      <div
+        class="flex px-5 py-3 select-none hover:bg-hover"
+        v-for="i in 100"
+        :key="i"
+      >
+        <router-link class="flex-grow" to="/notes/190">
+          <h3 class="text-lg">This is my article</h3>
+          <p class="text-gray-700">Maybe a sub</p>
+        </router-link>
+        <div class="flex flex-col">
+          <div class="flex justify-end flex-grow">
+            <button>
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 20 20"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  fill-rule="evenodd"
+                  clip-rule="evenodd"
+                  d="M10.9202 3.48083L12.4431 6.52312C12.5923 6.82179 12.8804 7.02888 13.2145 7.07681L16.6211 7.56717C17.4628 7.68869 17.7977 8.70878 17.1886 9.29327L14.7252 11.6604C14.4831 11.8931 14.3729 12.2277 14.4301 12.5564L15.0115 15.8982C15.1547 16.7249 14.2748 17.3556 13.5225 16.9645L10.4777 15.3856C10.1792 15.2307 9.82168 15.2307 9.52232 15.3856L6.4775 16.9645C5.72519 17.3556 4.84533 16.7249 4.98937 15.8982L5.56987 12.5564C5.62714 12.2277 5.51694 11.8931 5.27485 11.6604L2.8114 9.29327C2.20226 8.70878 2.5372 7.68869 3.37889 7.56717L6.78554 7.07681C7.11961 7.02888 7.40856 6.82179 7.55781 6.52312L9.07979 3.48083C9.45638 2.7286 10.5436 2.7286 10.9202 3.48083Z"
+                  stroke="#130F26"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </button>
           </div>
+          <p class="text-gray-500 text-sm">2 days ago</p>
         </div>
-
-        <!-- opened note -->
-        <div></div>
-      </template>
-    </div>
-
-    <!-- stats -->
-    <div v-if="errorText" class="bg-red-600 p-2 text-white">
-      <p>⚠ {{ errorText }}</p>
+      </div>
     </div>
   </div>
 </template>
-
-<script lang="ts">
-import { defineComponent, onMounted, Ref, ref, watch } from "vue";
-import useUqlClient from "@/composables/useUqlClient";
-
-export default defineComponent({
-  setup() {
-    let errTimout: number | null = null;
-    const { isAuthenticated, functions, user, notes } = useUqlClient();
-
-    const modal: Ref<string | null> = ref(null);
-    const errorText = ref("");
-    const fields = ref({
-      login: {
-        username: "",
-        password: "",
-      },
-    });
-
-    const doLogin = () => {
-      functions.auth
-        .login(fields.value.login.username, fields.value.login.password)
-        .then(() => {
-          modal.value = null;
-          fields.value.login.username = "";
-          fields.value.login.password = "";
-        })
-        .catch(() => {
-          errorText.value = "Error signing up";
-        });
-    };
-
-    watch(errorText, () => {
-      if (errorText.value) {
-        if (errTimout) clearTimeout(errTimout);
-
-        errTimout = setTimeout(() => {
-          errorText.value = "";
-          errTimout = null;
-        }, 2000);
-      }
-    });
-
-    onMounted(() => {
-      functions.auth.getAuthenticatedUser();
-    });
-
-    return {
-      doLogin,
-      isAuthenticated,
-      user,
-      notes,
-      functions,
-      errorText,
-      modal,
-      fields,
-    };
-  },
-});
-</script>
