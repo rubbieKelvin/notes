@@ -58,6 +58,7 @@ import Icon from "./Icon";
 import { ToastData } from "@/types";
 import {
   computed,
+  ComputedRef,
   defineComponent,
   inject,
   onMounted,
@@ -65,20 +66,18 @@ import {
   ref,
   Ref,
 } from "vue";
-import { Ctx } from "@/provider";
 
 export default defineComponent({
   components: { Icon },
   setup() {
-    const ctx = inject("ctx") as Ref<Ctx>;
     let tick_timer: number | null = null;
     const tick = ref(0);
 
-    const toasts = computed(() => [...ctx.value.toasts].reverse());
+    const toasts: ComputedRef<ToastData[]> = computed(() => []);
 
     onMounted(() => {
       tick_timer = setInterval(() => {
-        if (ctx.value.toasts.find((toast) => !!toast.timeout))
+        if (toasts.value.find((toast) => !!toast.timeout))
           tick.value = tick.value === 0 ? 1 : 0;
       }, 50);
     });

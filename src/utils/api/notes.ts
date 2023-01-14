@@ -1,17 +1,15 @@
 import { Note, NoteUpdate } from "@/types/models";
 import { v4 as uuid4 } from "uuid";
 import { localModels } from "@/utils/localModel";
-import { computed } from "vue";
+import { computed, ComputedRef, WritableComputedRef } from "vue";
 import { useToasts } from "@/utils/toasts";
-import { provideContext } from "@/plugins/context";
 
 const noteIDPrifix = "l-";
 
 export const useNotesManager = () => {
-  const ctx = provideContext();
-  const notes = computed({
-    get: () => ctx.value.notes,
-    set: (v) => (ctx.value.notes = v),
+  const notes: WritableComputedRef<Note[]> = computed({
+    get: () => [],
+    set: (v) => {},
   });
 
   const toasts = useToasts();
@@ -46,25 +44,7 @@ export const useNotesManager = () => {
   const updateNote = async (
     id: string,
     update: NoteUpdate
-  ): Promise<Note | void> => {
-    if (id.startsWith(noteIDPrifix)) {
-      // local note
-      const note = ctx.value.notes.find((n) => n.id === id);
-      if (!note) return;
-
-      const index = ctx.value.notes.findIndex((n) => n.id === id);
-      const updatedInstace = {
-        ...note,
-        ...(update as Note),
-        id,
-        last_updated: new Date().toISOString(),
-      };
-
-      localModels.note.update((n) => n.id === id, updatedInstace);
-      ctx.value.notes[index] = updatedInstace;
-      return updatedInstace;
-    }
-  };
+  ): Promise<Note | void> => {};
 
   return {
     createNote,

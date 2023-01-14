@@ -1,9 +1,9 @@
-import { Ctx } from "@/plugins/context";
 import { ToastData, ToastDataUpdate } from "@/types";
-import { computed, inject, Ref } from "vue";
+import { computed, inject, Ref, ref } from "vue";
 
 export const useToasts = () => {
-  const ctx = inject("ctx") as Ref<Ctx>;
+  const ctx: Ref<{ toasts: ToastData[] }> = ref({ toasts: [] }); // should be from an external source
+
   const toasts = computed<ToastData[]>({
     get: () => ctx.value.toasts,
     set: (v) => (ctx.value.toasts = v),

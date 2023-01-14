@@ -22,17 +22,16 @@ import PageHeader from "@/components/layout/ApplicationMenu/PageHeader.vue";
 import { MenuItem } from "@/types";
 import NewNoteDialog from "@/components/Dialog/NewNoteDialog.vue";
 import slug from "@/utils/slug";
-import { Ctx } from "@/plugins/context";
 import { useRoute } from "vue-router";
 import { useToasts } from "@/utils/toasts";
 import NotesItem from "@/components/NotesItem.vue";
+import { Note } from "@/types/models";
 
 export default defineComponent({
   components: { PageHeader, NewNoteDialog, NotesItem },
   setup() {
-    const ctx = inject("ctx") as Ref<Ctx>;
     const route = useRoute();
-    const notes = computed(() => ctx.value.notes);
+    const notes: ComputedRef<Note[]> = computed(() => []);
     const toasts = useToasts();
 
     const modals = ref({
@@ -46,7 +45,6 @@ export default defineComponent({
           title: "Create note",
           icon: "PlusIcon",
           action: () => (modals.value.newnote = true),
-          keybinding: ["ctrl", "alt", "n"],
         },
         {
           id: Symbol(),
@@ -73,7 +71,7 @@ export default defineComponent({
               (note) => note.id === identifier && note.author === null
             );
             if (note) {
-              ctx.value.note = note;
+              // ...
             } else {
               toasts.addToast({
                 id: Symbol(),

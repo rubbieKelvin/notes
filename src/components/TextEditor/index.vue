@@ -46,16 +46,14 @@ import {
   JSONContent,
 } from "@tiptap/vue-3";
 import StaterKit from "@tiptap/starter-kit";
-import { watch, ref, defineComponent, onMounted, onUnmounted, Ref } from "vue";
+import { ref, defineComponent, Ref } from "vue";
 import Placeholder from "@tiptap/extension-placeholder";
 import Link from "@tiptap/extension-link";
 import TaskList from "@tiptap/extension-task-list";
 import TaskItem from "@tiptap/extension-task-item";
 import Icon from "@/components/Icon";
-import useKeybinding from "@/plugins/shortcuts/useKeybinding";
 import { useToasts } from "@/utils/toasts";
 import { Note } from "@/types/models";
-import { provideContext } from "@/plugins/context";
 import { useNotesManager } from "@/utils/api/notes";
 import { useRouter } from "vue-router";
 
@@ -71,22 +69,11 @@ export default defineComponent({
     note: { type: Object as () => Note, required: true },
   },
   setup(props) {
-    const ctx = provideContext();
-
-    const keybindings = useKeybinding("editor");
     const unsaved = ref(false);
 
     const router = useRouter();
     const { updateNote } = useNotesManager();
     const { addToast, removeToast } = useToasts();
-
-    function changesMade() {
-      return (
-        current.value.heading !== ctx.value.note?.title ||
-        JSON.stringify(current.value.content) !==
-          JSON.stringify(ctx.value.note?.content)
-      );
-    }
 
     const tippyOptions = ref({
       duration: 100,
@@ -132,8 +119,6 @@ export default defineComponent({
     });
 
     async function save() {
-      if (!changesMade()) return;
-
       unsaved.value = false;
 
       const toast = addToast({
@@ -150,56 +135,6 @@ export default defineComponent({
 
       setTimeout(() => removeToast(toast.id), 3000);
     }
-
-    onMounted(() => {
-      keybindings.bind("savenote", "control+s", () => {
-        save();
-      });
-
-      keybindings.bind("closenote", "escape", () => {
-        ctx.value.note = null;
-        router.push({ name: "Notes" });
-      });
-    });
-
-    onUnmounted(() => {
-      keybindings.unbind();
-    });
-
-    watch(
-      () => current.value.heading,
-      () => {
-        unsaved.value = changesMade();
-      }
-    );
-
-    watch(
-      () => ctx.value.note,
-      (note) => {
-        if (note === null) {
-          current.value.heading = "";
-          current.value.content = {};
-        } else {
-          unsaved.value = changesMade();
-          current.value.heading = note.title;
-          current.value.content = note.content;
-        }
-      }
-    );
-
-    watch(
-      () => current.value.content,
-      (value) => {
-        unsaved.value = changesMade();
-
-        if (
-          JSON.stringify(editor?.value?.getJSON()) === JSON.stringify(value) ||
-          !value
-        )
-          return;
-        editor?.value?.commands.setContent(value, false);
-      }
-    );
 
     return { editor, tippyOptions, current, save, unsaved };
   },
