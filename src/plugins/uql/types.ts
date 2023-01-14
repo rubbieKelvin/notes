@@ -1,11 +1,15 @@
 export type Pk = string | number;
-
-export type UQLCall = {
-  intent: string;
-  fields?: boolean | Record<string, any> | null;
-  args?: Record<string, any> | null;
+export type UQLFieldType = boolean | Record<string, any> | null;
+export type InputMeta = {
   headers?: Record<string, string> | null;
-  formdata?: FormData | null;
+  initialFormdata?: FormData | null;
+};
+
+export type UQLFunctionCallInput = {
+  functionName: string;
+  fields?: UQLFieldType;
+  args?: Record<string, any> | null;
+  meta?: InputMeta;
 };
 
 export type UQLError = {
@@ -22,51 +26,49 @@ export type UQLResponse = {
   statusCode: number;
 };
 
-export type UQLModelManager<Model, ModelInsert, ModelUpdate> = {
-  __cache: Record<string, object>;
-
+export type UQLModelManager<
+  Model extends object,
+  ModelInsert extends object,
+  ModelUpdate extends object
+> = {
   // find
-  find: (findArgs: {
-    where: object;
-    useAuth?: boolean;
-  }) => Promise<Model | null>;
+  find?: (findArgs: { pk: Pk; fields: UQLFieldType }) => Promise<Model | null>;
 
   // find many
-  findMany: (findManyArgs: {
+  findMany?: (findManyArgs: {
     where: object;
     limit?: number;
     offset?: number;
-    useAuth?: boolean;
-  }) => Promise<Model[]>;
+    fields?: UQLFieldType;
+  }) => Promise<Model[] | null>;
 
   // insert
-  insert: (insertArgs: {
+  insert?: (insertArgs: {
     object: ModelInsert;
-    useAuth?: boolean;
-  }) => Promise<Model>;
+    fields: UQLFieldType;
+  }) => Promise<Model | null>;
 
   // insert many
-  insertMany: (insertManyArgs: {
-    objects: ModelInsert[];
-    useAuth?: boolean;
-  }) => Promise<Model[]>;
+  insertMany?: (insertManyArgs: { objects: ModelInsert[] }) => Promise<Model[]>;
 
   // update
-  update: (updateArgs: {
-    partial: ModelUpdate;
+  update?: (updateArgs: {
+    updatedFields: ModelUpdate;
     pk: Pk;
-    useAuth?: boolean;
-  }) => Promise<Model>;
+    fields: UQLFieldType;
+  }) => Promise<Model | null>;
 
   // update many
-  updateMany: (updateManyArgs: {
-    objects: { partial: ModelUpdate; pk: Pk }[];
-    useAuth?: boolean;
+  updateMany?: (updateManyArgs: {
+    objects: { updatedFields: ModelUpdate; pk: Pk }[];
   }) => Promise<Model>;
 
   // delete
-  delete: (deleteArgs: { pk: Pk; useAuth?: boolean }) => {};
+  delete?: (deleteArgs: {
+    pk: Pk;
+    fields: UQLFieldType;
+  }) => Promise<Model | null>;
 
   // delete many
-  deleteMany: (deleteManyArgs: { pks: Pk[]; useAuth?: boolean }) => {};
+  deleteMany?: (deleteManyArgs: { pks: Pk[] }) => {};
 };
