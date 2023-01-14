@@ -1,3 +1,3 @@
 <template>
-  <div>Trashed</div>
+  <div>trash</div>
 </template>

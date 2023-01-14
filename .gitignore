@@ -27,3 +27,6 @@ dist-ssr
 __pycache__
 venv
 db.sqlite3
+
+# Explicitly ignored files
+*.gitignore

@@ -1,3 +1,3 @@
 <template>
-  <div>starred</div>
+  <div>tags</div>
 </template>

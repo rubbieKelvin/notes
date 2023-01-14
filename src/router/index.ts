@@ -4,39 +4,68 @@ export default createRouter({
   history: createWebHistory(),
   routes: [
     {
-      component: () => import("@/views/notes.vue"),
       path: "",
-    },
-    {
-      component: () => import("@/views/notes.vue"),
-      path: "/notes",
-    },
-    {
-      name: "NewNote",
+      name: "Notes",
       components: {
         default: () => import("@/views/notes.vue"),
-        appSection: () => import("@/views/newnote.vue"),
+        extended: () => import("@/views/editor.vue"),
       },
-      path: "/notes/new",
     },
     {
+      path: "/@:username/:identifier",
+      name: "Note",
       components: {
         default: () => import("@/views/notes.vue"),
-        appSection: () => import("@/views/editor.vue"),
+        extended: () => import("@/views/editor.vue"),
       },
-      path: "/notes/:id",
     },
     {
-      component: () => import("@/views/starred.vue"),
-      path: "/starred",
+      path: "/shared",
+      name: "Shared",
+      components: {
+        default: () => import("@/views/shared.vue"),
+        extended: () => import("@/views/editor.vue"),
+      },
     },
     {
-      component: () => import("@/views/archived.vue"),
-      path: "/archive",
+      path: "/archived",
+      name: "Archive",
+      components: {
+        default: () => import("@/views/archives.vue"),
+        extended: () => import("@/views/editor.vue"),
+      },
     },
     {
-      component: () => import("@/views/trash.vue"),
       path: "/trash",
+      name: "Trash",
+      components: {
+        default: () => import("@/views/trash.vue"),
+        extended: () => import("@/views/editor.vue"),
+      },
+    },
+    {
+      path: "/starred",
+      name: "Starred",
+      components: {
+        default: () => import("@/views/starred.vue"),
+        extended: () => import("@/views/editor.vue"),
+      },
+    },
+    {
+      path: "/tags",
+      name: "Tags",
+      components: {
+        default: () => import("@/views/tags.vue"),
+        extended: () => import("@/views/editor.vue"),
+      },
+    },
+    {
+      path: "/search",
+      name: "Search",
+      components: {
+        default: () => import("@/views/search.vue"),
+        extended: () => import("@/views/editor.vue"),
+      },
     },
   ],
 });
