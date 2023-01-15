@@ -3,6 +3,11 @@ import { JSONContent } from "@tiptap/vue-3";
 export type User = {
   id: string;
   username: string;
+  date_created: string;
+  last_login: string | null;
+  first_name: string | null;
+  last_name: string | null;
+  notes: Note[];
 };
 
 export type Folder = {};

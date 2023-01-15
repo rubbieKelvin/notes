@@ -13,6 +13,7 @@
       class="popup"
       ref="popup"
       :class="{ 'popup-right': alignRight }"
+      :style="yOffset ? `bottom: ${yOffset}px;` : ''"
     >
       <slot />
     </div>
@@ -24,9 +25,11 @@ import { onClickOutside, onKeyDown } from "@vueuse/core";
 import { computed, defineComponent, ref, watch } from "vue";
 
 export default defineComponent({
+  name: "Popup",
   props: {
     escape: Boolean,
     alignRight: Boolean,
+    yOffset: Number,
     modelValue: Boolean,
   },
   emits: ["update:modelValue"],

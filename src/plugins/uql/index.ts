@@ -1,9 +1,8 @@
 import * as types from "./types";
-import { Axios } from "axios";
+import axios from "axios";
 import { createSharedComposable } from "@vueuse/core";
 
-export const useUQL = (models: string[]) => {
-  const axios = new Axios();
+export const useUQL = (url: string, models: string[]) => {
   const __cache: Record<string, object> = {};
 
   const call = async (
@@ -23,12 +22,14 @@ export const useUQL = (models: string[]) => {
 
     // prepare response
     const response = await axios.request({
+      url,
       method: "post",
       data: body,
       headers: {
         ...(input.meta?.headers ?? {}),
         "Content-Type": "multipart/form-data",
       },
+      validateStatus: () => true,
     });
 
     // return
@@ -167,4 +168,6 @@ export const useUQL = (models: string[]) => {
   return { call, model };
 };
 
-export default createSharedComposable(() => useUQL([]));
+export default createSharedComposable(() =>
+  useUQL("http://127.0.0.1:8000/uql/", [])
+);

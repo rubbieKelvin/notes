@@ -65,8 +65,7 @@ def login(request: Request, args: dict):
     return {"user": sr(user).data, "token": token.key}
 
 
-@permission_classes([IsAuthenticated])
-@ApiFunction.decorator()
+@ApiFunction.decorator(permission_classes=[IsAuthenticated])
 def logout(request: Request, args: dict):
     user: User = request.user
     token = Token.objects.filter(user=user).first()
@@ -77,8 +76,7 @@ def logout(request: Request, args: dict):
     return
 
 
-@permission_classes([IsAuthenticated])
-@ApiFunction.decorator()
+@ApiFunction.decorator(permission_classes=[IsAuthenticated])
 def me(request: Request, args: dict):
     user: User = request.user
     # mconf = typing.cast(ModelConfig, ModelConfig.getConfig(User))

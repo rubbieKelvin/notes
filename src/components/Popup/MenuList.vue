@@ -3,6 +3,7 @@
     v-model="visible"
     :escape="!navigation.history.slice(-1)[0]"
     :alignRight="alignRight"
+    :yOffset="yOffset"
   >
     <template #trigger="{ open }">
       <slot name="trigger" :open="open" />
@@ -161,6 +162,7 @@ import KeyboardShortcut from "@/components/KeyboardShortcut.vue";
 export default defineComponent({
   props: {
     alignRight: Boolean,
+    yOffset: Number,
     list: {
       type: Array as () => Array<MenuItem>,
       required: true,
@@ -222,6 +224,13 @@ export default defineComponent({
     };
 
     const current = ref(props.list);
+
+    watch(
+      () => props.list,
+      () => {
+        if (navigation.value.history.length === 0) current.value = props.list;
+      }
+    );
 
     watch(
       () => navigation.value.history[navigation.value.history.length - 1]?.id,

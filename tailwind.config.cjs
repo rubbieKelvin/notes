@@ -12,6 +12,8 @@ module.exports = {
         fadedFill: "#F9F9F9",
         hover: "#F0F0F0",
         accent: "#000000",
+        accentHint: "#333333",
+        accentHintLighter: "#555555",
       },
     },
   },

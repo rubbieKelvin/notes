@@ -4,6 +4,8 @@
     :class="{
       'bg-black bg-opacity-60': dim && visible,
       'pointer-events-none': !dim || !visible,
+      'glass-effect': glasseffect && visible,
+      'no-glass-effect': !glasseffect || !visible,
     }"
   >
     <div v-if="visible" class="w-full h-full flex items-center justify-center">
@@ -23,6 +25,7 @@ export default defineComponent({
   props: {
     dim: Boolean,
     escape: Boolean,
+    glasseffect: Boolean,
     closeOnClickOutside: Boolean,
     modelValue: Boolean,
   },
@@ -56,3 +59,13 @@ export default defineComponent({
   },
 });
 </script>
+
+<style lang="scss" scoped>
+.glass-effect {
+  backdrop-filter: blur(3px);
+}
+
+.no-glass-effect {
+  backdrop-filter: none;
+}
+</style>

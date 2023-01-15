@@ -6,9 +6,12 @@ import "./styles/index.css";
 import "./styles/editor.scss";
 
 import router from "./router";
+import { createPinia } from "pinia";
 
 const app = createApp(App);
+const pinia = createPinia();
 
 // plugins
 app.use(router);
+app.use(pinia);
 app.mount("#app");
