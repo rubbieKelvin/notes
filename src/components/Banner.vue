@@ -11,7 +11,7 @@
       </div>
     </div>
     <!-- progress -->
-    <div class="h-1 bg-inherit" :style="`width: ${count}%;`" />
+    <div v-if="useTimer" class="h-1 bg-inherit" :style="`width: ${count}%;`" />
   </div>
 </template>
 
@@ -26,6 +26,7 @@ export default defineComponent({
     icon: String as () => IconName,
     modelValue: String,
     subtitle: String,
+    useTimer: { type: Boolean, default: true },
   },
   emits: ["update:modelValue"],
   setup(props, { emit }) {
@@ -35,7 +36,7 @@ export default defineComponent({
       () => props.modelValue,
       () => {
         count.value = 0;
-        if (!props.modelValue) return;
+        if (!props.modelValue || !props.useTimer) return;
         timer = setInterval(() => {
           count.value += 1;
           if (count.value == 100) {

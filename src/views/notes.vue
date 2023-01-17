@@ -2,7 +2,20 @@
   <div>
     <PageHeader title="Notes" :menu="menu" />
     <div>
-      <NotesItem v-for="note in notes" :key="note.id" :note="note" />
+      <div
+        v-if="notestore.notes === null"
+        class="flex justify-center pt-6 gap-3"
+      >
+        <Loading v-if="authstore.isAuthenticated" class="text-black" />
+        <p>Checking for notes</p>
+      </div>
+      <template v-else>
+        <NotesItem
+          v-for="note in notestore.notes"
+          :key="note.id"
+          :note="note"
+        />
+      </template>
     </div>
     <NewNoteDialog v-model="modals.newnote" />
   </div>
@@ -22,17 +35,16 @@ import PageHeader from "@/components/layout/ApplicationMenu/PageHeader.vue";
 import { MenuItem } from "@/types";
 import NewNoteDialog from "@/components/Dialog/NewNoteDialog.vue";
 import slug from "@/utils/slug";
-import { useRoute } from "vue-router";
-import { useToasts } from "@/utils/toasts";
 import NotesItem from "@/components/NotesItem.vue";
-import { Note } from "@/types/models";
+import Loading from "@/components/Loading.vue";
+import { useNotesStore } from "@/stores/notes";
+import { useAuthStore } from "@/stores/auth";
 
 export default defineComponent({
-  components: { PageHeader, NewNoteDialog, NotesItem },
+  components: { PageHeader, NewNoteDialog, NotesItem, Loading },
   setup() {
-    const route = useRoute();
-    const notes: ComputedRef<Note[]> = computed(() => []);
-    const toasts = useToasts();
+    const notestore = useNotesStore();
+    const authstore = useAuthStore();
 
     const modals = ref({
       newnote: false,
@@ -58,40 +70,7 @@ export default defineComponent({
       ]
     );
 
-    watch(
-      () => route.fullPath,
-      () => {
-        if (route.name === "Note") {
-          const username = route.params.username;
-          const identifier = route.params.identifier;
-
-          if (username == "@local") {
-            // read from local storage
-            const note = notes.value.find(
-              (note) => note.id === identifier && note.author === null
-            );
-            if (note) {
-              // ...
-            } else {
-              toasts.addToast({
-                id: Symbol(),
-                title: "Couldn't find note",
-                timeout: 4000,
-                icon: "ExclamationTriangleIcon",
-                colorClasses: {
-                  bg: "bg-red-500",
-                  fg: "text-white",
-                  accent: "bg-gray-200",
-                },
-              });
-            }
-          }
-        }
-      },
-      { immediate: true }
-    );
-
-    return { menu, modals, notes, slug };
+    return { menu, modals, slug, notestore, authstore };
   },
 });
 </script>

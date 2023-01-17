@@ -1,25 +1,21 @@
 <template>
-  <ContextMenuWrapper>
+  <ContextMenuWrapper :list="menu">
     <router-link :to="noteRoute(note)">
       <div class="p-2 hover:bg-hover w-full">
         <div>
-          <div>
-            <div class="">
-              <p class="text-lg capitalize">
-                {{ note.title }}
-              </p>
-              <p v-if="note.description">{{ note.description }}</p>
-              <p
-                v-else-if="note.author === null"
-                class="text-xs bg-gray-200 w-min px-1 rounded"
-              >
-                local
-              </p>
-            </div>
-            <p class="text-xs text-gray-600">
-              {{ fuzzy(note.last_updated) }}
+          <div class="">
+            <p class="capitalize">
+              {{ note.title }}
             </p>
           </div>
+          <p class="text-xs text-gray-600">
+            <UseTimeAgo
+              v-slot="{ timeAgo }"
+              :time="new Date(note.last_updated)"
+            >
+              {{ timeAgo }}
+            </UseTimeAgo>
+          </p>
         </div>
       </div>
     </router-link>
@@ -29,20 +25,30 @@
 <script lang="ts">
 import { Note } from "@/types/models";
 import { noteRoute } from "@/utils/useNavigation";
-import { useTimeAgo } from "@vueuse/core";
+import { UseTimeAgo } from "@vueuse/components";
 import { defineComponent } from "vue";
 import ContextMenuWrapper from "@/components/Popup/ContextMenuWrapper.vue";
+import { MenuItem } from "@/types";
+import { useRouter } from "vue-router";
 
 export default defineComponent({
   props: {
     note: { type: Object as () => Note, required: true },
   },
-  components: { ContextMenuWrapper },
-  setup() {
-    return {
-      fuzzy: (datetime: string): string => {
-        return useTimeAgo(new Date(datetime)).value;
+  components: { ContextMenuWrapper, UseTimeAgo },
+  setup(props) {
+    const router = useRouter();
+
+    const menu: MenuItem[] = [
+      {
+        id: Symbol(),
+        title: "Open",
+        action: () => router.push(noteRoute(props.note)),
       },
+    ];
+
+    return {
+      menu,
       noteRoute,
     };
   },

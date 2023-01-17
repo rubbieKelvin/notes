@@ -18,7 +18,10 @@ export const useAuthStore = defineStore("auth", {
       state.token ? { Authorization: `Token ${state.token}` } : null,
   },
   actions: {
-    async authenticate() {
+    async authenticate(
+      onError: (retriesIn: number | null) => void,
+      onRetry: () => void
+    ) {
       if (!this.token) this.token = localStorage.getItem("auth-token");
       const headers = this.authHeader;
 
@@ -30,12 +33,18 @@ export const useAuthStore = defineStore("auth", {
         fields: true,
         meta: {
           headers,
+          retry: {
+            max: 2,
+            retriesIn: 4000,
+            onError,
+            onRetry,
+          },
         },
       });
 
       if (resp.error) {
         console.error(resp.error);
-        return;
+        return null;
       }
 
       const data: User = resp.data;

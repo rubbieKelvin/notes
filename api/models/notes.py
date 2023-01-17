@@ -8,7 +8,7 @@ def defaultContent():
 
 class Note(models.Model):
     id = models.UUIDField(default=uuid4, primary_key=True)
-    title = models.CharField(max_length=150, null=False)
+    title = models.CharField(max_length=60, null=False)
     content = models.JSONField(default=defaultContent)
     readable_id = models.BigIntegerField(null=True, default=None, blank=True)
     author = models.ForeignKey(

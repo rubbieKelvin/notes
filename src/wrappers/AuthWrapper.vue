@@ -4,9 +4,31 @@
     <UiDialog dim glasseffect v-model="modalOpen">
       <div class="p-2 border-stroke border bg-white rounded-md min-w-[400px]">
         <template v-if="authenticating">
-          <div class="flex gap-2 items-center">
-            <Loading class="text-blue-600" />
-            <span> Authenticating user </span>
+          <div
+            v-if="authenticationStatus.maxRetriesReached"
+            class="flex items-center"
+          >
+            <h1 class="text-lg font-medium flex-grow h-min">
+              Error reaching server
+            </h1>
+            <button
+              @click="doAuth"
+              class="bg-accent hover:bg-accentHint active:bg-accentHintLighter px-4 py-2 rounded-md text-white"
+            >
+              Retry
+            </button>
+          </div>
+          <div v-else class="flex flex-col gap-4">
+            <div class="flex gap-3 items-center p-1">
+              <Loading class="text-blue-600" />
+              <span class="text-lg font-medium"> Authenticating user </span>
+            </div>
+            <Banner
+              icon="WifiIcon"
+              v-model="authenticationStatus.error"
+              :class="authenticationStatus.cls"
+              :use-timer="false"
+            />
           </div>
         </template>
         <template v-else>
@@ -19,6 +41,7 @@
                 label="Username"
                 icon="UserIcon"
                 placeholder="john_doe"
+                autocomplete="username"
                 v-model="form.login.username"
                 :disabled="form.login.processing"
                 :error-message="form.login.error.username"
@@ -30,6 +53,7 @@
                 icon="KeyIcon"
                 inputType="password"
                 placeholder="secret-***"
+                autocomplete="current-password"
                 v-model="form.login.password"
                 :disabled="form.login.processing"
                 :error-message="form.login.error.password"
@@ -77,6 +101,7 @@
                 label="Username"
                 icon="UserIcon"
                 placeholder="john_doe"
+                autocomplete="username"
                 v-model="form.signup.username"
                 :disabled="form.signup.processing"
               />
@@ -84,6 +109,7 @@
                 label="Password"
                 icon="KeyIcon"
                 placeholder="secret-***"
+                autocomplete="new-password"
                 v-model="form.signup.password"
                 :disabled="form.signup.processing"
               />
@@ -125,6 +151,8 @@ import { useAuthStore } from "@/stores/auth";
 import TextInput from "@/components/TextInput.vue";
 import Loading from "@/components/Loading.vue";
 import Banner from "@/components/Banner.vue";
+import { useNotesStore } from "@/stores/notes";
+import { MaxRetriesReached } from "@/plugins/uql";
 
 export default defineComponent({
   components: {
@@ -135,7 +163,15 @@ export default defineComponent({
   },
   setup() {
     const authstore = useAuthStore();
+    const notestore = useNotesStore();
+
     const authenticating = ref(true);
+    const authenticationStatus = ref({
+      error: "",
+      cls: "",
+      maxRetriesReached: false,
+    });
+
     const tab: Ref<"login" | "signup"> = ref("login");
     const form = ref({
       login: {
@@ -162,8 +198,41 @@ export default defineComponent({
 
     const doAuth = async () => {
       authenticating.value = true;
-      await authstore.authenticate();
-      authenticating.value = false;
+      authenticationStatus.value.cls = "";
+      authenticationStatus.value.error = "";
+      authenticationStatus.value.maxRetriesReached = false;
+
+      try {
+        await authstore.authenticate(
+          (retiesIn) => {
+            authenticationStatus.value.error =
+              retiesIn === null
+                ? "Couldnt reach sever"
+                : `Error reaching server, retrying in ${
+                    retiesIn / 1000
+                  } seconds`;
+            authenticationStatus.value.cls = "bg-red-500 text-red-500";
+          },
+          () => {
+            authenticationStatus.value.error = "Retrying";
+            authenticationStatus.value.cls = "bg-amber-500 text-amber-500";
+          }
+        );
+        authenticating.value = false;
+        await setUpUser();
+      } catch (e) {
+        const error = e as MaxRetriesReached;
+        if (error.name === "MaxRetriesReached")
+          authenticationStatus.value.maxRetriesReached = true;
+        else throw e;
+      }
+    };
+
+    const setUpUser = async () => {
+      if (authstore.isAuthenticated) {
+        console.log(`Logged in as ${authstore.user?.username}`);
+        await notestore.fetchNotes();
+      }
     };
 
     const submitLogin = async () => {
@@ -188,13 +257,16 @@ export default defineComponent({
 
       if (res?.error) {
         form.value.login.error.global = res.error.message;
-      } else {
-        form.value.login.username = "";
-        form.value.login.password = "";
+        return;
       }
+
+      form.value.login.username = "";
+      form.value.login.password = "";
+      await setUpUser();
     };
     const submitSignup = async () => {
       form.value.signup.processing = true;
+      // todo
     };
 
     onMounted(async () => {
@@ -208,6 +280,8 @@ export default defineComponent({
       tab,
       submitLogin,
       submitSignup,
+      authenticationStatus,
+      doAuth,
     };
   },
 });

@@ -8,7 +8,7 @@ export type Route = {
 export const noteRoute = (note: Note): Route => ({
   name: "Note",
   params: {
-    username: note.author?.username ?? "@local",
-    identifier: note.id,
+    username: note.author?.username,
+    identifier: note.readable_id,
   },
 });

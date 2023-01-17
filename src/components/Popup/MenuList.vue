@@ -161,6 +161,7 @@ import KeyboardShortcut from "@/components/KeyboardShortcut.vue";
 
 export default defineComponent({
   props: {
+    modelValue: Boolean,
     alignRight: Boolean,
     yOffset: Number,
     list: {
@@ -168,9 +169,11 @@ export default defineComponent({
       required: true,
     },
   },
+  emits: ["update:modelValue"],
   components: { Popup, Icon, KeyboardShortcut },
-  setup(props) {
+  setup(props, { emit }) {
     const visible = ref(false);
+    const current = ref(props.list);
     const navigation: Ref<{
       session: string;
       resolving: boolean;
@@ -182,6 +185,44 @@ export default defineComponent({
       resolveError: false,
       history: [],
     });
+
+    watch(
+      () => props.list,
+      () => {
+        if (navigation.value.history.length === 0) current.value = props.list;
+      }
+    );
+
+    watch(
+      () => navigation.value.history[navigation.value.history.length - 1]?.id,
+      async () => {
+        navigation.value.session = uuid4();
+        navigation.value.resolving = false;
+
+        current.value = await resolveCurrentSelectionChildren();
+      }
+    );
+
+    watch(visible, (val) => {
+      if (val) {
+        // clear history when the popup closes
+        navigation.value.history = [];
+        navigation.value.session = uuid4();
+        navigation.value.resolveError = false;
+        navigation.value.resolving = false;
+      }
+      emit("update:modelValue", val);
+    });
+
+    watch(
+      () => props.modelValue,
+      () => {
+        visible.value = props.modelValue;
+      },
+      {
+        immediate: true,
+      }
+    );
 
     const reloadMenuItems = async () => {
       current.value = await resolveCurrentSelectionChildren();
@@ -222,35 +263,6 @@ export default defineComponent({
         return children();
       }
     };
-
-    const current = ref(props.list);
-
-    watch(
-      () => props.list,
-      () => {
-        if (navigation.value.history.length === 0) current.value = props.list;
-      }
-    );
-
-    watch(
-      () => navigation.value.history[navigation.value.history.length - 1]?.id,
-      async () => {
-        navigation.value.session = uuid4();
-        navigation.value.resolving = false;
-
-        current.value = await resolveCurrentSelectionChildren();
-      }
-    );
-
-    watch(visible, (val) => {
-      if (val) {
-        // clear history when the popup closes
-        navigation.value.history = [];
-        navigation.value.session = uuid4();
-        navigation.value.resolveError = false;
-        navigation.value.resolving = false;
-      }
-    });
 
     onKeyDown("Escape", (e) => {
       window.requestAnimationFrame(() => {

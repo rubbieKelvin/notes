@@ -10,31 +10,28 @@ export type User = {
   notes: Note[];
 };
 
-export type Folder = {};
-
 export type Tag = {};
 
 export type Note = {
   id: string;
   title: string;
-  description: string | null;
+  content: JSONContent;
+  readable_id: number | null;
   author: User | null;
   date_created: string;
   last_updated: string;
-  folder: Folder | null;
-  tags: Array<Tag> | null;
   is_archived: boolean;
-  content: JSONContent;
+  is_public: boolean;
+};
+
+export type NoteInsert = {
+  title: string;
+  is_public?: boolean;
 };
 
 export type NoteUpdate = {
   title?: string;
-  description?: string | null;
-  author?: User | null;
-  date_created?: string;
-  last_updated?: string;
-  folder?: Folder | null;
-  tags?: Array<Tag> | null;
-  is_archived?: boolean;
   content?: JSONContent;
+  is_archived?: boolean;
+  is_public?: boolean;
 };

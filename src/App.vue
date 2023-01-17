@@ -22,7 +22,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, inject, onMounted, Ref, ref } from "vue";
+import { defineComponent, ref, watch } from "vue";
 import AppHeader from "@/components/layout/Header.vue";
 import MainNav from "@/components/layout/SideMenu/index.vue";
 import ApplicationMenu from "@/components/layout/ApplicationMenu/index.vue";
@@ -31,6 +31,8 @@ import Toast from "@/components/Toast.vue";
 import NewNoteDialog from "@/components/Dialog/NewNoteDialog.vue";
 import KeyboardShortcut from "@/components/KeyboardShortcut.vue";
 import AuthWrapper from "./wrappers/AuthWrapper.vue";
+import { useAuthStore } from "./stores/auth";
+import { useNotesStore } from "./stores/notes";
 
 export default defineComponent({
   components: {
@@ -44,12 +46,24 @@ export default defineComponent({
     AuthWrapper,
   },
   setup() {
+    const authstore = useAuthStore();
+    const notestore = useNotesStore();
+
     const content = ref({
       type: "doc",
       content: [],
     });
 
     const modals = ref({ newnote: false });
+
+    watch(
+      () => authstore.isAuthenticated,
+      () => {
+        if (!authstore.isAuthenticated) {
+          notestore.notes = [];
+        }
+      }
+    );
 
     return { content, modals };
   },

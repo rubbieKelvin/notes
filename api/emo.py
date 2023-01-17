@@ -11,12 +11,9 @@ from api.models.users import User
 
 
 def _noteUpdateCheck(request: Request, partial: PartialUpdateType) -> bool:
-    title = partial["fields"].get("title")
+    fields = partial["fields"]
 
-    if not title:
-        return False
-
-    if not (type(title) == str and len(title) > 0):
+    if "title" in fields and (not fields["title"] and len(fields["title"]) > 60):
         return False
     return True
 

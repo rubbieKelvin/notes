@@ -12,7 +12,7 @@ export default createRouter({
       },
     },
     {
-      path: "/@:username/:identifier",
+      path: "/@:username/note-:identifier",
       name: "Note",
       components: {
         default: () => import("@/views/notes.vue"),

@@ -9,6 +9,7 @@
     >
       <Icon v-if="icon" :name="icon" class="w-5 h-5" />
       <input
+        :autocomplete="autocomplete"
         :disabled="disabled"
         :type="inputType"
         :placeholder="placeholder"
@@ -26,6 +27,7 @@ import { IconName } from "./Icon/types";
 export default defineComponent({
   components: { Icon },
   props: {
+    autocomplete: String,
     label: String,
     errorMessage: String,
     icon: String as () => IconName,

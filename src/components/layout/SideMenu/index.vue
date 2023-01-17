@@ -1,6 +1,8 @@
 <template>
   <div class="w-72 border-r border-stroke p-3">
-    <NavItem v-for="item in navItems" :key="item.id" :item="item" />
+    <template v-for="item in navItems" :key="item.id">
+      <NavItem v-if="!item.hidden" :item="item" />
+    </template>
   </div>
 </template>
 
@@ -16,6 +18,7 @@ const navItems: Array<MenuItem> = [
     icon: "TagIcon",
     title: "tags",
     link: { name: "Tags" },
+    hidden: true,
   },
   {
     id: Symbol(),

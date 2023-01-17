@@ -1,6 +1,13 @@
 import * as types from "./types";
-import axios from "axios";
-import { createSharedComposable } from "@vueuse/core";
+import axios, { AxiosError } from "axios";
+import { createSharedComposable, promiseTimeout } from "@vueuse/core";
+
+export class MaxRetriesReached extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "MaxRetriesReached";
+  }
+}
 
 export const useUQL = (url: string, models: string[]) => {
   const __cache: Record<string, object> = {};
@@ -21,19 +28,53 @@ export const useUQL = (url: string, models: string[]) => {
     );
 
     // prepare response
-    const response = await axios.request({
-      url,
-      method: "post",
-      data: body,
-      headers: {
-        ...(input.meta?.headers ?? {}),
-        "Content-Type": "multipart/form-data",
-      },
-      validateStatus: () => true,
-    });
+    let retryCount = 0;
+    const maxRetry = input.meta?.retry?.max ?? 0;
+    let retryMultiplier = input.meta?.retry?.retriesIn ?? 3 * 1000;
 
-    // return
-    return response.data as types.UQLResponse;
+    do {
+      try {
+        const response = await axios.request({
+          url,
+          method: "post",
+          data: body,
+          headers: {
+            ...(input.meta?.headers ?? {}),
+            "Content-Type": "multipart/form-data",
+          },
+          validateStatus: (status) => status < 500,
+        });
+
+        // return
+        return response.data as types.UQLResponse;
+      } catch (e) {
+        // retry
+        console.log({ retryCount });
+        const error = e as AxiosError;
+        if (error.name === "AxiosError" && error.code === "ERR_NETWORK") {
+          if (retryCount === maxRetry) {
+            if (input.meta?.retry?.onError) input.meta.retry.onError(null);
+            break;
+          }
+
+          retryCount += 1;
+          retryMultiplier = Math.min(
+            retryMultiplier * retryCount,
+            5 * 60 * 1000
+          ); // 5 minues max
+
+          if (input.meta?.retry?.onError)
+            input.meta.retry.onError(retryMultiplier);
+
+          await promiseTimeout(retryMultiplier);
+
+          if (input.meta?.retry?.onRetry) input.meta.retry.onRetry();
+        } else throw e;
+      }
+    } while (retryCount !== maxRetry);
+    throw new MaxRetriesReached(
+      `Retried ${retryCount} time(s), maxRetry is ${maxRetry} time(s)`
+    );
   };
 
   const model = <
@@ -83,23 +124,26 @@ export const useUQL = (url: string, models: string[]) => {
           true
         );
 
-        if (resp.error) return null;
+        if (resp.error || resp.data === null) return null;
         const instance = resp.data as Model;
 
         updateCache(instance);
         return instance;
       },
       findMany: async (args) => {
-        const resp = await call({
-          functionName: `${intent}.findmany`,
-          fields: args.fields,
-          args: {
-            where: args.where,
+        const resp = await call(
+          {
+            functionName: `${intent}.findmany`,
+            fields: args.fields,
+            args: {
+              where: args.where ?? null,
+            },
+            meta,
           },
-          meta,
-        });
+          true
+        );
 
-        if (resp.error) return null;
+        if (resp.error || resp.data === null) return null;
         const instances = resp.data as Array<Model>;
 
         instances.forEach((instance) => updateCache(instance));
@@ -118,7 +162,7 @@ export const useUQL = (url: string, models: string[]) => {
           true
         );
 
-        if (resp.error) return null;
+        if (resp.error || resp.data === null) return null;
         const instance = resp.data as Model;
 
         updateCache(instance);
@@ -140,7 +184,7 @@ export const useUQL = (url: string, models: string[]) => {
           true
         );
 
-        if (resp.error) return null;
+        if (resp.error || resp.data === null) return null;
         const instance = resp.data as Model;
 
         updateCache(instance);
@@ -156,7 +200,7 @@ export const useUQL = (url: string, models: string[]) => {
           },
           true
         );
-        if (resp.error) return null;
+        if (resp.error || resp.data === null) return null;
         const instance = resp.data as Model;
 
         updateCache(instance, true);
@@ -169,5 +213,5 @@ export const useUQL = (url: string, models: string[]) => {
 };
 
 export default createSharedComposable(() =>
-  useUQL("http://127.0.0.1:8000/uql/", [])
+  useUQL("http://127.0.0.1:8000/uql/", ["api.note"])
 );
