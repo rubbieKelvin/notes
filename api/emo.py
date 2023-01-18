@@ -29,6 +29,7 @@ exposedmodels = [
                 ModelOperations.SELECT,
                 ModelOperations.UPDATE,
             ],
+            fieldsIncludedOnUpdate=["last_updated"],
         )
         .addPermission(
             [CoreUserRoles.USER, CoreUserRoles.ADMIN],

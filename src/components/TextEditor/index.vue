@@ -8,7 +8,7 @@
             type="text"
             placeholder="Untitled"
             v-model="editableNote.title"
-            class="outline-0 w-full text-lg"
+            class="outline-0 w-full text-lg focus:outline-none"
             maxlength="60"
             @keypress.enter="saveNoteName"
             @blur="saveNoteName"
