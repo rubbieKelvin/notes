@@ -34,7 +34,7 @@ export const useAuthStore = defineStore("auth", {
         meta: {
           headers,
           retry: {
-            max: 2,
+            max: 4,
             retriesIn: 4000,
             onError,
             onRetry,

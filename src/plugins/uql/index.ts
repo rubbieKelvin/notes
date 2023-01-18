@@ -49,7 +49,6 @@ export const useUQL = (url: string, models: string[]) => {
         return response.data as types.UQLResponse;
       } catch (e) {
         // retry
-        console.log({ retryCount });
         const error = e as AxiosError;
         if (error.name === "AxiosError" && error.code === "ERR_NETWORK") {
           if (retryCount === maxRetry) {
@@ -72,9 +71,12 @@ export const useUQL = (url: string, models: string[]) => {
         } else throw e;
       }
     } while (retryCount !== maxRetry);
-    throw new MaxRetriesReached(
-      `Retried ${retryCount} time(s), maxRetry is ${maxRetry} time(s)`
-    );
+
+    if (input.meta?.retry)
+      throw new MaxRetriesReached(
+        `Retried ${retryCount} time(s), maxRetry is ${maxRetry} time(s)`
+      );
+    else throw new Error("Network error: error reaching server");
   };
 
   const model = <

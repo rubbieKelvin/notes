@@ -1,6 +1,11 @@
 <template>
   <div authwrapper>
-    <slot />
+    <div
+      :disabled="!authstore.isAuthenticated"
+      :class="{ 'pointer-events-none': !authstore.isAuthenticated }"
+    >
+      <slot />
+    </div>
     <UiDialog dim glasseffect v-model="modalOpen">
       <div class="p-2 border-stroke border bg-white rounded-md min-w-[400px]">
         <template v-if="authenticating">
@@ -248,21 +253,26 @@ export default defineComponent({
 
       form.value.login.processing = true;
 
-      const res = await authstore.login(
-        form.value.login.username,
-        form.value.login.password
-      );
+      try {
+        const res = await authstore.login(
+          form.value.login.username,
+          form.value.login.password
+        );
 
-      form.value.login.processing = false;
+        form.value.login.processing = false;
 
-      if (res?.error) {
-        form.value.login.error.global = res.error.message;
-        return;
+        if (res?.error) {
+          form.value.login.error.global = res.error.message;
+          return;
+        }
+
+        form.value.login.username = "";
+        form.value.login.password = "";
+
+        await setUpUser();
+      } catch {
+        form.value.login.processing = false;
       }
-
-      form.value.login.username = "";
-      form.value.login.password = "";
-      await setUpUser();
     };
     const submitSignup = async () => {
       form.value.signup.processing = true;
@@ -282,6 +292,7 @@ export default defineComponent({
       submitSignup,
       authenticationStatus,
       doAuth,
+      authstore,
     };
   },
 });
