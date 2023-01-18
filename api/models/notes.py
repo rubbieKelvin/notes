@@ -16,6 +16,7 @@ class Note(models.Model):
     )
     date_created = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
+    is_starred = models.BooleanField(default=False)
     is_deleted = models.BooleanField(default=False)
     is_archived = models.BooleanField(default=False)
     is_public = models.BooleanField(default=False)

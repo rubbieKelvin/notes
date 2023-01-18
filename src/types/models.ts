@@ -20,6 +20,7 @@ export type Note = {
   author: User | null;
   date_created: string;
   last_updated: string;
+  is_starred: boolean;
   is_archived: boolean;
   is_public: boolean;
 };
@@ -32,6 +33,7 @@ export type NoteInsert = {
 export type NoteUpdate = {
   title?: string;
   content?: JSONContent;
+  is_starred?: boolean;
   is_archived?: boolean;
   is_public?: boolean;
 };

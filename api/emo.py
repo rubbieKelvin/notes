@@ -43,6 +43,7 @@ exposedmodels = [
                         "author",
                         "date_created",
                         "last_updated",
+                        "is_starred",
                         "is_archived",
                         "is_public",
                     ],
@@ -53,6 +54,7 @@ exposedmodels = [
                     "column": [
                         "title",
                         "content",
+                        "is_starred",
                         "is_public",
                         "is_archived",
                         "is_deleted",
