@@ -22,19 +22,28 @@ import Empty from "@/components/layout/ApplicationMenu/Empty.vue";
 import { computed, defineComponent, ref, Ref, watch } from "vue";
 import { useNotesStore } from "@/stores/notes";
 import { Note } from "@/types/models";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import NotesItem from "@/components/NotesItem.vue";
+import { onKeyStroke } from "@vueuse/core";
 
 export default defineComponent({
   components: { PageHeader, Empty, NotesItem },
   setup() {
     const route = useRoute();
+    const router = useRouter();
     const notestore = useNotesStore();
 
     const loading = ref(false);
     const notes: Ref<Note[]> = ref([]);
     const queryString = computed(() => {
       return (route.query.q as string | undefined) ?? null;
+    });
+
+    onKeyStroke(["Escape"], (e) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        router.back();
+      }
     });
 
     watch(
