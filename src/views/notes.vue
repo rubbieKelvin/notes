@@ -11,9 +11,10 @@
       </div>
       <template v-else>
         <NotesItem
-          v-for="note in notestore.notes"
+          v-for="note in notes"
           :key="note.id"
           :note="note"
+          :page="section"
         />
       </template>
     </div>
@@ -21,7 +22,7 @@
 </template>
 
 <script lang="ts">
-import { computed, ComputedRef, defineComponent } from "vue";
+import { computed, ComputedRef, defineComponent, ref } from "vue";
 import PageHeader from "@/components/layout/ApplicationMenu/PageHeader.vue";
 import { MenuItem } from "@/types";
 import NewNoteDialog from "@/components/Dialog/NewNoteDialog.vue";
@@ -30,13 +31,29 @@ import Loading from "@/components/Loading.vue";
 import { useNotesStore } from "@/stores/notes";
 import { useAuthStore } from "@/stores/auth";
 import { useModalStore } from "@/stores/modals";
+import { NotePages } from "@/plugins/useNavigation";
 
 export default defineComponent({
+  props: {
+    section: {
+      type: String as () => keyof NotePages,
+      default: "Note",
+    },
+  },
   components: { PageHeader, NewNoteDialog, NotesItem, Loading },
-  setup() {
+  setup(props) {
+    const selecting = ref(false);
     const notestore = useNotesStore();
     const authstore = useAuthStore();
     const modalstore = useModalStore();
+
+    const notes = computed(() => {
+      if (props.section === "Note") {
+        return notestore.notes;
+      } else if (props.section === "StarredNote") {
+        return notestore.starredNotes;
+      }
+    });
 
     const menu: ComputedRef<Array<MenuItem>> = computed(
       (): Array<MenuItem> => [
@@ -60,11 +77,47 @@ export default defineComponent({
           hidden: true,
           subtitle: "Signin to use feature",
         },
-        { id: Symbol(), title: "Sort", icon: "AdjustmentsHorizontalIcon" },
+        {
+          id: Symbol(),
+          title: "Sort by",
+          icon: "AdjustmentsHorizontalIcon",
+          children: [
+            { id: Symbol(), title: "No sort" },
+            { id: Symbol(), title: "Title" },
+            { id: Symbol(), title: "Updated" },
+            { id: Symbol(), title: "Created" },
+            { id: Symbol(), type: "SEPARATOR" },
+            {
+              id: Symbol(),
+              title: "Ascending",
+              type: "CHECKBOX",
+              value: notestore.sort.ascending,
+              action: () => {
+                notestore.sort.ascending = !notestore.sort.ascending;
+              },
+            },
+          ],
+        },
+        { id: Symbol(), type: "SEPARATOR" },
+        {
+          id: Symbol(),
+          title: "Select",
+          icon: "ListBulletIcon",
+          action: () => {
+            selecting.value = true;
+          },
+        },
+        {
+          id: Symbol(),
+          title: "Select All",
+          action: () => {
+            selecting.value = true;
+          },
+        },
       ]
     );
 
-    return { menu, notestore, authstore };
+    return { menu, notestore, authstore, notes };
   },
 });
 </script>

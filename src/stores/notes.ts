@@ -6,12 +6,20 @@ import { useAuthStore } from "./auth";
 interface State {
   notes: Note[] | null;
   tags: Tag[];
+  sort: {
+    by: keyof Note | null;
+    ascending: boolean;
+  };
 }
 
 export const useNotesStore = defineStore("notes", {
   state: (): State => ({
     notes: null,
     tags: [],
+    sort: {
+      by: null,
+      ascending: true,
+    },
   }),
   getters: {
     notemodel() {
@@ -28,8 +36,9 @@ export const useNotesStore = defineStore("notes", {
     archivedNotes: (): Note[] => {
       return [];
     },
-    starredNotes: (): Note[] => {
-      return [];
+    starredNotes: (state): Note[] => {
+      if (state.notes === null) return [];
+      return state.notes.filter((note) => note.is_starred);
     },
     trashedNotes: (): Note[] => {
       return [];

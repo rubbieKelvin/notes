@@ -1,6 +1,6 @@
 <template>
   <ContextMenuWrapper :list="menu">
-    <router-link :to="noteRoute(note)">
+    <router-link :to="noteRoute(note, page)">
       <div class="p-2 hover:bg-hover w-full">
         <div>
           <div class="">
@@ -24,7 +24,7 @@
 
 <script lang="ts">
 import { Note } from "@/types/models";
-import { noteRoute } from "@/plugins/useNavigation";
+import { NotePages, noteRoute } from "@/plugins/useNavigation";
 import { UseTimeAgo } from "@vueuse/components";
 import { defineComponent } from "vue";
 import ContextMenuWrapper from "@/components/Popup/ContextMenuWrapper.vue";
@@ -34,6 +34,7 @@ import { useRouter } from "vue-router";
 export default defineComponent({
   props: {
     note: { type: Object as () => Note, required: true },
+    page: { type: String as () => keyof NotePages, default: "Note" },
   },
   components: { ContextMenuWrapper, UseTimeAgo },
   setup(props) {

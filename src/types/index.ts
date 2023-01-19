@@ -1,6 +1,6 @@
 import { IconName } from "@/components/Icon/types";
 
-export type MenuItemType = "NORMAL" | "SEPARATOR" | "HEADER";
+export type MenuItemType = "NORMAL" | "SEPARATOR" | "HEADER" | "CHECKBOX";
 export type RouteName =
   | "Notes"
   | "Shared"
@@ -16,6 +16,7 @@ export type MenuItem = {
   icon?: IconName;
   badgeText?: string;
   action?: () => any;
+  value?: any;
   disabled?: boolean;
   hidden?: boolean;
   link?: string | { name: RouteName; params?: Record<string, string> };

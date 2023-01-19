@@ -76,7 +76,9 @@
           <template v-if="!item.hidden">
             <!-- normal -->
             <div
-              v-if="item.type === 'NORMAL' || !item.type"
+              v-if="
+                item.type === 'NORMAL' || item.type === 'CHECKBOX' || !item.type
+              "
               @click="!item.disabled && itemClicked(item)"
               class="px-2 py-1 transition-colors flex gap-1 items-center relative select-none"
               :class="{
@@ -90,6 +92,13 @@
                 <Icon :name="item.icon" class="w-5 h-5" />
               </div>
               <div v-else-if="listHasIcon(current)" class="w-5 h-5" />
+              <!-- checkbox -->
+              <input
+                v-if="item.type === 'CHECKBOX'"
+                class="pointer-events-none"
+                :checked="item.value"
+                type="checkbox"
+              />
               <!-- text -->
               <div class="flex-grow">
                 <p style="font-size: 14px" class="">

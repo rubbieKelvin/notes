@@ -36,7 +36,10 @@ export default defineComponent({
     const writableContent: Ref<JSONContent | null> = ref(null);
 
     const openNote = async () => {
-      if (route.name === "Note" && authstore.isAuthenticated) {
+      if (
+        route.name?.toString().endsWith("Note") &&
+        authstore.isAuthenticated
+      ) {
         // we want to select a note
         const readable_id = route.params?.identifier
           ? parseInt(route.params.identifier as string)
