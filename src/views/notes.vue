@@ -22,19 +22,10 @@
 </template>
 
 <script lang="ts">
-import {
-  computed,
-  ComputedRef,
-  defineComponent,
-  inject,
-  ref,
-  Ref,
-  watch,
-} from "vue";
+import { computed, ComputedRef, defineComponent, ref } from "vue";
 import PageHeader from "@/components/layout/ApplicationMenu/PageHeader.vue";
 import { MenuItem } from "@/types";
 import NewNoteDialog from "@/components/Dialog/NewNoteDialog.vue";
-// import slug from "@/utils/slug";
 import NotesItem from "@/components/NotesItem.vue";
 import Loading from "@/components/Loading.vue";
 import { useNotesStore } from "@/stores/notes";
@@ -57,6 +48,11 @@ export default defineComponent({
           title: "Create note",
           icon: "PlusIcon",
           action: () => (modals.value.newnote = true),
+        },
+        {
+          id: Symbol(),
+          title: "Import",
+          icon: "CloudArrowDownIcon",
         },
         {
           id: Symbol(),

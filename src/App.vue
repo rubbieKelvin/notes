@@ -5,12 +5,6 @@
       <div class="flex-grow flex">
         <MainNav class="h-full" />
         <ApplicationMenu class="h-full" />
-        <!-- <TextEditor
-          v-if="ctx.note"
-          v-model="content"
-          class="flex-grow"
-          :note="ctx.note"
-        /> -->
         <router-view name="extended"> </router-view>
       </div>
 

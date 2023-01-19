@@ -47,9 +47,14 @@
               :solid="editableNote.is_starred"
             />
           </button>
-          <button class="btn p-1 h-min">
-            <Icon class="w-5 h-5" name="EllipsisVerticalIcon" />
-          </button>
+
+          <MenuList :list="menu" alignRight>
+            <template v-slot:trigger="{ open }">
+              <button @click="open" class="btn p-1">
+                <Icon name="EllipsisVerticalIcon" class="w-5 h-5" />
+              </button>
+            </template>
+          </MenuList>
         </div>
       </div>
     </div>
@@ -81,20 +86,19 @@ import {
 } from "@tiptap/vue-3";
 import { UseTimeAgo } from "@vueuse/components";
 import StaterKit from "@tiptap/starter-kit";
-import { ref, defineComponent, Ref, watch } from "vue";
+import { ref, defineComponent, Ref, watch, computed } from "vue";
 import Placeholder from "@tiptap/extension-placeholder";
 import Link from "@tiptap/extension-link";
 import TaskList from "@tiptap/extension-task-list";
 import TaskItem from "@tiptap/extension-task-item";
 import Icon from "@/components/Icon";
-// import { useToasts } from "@/utils/toasts";
 import { Note, NoteUpdate } from "@/types/models";
-// import { useNotesManager } from "@/utils/api/notes";
 import { onKeyStroke } from "@vueuse/core";
 import { useNotesStore } from "@/stores/notes";
 import { pickProperties } from "@/utils/helpers";
 import { useIdle } from "@vueuse/core";
-// import {  } from ''
+import { MenuItem } from "@/types";
+import MenuList from "@/components/Popup/MenuList.vue";
 
 export default defineComponent({
   name: "TextEditor",
@@ -103,6 +107,7 @@ export default defineComponent({
     BubbleMenu,
     Icon,
     UseTimeAgo,
+    MenuList,
   },
   props: {
     modelValue: Object as () => JSONContent,
@@ -115,6 +120,13 @@ export default defineComponent({
     const contentEdited = ref(false);
     const { idle } = useIdle(5 * 1000);
     const editableNote = ref({ ...props.note });
+
+    const menu = computed((): MenuItem[] => [
+      { id: Symbol(), title: "Make public" },
+      { id: Symbol(), title: "Share" },
+      { id: Symbol(), title: "Export" },
+      { id: Symbol(), title: "Delete" },
+    ]);
 
     watch(
       () => props.note,
@@ -199,7 +211,7 @@ export default defineComponent({
       },
     });
 
-    return { contentEdited, editableNote, updateNote, editor, saveNote };
+    return { contentEdited, editableNote, updateNote, editor, saveNote, menu };
   },
 });
 </script>
