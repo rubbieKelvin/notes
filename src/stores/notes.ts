@@ -36,6 +36,20 @@ export const useNotesStore = defineStore("notes", {
     },
   },
   actions: {
+    async searchNotes(query: string): Promise<Note[]> {
+      const notes = await this.notemodel.findMany({
+        where: {
+          _or: [
+            { title: { _icontains: query } },
+            { content: { _icontains: query } },
+          ],
+        },
+        fields: true,
+        limit: 100,
+      });
+
+      return notes ?? [];
+    },
     async getNoteByRiD(rid: number) {
       if (this.notes === null) {
         const note =

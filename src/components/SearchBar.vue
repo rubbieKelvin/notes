@@ -30,7 +30,6 @@ export default defineComponent({
     const search = () => {
       if (!searchText.value) return;
       const q = searchText.value;
-      searchText.value = "";
 
       router.push({
         name: "Search",

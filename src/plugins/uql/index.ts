@@ -139,6 +139,8 @@ export const useUQL = (url: string, models: string[]) => {
             fields: args.fields,
             args: {
               where: args.where ?? null,
+              limit: args.limit ?? null,
+              offset: args.offset ?? null,
             },
             meta,
           },
