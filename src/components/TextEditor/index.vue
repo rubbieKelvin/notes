@@ -25,7 +25,13 @@
         </div>
 
         <div class="flex gap-2 items-center">
-          <button v-if="unsaved" class="btn p-1 text-sm">Changes made</button>
+          <button
+            v-if="contentEdited"
+            @click="saveNote"
+            class="btn p-1 text-sm"
+          >
+            Changes made
+          </button>
           <button
             class="btn p-1 h-min"
             @click="
@@ -61,7 +67,7 @@
 
     <!-- input -->
     <div class="texteditor-input">
-      <!-- <editor-content :editor="editor" /> -->
+      <editor-content :editor="editor" />
     </div>
   </div>
 </template>
@@ -84,9 +90,10 @@ import Icon from "@/components/Icon";
 // import { useToasts } from "@/utils/toasts";
 import { Note, NoteUpdate } from "@/types/models";
 // import { useNotesManager } from "@/utils/api/notes";
-import { useRouter } from "vue-router";
+import { onKeyStroke } from "@vueuse/core";
 import { useNotesStore } from "@/stores/notes";
 import { pickProperties } from "@/utils/helpers";
+import { useIdle } from "@vueuse/core";
 // import {  } from ''
 
 export default defineComponent({
@@ -105,15 +112,37 @@ export default defineComponent({
   setup(props, { emit }) {
     const notestore = useNotesStore();
 
-    const unsaved = ref(false);
+    const contentEdited = ref(false);
+    const { idle } = useIdle(5 * 1000);
     const editableNote = ref({ ...props.note });
 
     watch(
       () => props.note,
       () => {
         editableNote.value = { ...props.note };
+        const editorCommands = editor.value?.commands;
+        if (editorCommands)
+          editorCommands.setContent(editableNote.value.content);
       }
     );
+
+    watch(idle, async () => {
+      await saveNote();
+    });
+
+    onKeyStroke(["Control", "s"], (e) => {
+      if (e.ctrlKey && e.key === "s") {
+        e.preventDefault();
+        saveNote();
+      }
+    });
+
+    const saveNote = async () => {
+      if (contentEdited.value) {
+        const note = await updateNote(["content"]);
+        if (note) contentEdited.value = false;
+      }
+    };
 
     const updateNote = async (updated_fields: Array<keyof NoteUpdate>) => {
       if (updated_fields.includes("title")) {
@@ -127,74 +156,50 @@ export default defineComponent({
       );
 
       if (note) emit("note:changed", note);
+      return note;
     };
 
-    // const router = useRouter();
-    // const { updateNote } = useNotesManager();
-    // const { addToast, removeToast } = useToasts();
+    const editor = useEditor({
+      extensions: [
+        TaskList,
+        TaskItem,
+        Link.configure({
+          autolink: true,
+          linkOnPaste: true,
+          openOnClick: true,
+        }),
+        StaterKit.configure({ heading: { levels: [1, 2, 3] } }),
+        Placeholder.configure({
+          emptyEditorClass: "editor-empty",
+          emptyNodeClass: "empty-node",
+          placeholder: ({ node }) => {
+            if (node.type.name === "heading") {
+              if (node.attrs.level === 1)
+                return "What's are we writing about?...";
+              else if (node.attrs.level === 2)
+                return "A Nice title under our main topic...";
+              else node.attrs.level === 3;
+              return "Let's discuss a point...";
+            }
 
-    // const tippyOptions = ref({
-    //   duration: 100,
-    // });
+            return "Write Something...";
+          },
+        }),
+      ],
+      content: editableNote.value.content,
+      onUpdate: () => {
+        const content = editor?.value?.getJSON();
+        if (
+          content &&
+          JSON.stringify(content) !== JSON.stringify(editableNote.value.content)
+        ) {
+          editableNote.value.content = content;
+          contentEdited.value = true;
+        }
+      },
+    });
 
-    // const current: Ref<{ heading: string; content: JSONContent }> = ref({
-    //   heading: props.note.title,
-    //   content: props.note.content,
-    // });
-
-    // const editor = useEditor({
-    //   extensions: [
-    //     TaskList,
-    //     TaskItem,
-    //     Link.configure({
-    //       autolink: true,
-    //       linkOnPaste: true,
-    //       openOnClick: true,
-    //     }),
-    //     StaterKit.configure({ heading: { levels: [1, 2, 3] } }),
-    //     Placeholder.configure({
-    //       emptyEditorClass: "editor-empty",
-    //       emptyNodeClass: "empty-node",
-    //       placeholder: ({ node }) => {
-    //         if (node.type.name === "heading") {
-    //           if (node.attrs.level === 1)
-    //             return "What's are we writing about?...";
-    //           else if (node.attrs.level === 2)
-    //             return "A Nice title under our main topic...";
-    //           else node.attrs.level === 3;
-    //           return "Let's discuss a point...";
-    //         }
-
-    //         return "Write Something...";
-    //       },
-    //     }),
-    //   ],
-    //   content: current.value.content,
-    //   onUpdate: () => {
-    //     const content = editor?.value?.getJSON();
-    //     if (content) current.value.content = content;
-    //   },
-    // });
-
-    // async function save() {
-    //   unsaved.value = false;
-
-    //   const toast = addToast({
-    //     id: Symbol(),
-    //     title: "Saving note",
-    //     desciption: `saving ${current.value.heading} to local`,
-    //   });
-
-    //   // find note's index in ctx
-    //   await updateNote(props.note.id, {
-    //     title: current.value.heading,
-    //     content: current.value.content,
-    //   });
-
-    //   setTimeout(() => removeToast(toast.id), 3000);
-    // }
-
-    return { unsaved, editableNote, updateNote };
+    return { contentEdited, editableNote, updateNote, editor, saveNote };
   },
 });
 </script>
