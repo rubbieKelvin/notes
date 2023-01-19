@@ -35,21 +35,33 @@ export default defineComponent({
     const note: Ref<Note | null> = ref(null);
     const writableContent: Ref<JSONContent | null> = ref(null);
 
+    const openNote = async () => {
+      if (route.name === "Note" && authstore.isAuthenticated) {
+        // we want to select a note
+        const readable_id = route.params?.identifier
+          ? parseInt(route.params.identifier as string)
+          : null;
+
+        if (readable_id === null) return;
+
+        // get note
+        note.value = await notestore.getNoteByRiD(readable_id);
+        writableContent.value = note.value?.content ?? null;
+      }
+    };
+
+    watch(
+      () => authstore.isAuthenticated,
+      async () => {
+        await openNote();
+      },
+      { immediate: true }
+    );
+
     watch(
       () => route.fullPath,
       async () => {
-        if (route.name === "Note" && authstore.isAuthenticated) {
-          // we want to select a note
-          const readable_id = route.params?.identifier
-            ? parseInt(route.params.identifier as string)
-            : null;
-
-          if (readable_id === null) return;
-
-          // get note
-          note.value = await notestore.getNoteByRiD(readable_id);
-          writableContent.value = note.value?.content ?? null;
-        }
+        await openNote();
       },
       {
         deep: true,

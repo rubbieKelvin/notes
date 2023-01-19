@@ -35,8 +35,7 @@ import { computed, defineComponent, Ref, ref, watch } from "vue";
 import Dialog from "./index.vue";
 import Icon from "@/components/Icon";
 import { useFocus } from "@vueuse/core";
-import { useNotesManager } from "@/utils/api/notes";
-import { noteRoute } from "@/utils/useNavigation";
+import { noteRoute } from "@/plugins/useNavigation";
 import { useRouter } from "vue-router";
 
 export default defineComponent({
@@ -46,7 +45,7 @@ export default defineComponent({
   },
   emits: ["update:modelValue"],
   setup(props, { emit }) {
-    const noteManager = useNotesManager();
+    // const noteManager = useNotesManager();
     const noteTitleRef: Ref<HTMLInputElement | null> = ref(null);
     const data = ref({ title: "" });
     const router = useRouter();
@@ -71,9 +70,9 @@ export default defineComponent({
       }
     });
     const create = async () => {
-      const note = await noteManager.createNote(data.value.title);
+      // const note = await noteManager.createNote(data.value.title);
       visible.value = false;
-      router.push(noteRoute(note));
+      // router.push(noteRoute(note));
     };
     return { visible, noteTitleRef, data, create };
   },

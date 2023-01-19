@@ -10,8 +10,8 @@
             v-model="editableNote.title"
             class="outline-0 w-full text-lg focus:outline-none"
             maxlength="60"
-            @keypress.enter="saveNoteName"
-            @blur="saveNoteName"
+            @keypress.enter="() => updateNote(['title'])"
+            @blur="() => updateNote(['title'])"
           />
           <p class="text-gray-500 text-sm">
             Last updated
@@ -26,8 +26,20 @@
 
         <div class="flex gap-2 items-center">
           <button v-if="unsaved" class="btn p-1 text-sm">Changes made</button>
-          <button class="btn p-1 h-min">
-            <Icon name="StarIcon" class="w-5 h-5" />
+          <button
+            class="btn p-1 h-min"
+            @click="
+              () => {
+                editableNote.is_starred = !editableNote.is_starred;
+                updateNote(['is_starred']);
+              }
+            "
+          >
+            <Icon
+              name="StarIcon"
+              class="w-5 h-5"
+              :solid="editableNote.is_starred"
+            />
           </button>
           <button class="btn p-1 h-min">
             <Icon class="w-5 h-5" name="EllipsisVerticalIcon" />
@@ -69,11 +81,13 @@ import Link from "@tiptap/extension-link";
 import TaskList from "@tiptap/extension-task-list";
 import TaskItem from "@tiptap/extension-task-item";
 import Icon from "@/components/Icon";
-import { useToasts } from "@/utils/toasts";
-import { Note } from "@/types/models";
-import { useNotesManager } from "@/utils/api/notes";
+// import { useToasts } from "@/utils/toasts";
+import { Note, NoteUpdate } from "@/types/models";
+// import { useNotesManager } from "@/utils/api/notes";
 import { useRouter } from "vue-router";
 import { useNotesStore } from "@/stores/notes";
+import { pickProperties } from "@/utils/helpers";
+// import {  } from ''
 
 export default defineComponent({
   name: "TextEditor",
@@ -101,13 +115,16 @@ export default defineComponent({
       }
     );
 
-    const saveNoteName = async () => {
-      let title = editableNote.value.title.trim().slice(0, 60) || "Untitled";
-      editableNote.value.title = title;
+    const updateNote = async (updated_fields: Array<keyof NoteUpdate>) => {
+      if (updated_fields.includes("title")) {
+        let title = editableNote.value.title.trim().slice(0, 60) || "Untitled";
+        editableNote.value.title = title;
+      }
 
-      const note = await notestore.updateNote(props.note, {
-        title: editableNote.value.title,
-      });
+      const note = await notestore.updateNote(
+        props.note,
+        pickProperties(editableNote.value, updated_fields)
+      );
 
       if (note) emit("note:changed", note);
     };
@@ -177,7 +194,7 @@ export default defineComponent({
     //   setTimeout(() => removeToast(toast.id), 3000);
     // }
 
-    return { unsaved, editableNote, saveNoteName };
+    return { unsaved, editableNote, updateNote };
   },
 });
 </script>

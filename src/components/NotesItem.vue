@@ -24,7 +24,7 @@
 
 <script lang="ts">
 import { Note } from "@/types/models";
-import { noteRoute } from "@/utils/useNavigation";
+import { noteRoute } from "@/plugins/useNavigation";
 import { UseTimeAgo } from "@vueuse/components";
 import { defineComponent } from "vue";
 import ContextMenuWrapper from "@/components/Popup/ContextMenuWrapper.vue";

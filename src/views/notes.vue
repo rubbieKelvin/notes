@@ -34,7 +34,7 @@ import {
 import PageHeader from "@/components/layout/ApplicationMenu/PageHeader.vue";
 import { MenuItem } from "@/types";
 import NewNoteDialog from "@/components/Dialog/NewNoteDialog.vue";
-import slug from "@/utils/slug";
+// import slug from "@/utils/slug";
 import NotesItem from "@/components/NotesItem.vue";
 import Loading from "@/components/Loading.vue";
 import { useNotesStore } from "@/stores/notes";
@@ -70,7 +70,7 @@ export default defineComponent({
       ]
     );
 
-    return { menu, modals, slug, notestore, authstore };
+    return { menu, modals, notestore, authstore };
   },
 });
 </script>
