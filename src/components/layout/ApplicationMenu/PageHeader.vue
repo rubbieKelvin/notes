@@ -1,13 +1,15 @@
 <template>
   <div class="h-11 border-b border-stroke flex items-center px-2">
     <h2 class="flex-grow text-black">{{ title }}</h2>
-    <MenuList :list="menu" alignRight>
-      <template v-slot:trigger="{ open }">
-        <button @click="open" class="btn p-1">
-          <EllipsisVerticalIcon class="w-5 h-5" />
-        </button>
-      </template>
-    </MenuList>
+    <slot>
+      <MenuList :list="menu" alignRight>
+        <template v-slot:trigger="{ open }">
+          <button @click="open" class="btn p-1">
+            <EllipsisVerticalIcon class="w-5 h-5" />
+          </button>
+        </template>
+      </MenuList>
+    </slot>
   </div>
 </template>
 
