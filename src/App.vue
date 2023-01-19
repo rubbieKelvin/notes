@@ -10,7 +10,7 @@
 
       <!-- ... -->
       <Toast />
-      <NewNoteDialog v-model="modals.newnote" />
+      <NewNoteDialog v-model="modalstore.createNote" />
     </div>
   </AuthWrapper>
 </template>
@@ -27,6 +27,8 @@ import KeyboardShortcut from "@/components/KeyboardShortcut.vue";
 import AuthWrapper from "./wrappers/AuthWrapper.vue";
 import { useAuthStore } from "./stores/auth";
 import { useNotesStore } from "./stores/notes";
+import { useModalStore } from "./stores/modals";
+import { onKeyStroke } from "@vueuse/core";
 
 export default defineComponent({
   components: {
@@ -42,13 +44,14 @@ export default defineComponent({
   setup() {
     const authstore = useAuthStore();
     const notestore = useNotesStore();
+    const modalstore = useModalStore();
 
-    const content = ref({
-      type: "doc",
-      content: [],
+    onKeyStroke(["Control", "Alt", "n"], (e) => {
+      if (e.ctrlKey && e.altKey && e.key === "n") {
+        e.preventDefault();
+        modalstore.createNote = true;
+      }
     });
-
-    const modals = ref({ newnote: false });
 
     watch(
       () => authstore.isAuthenticated,
@@ -59,7 +62,7 @@ export default defineComponent({
       }
     );
 
-    return { content, modals };
+    return { modalstore };
   },
 });
 </script>

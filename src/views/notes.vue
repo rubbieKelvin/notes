@@ -1,7 +1,7 @@
 <template>
-  <div>
+  <div class="flex flex-col h-full">
     <PageHeader title="Notes" :menu="menu" />
-    <div>
+    <div class="h-0 flex-grow overflow-y-auto">
       <div
         v-if="notestore.notes === null"
         class="flex justify-center pt-6 gap-3"
@@ -17,12 +17,11 @@
         />
       </template>
     </div>
-    <NewNoteDialog v-model="modals.newnote" />
   </div>
 </template>
 
 <script lang="ts">
-import { computed, ComputedRef, defineComponent, ref } from "vue";
+import { computed, ComputedRef, defineComponent } from "vue";
 import PageHeader from "@/components/layout/ApplicationMenu/PageHeader.vue";
 import { MenuItem } from "@/types";
 import NewNoteDialog from "@/components/Dialog/NewNoteDialog.vue";
@@ -30,16 +29,14 @@ import NotesItem from "@/components/NotesItem.vue";
 import Loading from "@/components/Loading.vue";
 import { useNotesStore } from "@/stores/notes";
 import { useAuthStore } from "@/stores/auth";
+import { useModalStore } from "@/stores/modals";
 
 export default defineComponent({
   components: { PageHeader, NewNoteDialog, NotesItem, Loading },
   setup() {
     const notestore = useNotesStore();
     const authstore = useAuthStore();
-
-    const modals = ref({
-      newnote: false,
-    });
+    const modalstore = useModalStore();
 
     const menu: ComputedRef<Array<MenuItem>> = computed(
       (): Array<MenuItem> => [
@@ -47,7 +44,8 @@ export default defineComponent({
           id: Symbol(),
           title: "Create note",
           icon: "PlusIcon",
-          action: () => (modals.value.newnote = true),
+          keybinding: ["ctrl", "alt", "n"],
+          action: () => (modalstore.createNote = true),
         },
         {
           id: Symbol(),
@@ -66,7 +64,7 @@ export default defineComponent({
       ]
     );
 
-    return { menu, modals, notestore, authstore };
+    return { menu, notestore, authstore };
   },
 });
 </script>

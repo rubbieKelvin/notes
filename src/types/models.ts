@@ -27,6 +27,7 @@ export type Note = {
 
 export type NoteInsert = {
   title: string;
+  author: string;
   is_public?: boolean;
 };
 

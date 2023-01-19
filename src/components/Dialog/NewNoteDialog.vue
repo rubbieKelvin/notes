@@ -4,7 +4,7 @@
       class="bg-white border border-stroke py-2 rounded-md min-w-[400px] flex gap-3 flex-col"
     >
       <div class="pb-2 px-3 border-b border-stroke flex">
-        <p class="flex-grow">New note</p>
+        <p class="flex-grow font-medium">New note</p>
         <button class="btn p-1" @click="visible = false">
           <Icon name="XMarkIcon" class="w-5 h-5" />
         </button>
@@ -35,7 +35,9 @@ import { computed, defineComponent, Ref, ref, watch } from "vue";
 import Dialog from "./index.vue";
 import Icon from "@/components/Icon";
 import { useFocus } from "@vueuse/core";
+import { useNotesStore } from "@/stores/notes";
 import { noteRoute } from "@/plugins/useNavigation";
+import { useAuthStore } from "@/stores/auth";
 import { useRouter } from "vue-router";
 
 export default defineComponent({
@@ -45,10 +47,11 @@ export default defineComponent({
   },
   emits: ["update:modelValue"],
   setup(props, { emit }) {
-    // const noteManager = useNotesManager();
-    const noteTitleRef: Ref<HTMLInputElement | null> = ref(null);
     const data = ref({ title: "" });
+    const authstore = useAuthStore();
+    const notestore = useNotesStore();
     const router = useRouter();
+    const noteTitleRef: Ref<HTMLInputElement | null> = ref(null);
 
     const visible = computed({
       get() {
@@ -70,9 +73,16 @@ export default defineComponent({
       }
     });
     const create = async () => {
-      // const note = await noteManager.createNote(data.value.title);
-      visible.value = false;
-      // router.push(noteRoute(note));
+      if (authstore.isAuthenticated && authstore.user) {
+        const note = await notestore.createNote({
+          title: data.value.title,
+          author: authstore.user.id,
+        });
+        if (note) {
+          visible.value = false;
+          router.push(noteRoute(note));
+        }
+      }
     };
     return { visible, noteTitleRef, data, create };
   },

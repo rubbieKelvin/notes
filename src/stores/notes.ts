@@ -36,6 +36,14 @@ export const useNotesStore = defineStore("notes", {
     },
   },
   actions: {
+    async createNote(object: NoteInsert) {
+      const note = await this.notemodel.insert({ object, fields: true });
+      if (note) {
+        if (this.notes !== null) this.notes.push(note);
+        else this.notes = [note];
+      }
+      return note;
+    },
     async searchNotes(query: string): Promise<Note[]> {
       const notes = await this.notemodel.findMany({
         where: {
