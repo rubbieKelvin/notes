@@ -58,26 +58,28 @@ export default defineComponent({
     const route = useRoute();
     const notestore = useNotesStore();
 
+    const shouldDirectlyOpenNote = computed(() => route.name === "Search");
+
     const handleClick = () => {
       if (props.selecting) {
         if (props.selected) emit("deselect");
         else emit("select");
-      } else if (route.name === "Search" && props.note.readable_id !== null) {
+      } else if (
+        shouldDirectlyOpenNote.value &&
+        props.note.readable_id !== null
+      ) {
         notestore.openNote(props.note.readable_id);
       }
     };
 
     const hide_routing = computed(() => {
-      return props.selecting || route.name === "Search";
+      return props.selecting || shouldDirectlyOpenNote.value;
     });
 
-    const menu: MenuItem[] = [
-      {
-        id: Symbol(),
-        title: "Open",
-        action: () => router.push(noteRoute(props.note)),
-      },
-    ];
+    const menu: MenuItem[] = notestore.noteContextMenu(props.note, {
+      showOpen: true,
+      useRouterToOpenNote: !shouldDirectlyOpenNote.value,
+    });
 
     return {
       menu,

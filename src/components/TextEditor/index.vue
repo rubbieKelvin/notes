@@ -44,6 +44,7 @@
             <Icon
               name="StarIcon"
               class="w-5 h-5"
+              :class="{ 'text-yellow-400': editableNote.is_starred }"
               :solid="editableNote.is_starred"
             />
           </button>
@@ -123,19 +124,7 @@ export default defineComponent({
     const { idle } = useIdle(5 * 1000);
     const editableNote = ref({ ...props.note });
 
-    const menu = computed((): MenuItem[] => [
-      { id: Symbol(), title: "Make public" },
-      { id: Symbol(), title: "Share" },
-      { id: Symbol(), title: "Export" },
-      {
-        id: Symbol(),
-        title: "Delete",
-        icon: "TrashIcon",
-        action: () => {
-          emit("contextmenu:delete");
-        },
-      },
-    ]);
+    const menu = computed(() => notestore.noteContextMenu(props.note, {}));
 
     watch(
       () => props.note,

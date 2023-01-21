@@ -2,6 +2,9 @@ import { Note, NoteInsert, NoteUpdate, Tag } from "@/types/models";
 import { defineStore } from "pinia";
 import useSharedUQL from "@/plugins/uql";
 import { useAuthStore } from "./auth";
+import { MenuItem } from "@/types";
+import { useRouter } from "vue-router";
+import { noteRoute } from "@/plugins/useNavigation";
 
 interface State {
   notes: Note[] | null;
@@ -142,6 +145,39 @@ export const useNotesStore = defineStore("notes", {
       });
 
       this.notes = notes;
+    },
+    noteContextMenu(
+      note: Note,
+      { showOpen = false, useRouterToOpenNote = true }
+    ): MenuItem[] {
+      const router = useRouter();
+
+      return [
+        {
+          id: Symbol(),
+          title: "Open",
+          hidden: !showOpen,
+          action: () => {
+            if (useRouterToOpenNote) router.push(noteRoute(note));
+            else this.openedNote = note;
+          },
+        },
+        { id: Symbol(), title: "Make public", hidden: true },
+        { id: Symbol(), title: "Share", hidden: true },
+        { id: Symbol(), title: "Export", hidden: true },
+        {
+          id: Symbol(),
+          title: "Delete",
+          icon: "TrashIcon",
+          action: async () => {
+            if (await this.deleteNotes([note.id])) {
+              if (note.id === this.openedNote?.id) {
+                this.openedNote = null;
+              }
+            }
+          },
+        },
+      ];
     },
   },
 });

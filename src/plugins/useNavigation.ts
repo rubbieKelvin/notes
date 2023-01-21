@@ -19,7 +19,6 @@ export const noteRoute = (
   return {
     name,
     params: {
-      username: note.author?.username,
       identifier: note.readable_id,
     },
   };
