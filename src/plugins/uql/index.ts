@@ -194,6 +194,28 @@ export const useUQL = (url: string, models: string[]) => {
         updateCache(instance);
         return instance;
       },
+      updateMany: async (args) => {
+        const resp = await call(
+          {
+            functionName: `${intent}.updatemany`,
+            fields: args.fields,
+            args: {
+              partials: args.objects.map((item) => ({
+                pk: item.pk,
+                fields: item.updatedFields,
+              })),
+            },
+            meta,
+          },
+          true
+        );
+
+        if (resp.error || resp.data === null) return null;
+        const instances = resp.data as Array<Model>;
+
+        instances.forEach((instance) => updateCache(instance));
+        return instances;
+      },
       delete: async (args) => {
         const resp = await call(
           {

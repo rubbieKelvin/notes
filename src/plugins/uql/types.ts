@@ -65,9 +65,10 @@ export type UQLModelManager<
   }) => Promise<Model | null>;
 
   // update many
-  updateMany?: (updateManyArgs: {
+  updateMany: (updateManyArgs: {
     objects: { updatedFields: ModelUpdate; pk: Pk }[];
-  }) => Promise<Model>;
+    fields: UQLFieldType;
+  }) => Promise<Model[] | null>;
 
   // delete
   delete: (deleteArgs: {

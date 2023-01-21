@@ -28,4 +28,4 @@ class Note(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self) -> str:
-        return f"{self.author.username}/NOTE-{self.readable_id}"
+        return f"{self.author.username}/NOTE-{self.readable_id} {self.title}"

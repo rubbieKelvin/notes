@@ -86,7 +86,7 @@ import {
 } from "@tiptap/vue-3";
 import { UseTimeAgo } from "@vueuse/components";
 import StaterKit from "@tiptap/starter-kit";
-import { ref, defineComponent, Ref, watch, computed } from "vue";
+import { ref, defineComponent, watch, computed } from "vue";
 import Placeholder from "@tiptap/extension-placeholder";
 import Link from "@tiptap/extension-link";
 import TaskList from "@tiptap/extension-task-list";
@@ -113,7 +113,7 @@ export default defineComponent({
     modelValue: Object as () => JSONContent,
     note: { type: Object as () => Note, required: true },
   },
-  emits: ["note:changed"],
+  emits: ["note:changed", "contextmenu:delete"],
   setup(props, { emit }) {
     const notestore = useNotesStore();
 
@@ -125,7 +125,14 @@ export default defineComponent({
       { id: Symbol(), title: "Make public" },
       { id: Symbol(), title: "Share" },
       { id: Symbol(), title: "Export" },
-      { id: Symbol(), title: "Delete" },
+      {
+        id: Symbol(),
+        title: "Delete",
+        icon: "TrashIcon",
+        action: () => {
+          emit("contextmenu:delete");
+        },
+      },
     ]);
 
     watch(
@@ -235,7 +242,7 @@ export default defineComponent({
   &-input {
     flex-grow: 1;
     overflow-y: auto;
-    @apply custom-scrollbar h-1 px-2;
+    @apply custom-scrollbar h-1 px-2 pb-10;
 
     div {
       height: 100%;

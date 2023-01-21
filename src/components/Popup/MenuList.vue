@@ -14,7 +14,7 @@
       <!-- heading -->
       <div
         v-if="!!navigation.history.slice(-1)[0]"
-        class="border-b border-stroke flex items-center pb-1 px-2 gap-1"
+        class="border-b border-stroke flex items-center py-1 px-2 gap-1"
       >
         <button
           @click="navigation.history.pop()"
@@ -148,7 +148,7 @@
             <!-- header -->
             <p
               v-if="item.type === 'HEADER'"
-              class="px-2 text-xs font-bold uppercase"
+              class="px-2 py-1 text-xs font-bold uppercase"
             >
               {{ item.title || "Section" }}
             </p>

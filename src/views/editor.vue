@@ -5,6 +5,7 @@
       v-model="writableContent"
       :note="note"
       class="flex-grow"
+      @contextmenu:delete="deleteNote"
       @note:changed="
         (n) => {
           note = n;
@@ -19,7 +20,7 @@
 import { defineComponent, Ref, watch, ref } from "vue";
 import EmptyPage from "@/components/EmptyPage.vue";
 import TextEditor from "@/components/TextEditor/index.vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { Note } from "@/types/models";
 import { JSONContent } from "@tiptap/core";
 import { useNotesStore } from "@/stores/notes";
@@ -29,6 +30,7 @@ export default defineComponent({
   components: { EmptyPage, TextEditor },
   setup() {
     const route = useRoute();
+    const router = useRouter();
     const notestore = useNotesStore();
     const authstore = useAuthStore();
 
@@ -72,7 +74,17 @@ export default defineComponent({
       }
     );
 
-    return { note, writableContent, authstore };
+    const deleteNote = async () => {
+      if (note.value) {
+        const res = await notestore.deleteNotes([note.value.id]);
+        if (res) {
+          note.value = null;
+          router.back();
+        }
+      }
+    };
+
+    return { note, writableContent, authstore, deleteNote };
   },
 });
 </script>

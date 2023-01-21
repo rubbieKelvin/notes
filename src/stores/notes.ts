@@ -53,6 +53,31 @@ export const useNotesStore = defineStore("notes", {
       }
       return note;
     },
+    async deleteNotes(pks: string[]): Promise<string[] | null> {
+      try {
+        const notes = await this.notemodel.updateMany({
+          objects: pks.map((pk) => ({
+            pk,
+            updatedFields: { is_deleted: true },
+          })),
+          fields: {
+            id: true,
+          },
+        });
+
+        if (notes) {
+          const res = notes.map((note) => note.id);
+
+          if (this.notes)
+            this.notes = this.notes.filter((note) => !res.includes(note.id));
+
+          return res;
+        }
+        return null;
+      } catch {
+        return null;
+      }
+    },
     async searchNotes(query: string): Promise<Note[]> {
       const notes = await this.notemodel.findMany({
         where: {

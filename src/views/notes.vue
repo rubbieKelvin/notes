@@ -15,6 +15,10 @@
           :key="note.id"
           :note="note"
           :page="section"
+          :selecting="selecting"
+          :selected="selectedNotes.includes(note.id)"
+          @select="selectedNotes.push(note.id)"
+          @deselect="selectedNotes = selectedNotes.filter((n) => n !== note.id)"
         />
       </template>
     </div>
@@ -22,7 +26,7 @@
 </template>
 
 <script lang="ts">
-import { computed, ComputedRef, defineComponent, ref } from "vue";
+import { computed, ComputedRef, defineComponent, Ref, ref } from "vue";
 import PageHeader from "@/components/layout/ApplicationMenu/PageHeader.vue";
 import { MenuItem } from "@/types";
 import NewNoteDialog from "@/components/Dialog/NewNoteDialog.vue";
@@ -46,78 +50,115 @@ export default defineComponent({
     const notestore = useNotesStore();
     const authstore = useAuthStore();
     const modalstore = useModalStore();
+    const selectedNotes: Ref<string[]> = ref([]);
 
     const notes = computed(() => {
       if (props.section === "Note") {
-        return notestore.notes;
+        return notestore.notes ?? [];
       } else if (props.section === "StarredNote") {
         return notestore.starredNotes;
       }
+      return [];
     });
 
     const menu: ComputedRef<Array<MenuItem>> = computed(
-      (): Array<MenuItem> => [
-        {
-          id: Symbol(),
-          title: "Create note",
-          icon: "PlusIcon",
-          keybinding: ["ctrl", "alt", "n"],
-          action: () => (modalstore.createNote = true),
-        },
-        {
-          id: Symbol(),
-          title: "Import",
-          icon: "CloudArrowDownIcon",
-        },
-        {
-          id: Symbol(),
-          title: "Create folder",
-          icon: "FolderPlusIcon",
-          disabled: true,
-          hidden: true,
-          subtitle: "Signin to use feature",
-        },
-        {
-          id: Symbol(),
-          title: "Sort by",
-          icon: "AdjustmentsHorizontalIcon",
-          children: [
-            { id: Symbol(), title: "No sort" },
-            { id: Symbol(), title: "Title" },
-            { id: Symbol(), title: "Updated" },
-            { id: Symbol(), title: "Created" },
-            { id: Symbol(), type: "SEPARATOR" },
-            {
-              id: Symbol(),
-              title: "Ascending",
-              type: "CHECKBOX",
-              value: notestore.sort.ascending,
-              action: () => {
-                notestore.sort.ascending = !notestore.sort.ascending;
+      (): Array<MenuItem> =>
+        selecting.value
+          ? [
+              { id: Symbol(), title: "Selection", type: "HEADER" },
+              {
+                id: Symbol(),
+                title: "Delete Selected",
+                action: async () => {
+                  const res = await notestore.deleteNotes(selectedNotes.value);
+                  if (res) {
+                    selectedNotes.value = [];
+                    selecting.value = false;
+                  }
+                },
               },
-            },
-          ],
-        },
-        { id: Symbol(), type: "SEPARATOR" },
-        {
-          id: Symbol(),
-          title: "Select",
-          icon: "ListBulletIcon",
-          action: () => {
-            selecting.value = true;
-          },
-        },
-        {
-          id: Symbol(),
-          title: "Select All",
-          action: () => {
-            selecting.value = true;
-          },
-        },
-      ]
+              {
+                id: Symbol(),
+                title: "Reverse Selection",
+                icon: "ArrowPathIcon",
+                action: () => {
+                  selectedNotes.value = notes.value
+                    .map((note) => note.id)
+                    .filter((nid) => !selectedNotes.value.includes(nid));
+                },
+              },
+              {
+                id: Symbol(),
+                title: "Close Selection",
+                action: () => {
+                  selectedNotes.value = [];
+                  selecting.value = false;
+                },
+              },
+            ]
+          : [
+              {
+                id: Symbol(),
+                title: "Create note",
+                icon: "PlusIcon",
+                keybinding: ["ctrl", "alt", "n"],
+                action: () => (modalstore.createNote = true),
+              },
+              {
+                id: Symbol(),
+                title: "Import",
+                icon: "CloudArrowDownIcon",
+              },
+              {
+                id: Symbol(),
+                title: "Create folder",
+                icon: "FolderPlusIcon",
+                disabled: true,
+                hidden: true,
+                subtitle: "Signin to use feature",
+              },
+              {
+                id: Symbol(),
+                title: "Sort by",
+                icon: "AdjustmentsHorizontalIcon",
+                children: [
+                  { id: Symbol(), title: "No sort" },
+                  { id: Symbol(), title: "Title" },
+                  { id: Symbol(), title: "Updated" },
+                  { id: Symbol(), title: "Created" },
+                  { id: Symbol(), type: "SEPARATOR" },
+                  {
+                    id: Symbol(),
+                    title: "Ascending",
+                    type: "CHECKBOX",
+                    value: notestore.sort.ascending,
+                    action: () => {
+                      notestore.sort.ascending = !notestore.sort.ascending;
+                    },
+                  },
+                ],
+              },
+              { id: Symbol(), type: "SEPARATOR" },
+              {
+                id: Symbol(),
+                title: "Select",
+                icon: "ListBulletIcon",
+                action: () => {
+                  selecting.value = true;
+                },
+              },
+              {
+                id: Symbol(),
+                title: "Select All",
+                action: () => {
+                  selecting.value = true;
+                  selectedNotes.value = notes.value.map((n) => n.id);
+                },
+              },
+            ]
     );
 
-    return { menu, notestore, authstore, notes };
+    return { menu, notestore, authstore, notes, selecting, selectedNotes };
   },
 });
 </script>

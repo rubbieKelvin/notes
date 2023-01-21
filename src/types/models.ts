@@ -37,4 +37,5 @@ export type NoteUpdate = {
   is_starred?: boolean;
   is_archived?: boolean;
   is_public?: boolean;
+  is_deleted?: boolean;
 };

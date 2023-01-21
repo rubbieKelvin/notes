@@ -28,6 +28,7 @@ exposedmodels = [
                 ModelOperations.SELECT_MANY,
                 ModelOperations.SELECT,
                 ModelOperations.UPDATE,
+                ModelOperations.UPDATE_MANY,
             ],
             fieldsIncludedOnUpdate=["last_updated"],
         )
