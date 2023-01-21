@@ -11,10 +11,10 @@
   }
 
   p > code {
-    background-color: rgba(#616161, 0.1);
-    color: #616161;
+    background-color: rgba(#ffe99f, 0.6);
+    color: #a06f13;
     padding: 2px 2px;
-    @apply rounded;
+    @apply rounded text-sm;
   }
 
   h1,
