@@ -41,8 +41,9 @@
   }
 
   blockquote {
-    border-left: 3px solid black;
-    @apply bg-gray-100 rounded-sm;
+    border-left: 3px solid #efcb10;
+    background-color: #fff9ea;
+    @apply rounded-sm;
     @apply py-2 px-3;
   }
 
