@@ -17,7 +17,14 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, Ref, watch, ref } from "vue";
+import {
+  defineComponent,
+  Ref,
+  watch,
+  ref,
+  computed,
+  WritableComputedRef,
+} from "vue";
 import EmptyPage from "@/components/EmptyPage.vue";
 import TextEditor from "@/components/TextEditor/index.vue";
 import { useRoute, useRouter } from "vue-router";
@@ -34,14 +41,18 @@ export default defineComponent({
     const notestore = useNotesStore();
     const authstore = useAuthStore();
 
-    const note: Ref<Note | null> = ref(null);
+    const note: WritableComputedRef<Note | null> = computed({
+      get() {
+        return notestore.openedNote;
+      },
+      set(note: Note | null) {
+        notestore.openedNote = note;
+      },
+    });
     const writableContent: Ref<JSONContent | null> = ref(null);
 
     const openNote = async () => {
-      if (
-        route.name?.toString().endsWith("Note") &&
-        authstore.isAuthenticated
-      ) {
+      if (route.name?.toString().endsWith("Note")) {
         // we want to select a note
         const readable_id = route.params?.identifier
           ? parseInt(route.params.identifier as string)
@@ -50,8 +61,7 @@ export default defineComponent({
         if (readable_id === null) return;
 
         // get note
-        note.value = await notestore.getNoteByRiD(readable_id);
-        writableContent.value = note.value?.content ?? null;
+        notestore.openNote(readable_id);
       }
     };
 
@@ -72,6 +82,14 @@ export default defineComponent({
         deep: true,
         immediate: true,
       }
+    );
+
+    watch(
+      note,
+      () => {
+        writableContent.value = note.value?.content ?? null;
+      },
+      { deep: true }
     );
 
     const deleteNote = async () => {

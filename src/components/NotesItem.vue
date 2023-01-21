@@ -1,6 +1,6 @@
 <template>
   <ContextMenuWrapper :list="menu">
-    <div @click="select" class="hover:bg-hover flex gap-2 p-2">
+    <div @click="handleClick" class="hover:bg-hover flex gap-2 p-2">
       <input
         v-if="selecting"
         type="checkbox"
@@ -9,7 +9,7 @@
       />
       <router-link
         class="flex-grow"
-        :class="{ 'pointer-events-none': selecting }"
+        :class="{ 'pointer-events-none': hide_routing }"
         :to="noteRoute(note, page)"
       >
         <div class="w-full">
@@ -38,10 +38,11 @@
 import { Note } from "@/types/models";
 import { NotePages, noteRoute } from "@/plugins/useNavigation";
 import { UseTimeAgo } from "@vueuse/components";
-import { defineComponent } from "vue";
+import { computed, defineComponent } from "vue";
 import ContextMenuWrapper from "@/components/Popup/ContextMenuWrapper.vue";
 import { MenuItem } from "@/types";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
+import { useNotesStore } from "@/stores/notes";
 
 export default defineComponent({
   props: {
@@ -54,13 +55,21 @@ export default defineComponent({
   emits: ["select", "deselect"],
   setup(props, { emit }) {
     const router = useRouter();
+    const route = useRoute();
+    const notestore = useNotesStore();
 
-    const select = () => {
+    const handleClick = () => {
       if (props.selecting) {
         if (props.selected) emit("deselect");
         else emit("select");
+      } else if (route.name === "Search" && props.note.readable_id !== null) {
+        notestore.openNote(props.note.readable_id);
       }
     };
+
+    const hide_routing = computed(() => {
+      return props.selecting || route.name === "Search";
+    });
 
     const menu: MenuItem[] = [
       {
@@ -72,8 +81,9 @@ export default defineComponent({
 
     return {
       menu,
-      select,
+      handleClick,
       noteRoute,
+      hide_routing,
     };
   },
 });

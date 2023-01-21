@@ -5,6 +5,7 @@ import { useAuthStore } from "./auth";
 
 interface State {
   notes: Note[] | null;
+  openedNote: Note | null;
   tags: Tag[];
   sort: {
     by: keyof Note | null;
@@ -15,6 +16,7 @@ interface State {
 export const useNotesStore = defineStore("notes", {
   state: (): State => ({
     notes: null,
+    openedNote: null,
     tags: [],
     sort: {
       by: null,
@@ -45,6 +47,12 @@ export const useNotesStore = defineStore("notes", {
     },
   },
   actions: {
+    async openNote(rid: number) {
+      const authstore = useAuthStore();
+      if (authstore.isAuthenticated) {
+        this.openedNote = await this.getNoteByRiD(rid);
+      }
+    },
     async createNote(object: NoteInsert) {
       const note = await this.notemodel.insert({ object, fields: true });
       if (note) {
