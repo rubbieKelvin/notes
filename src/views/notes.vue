@@ -36,6 +36,7 @@ import { useNotesStore } from "@/stores/notes";
 import { useAuthStore } from "@/stores/auth";
 import { useModalStore } from "@/stores/modals";
 import { NotePages } from "@/plugins/useNavigation";
+import { onKeyStroke } from "@vueuse/core";
 
 export default defineComponent({
   props: {
@@ -158,6 +159,12 @@ export default defineComponent({
             ]
     );
 
+    onKeyStroke(["Escape"], (e) => {
+      if (selecting.value) {
+        e.preventDefault();
+        selecting.value = false;
+      }
+    });
     return { menu, notestore, authstore, notes, selecting, selectedNotes };
   },
 });
