@@ -12,8 +12,8 @@
         :class="{ 'pointer-events-none': hide_routing }"
         :to="noteRoute(note, page)"
       >
-        <div class="w-full">
-          <div>
+        <div class="w-full flex gap-2 items-center">
+          <div class="flex-grow">
             <div class="">
               <p class="capitalize">
                 {{ note.title }}
@@ -28,6 +28,12 @@
               </UseTimeAgo>
             </p>
           </div>
+          <Icon
+            v-if="note.is_starred"
+            name="StarIcon"
+            class="w-3 h-3 text-yellow-400"
+            solid
+          />
         </div>
       </router-link>
     </div>
@@ -43,6 +49,7 @@ import ContextMenuWrapper from "@/components/Popup/ContextMenuWrapper.vue";
 import { MenuItem } from "@/types";
 import { useRoute, useRouter } from "vue-router";
 import { useNotesStore } from "@/stores/notes";
+import Icon from "./Icon";
 
 export default defineComponent({
   props: {
@@ -51,7 +58,7 @@ export default defineComponent({
     selected: { type: Boolean },
     selecting: { type: Boolean },
   },
-  components: { ContextMenuWrapper, UseTimeAgo },
+  components: { ContextMenuWrapper, UseTimeAgo, Icon },
   emits: ["select", "deselect"],
   setup(props, { emit }) {
     const router = useRouter();
