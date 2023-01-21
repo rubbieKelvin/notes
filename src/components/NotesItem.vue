@@ -28,8 +28,10 @@
               </UseTimeAgo>
             </p>
           </div>
+
+          <Icon v-if="note.is_archived" name="LockClosedIcon" class="w-3 h-3" />
           <Icon
-            v-if="note.is_starred"
+            v-else-if="note.is_starred"
             name="StarIcon"
             class="w-3 h-3 text-yellow-400"
             solid

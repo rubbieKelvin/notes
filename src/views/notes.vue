@@ -55,9 +55,11 @@ export default defineComponent({
 
     const notes = computed(() => {
       if (props.section === "Note") {
-        return notestore.notes ?? [];
+        return notestore.basicNotes;
       } else if (props.section === "StarredNote") {
         return notestore.starredNotes;
+      } else if (props.section === "ArchivedNote") {
+        return notestore.archivedNotes;
       }
       return [];
     });
@@ -70,8 +72,23 @@ export default defineComponent({
               {
                 id: Symbol(),
                 title: "Delete Selected",
+                icon: "TrashIcon",
                 action: async () => {
                   const res = await notestore.deleteNotes(selectedNotes.value);
+                  if (res) {
+                    selectedNotes.value = [];
+                    selecting.value = false;
+                  }
+                },
+              },
+              {
+                id: Symbol(),
+                title: "Archive Selected",
+                icon: "ArchiveBoxIcon",
+                action: async () => {
+                  const res = await notestore.moveNotesToArchive(
+                    selectedNotes.value
+                  );
                   if (res) {
                     selectedNotes.value = [];
                     selecting.value = false;
@@ -91,6 +108,7 @@ export default defineComponent({
               {
                 id: Symbol(),
                 title: "Close Selection",
+                icon: "XMarkIcon",
                 action: () => {
                   selectedNotes.value = [];
                   selecting.value = false;

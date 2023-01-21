@@ -26,13 +26,14 @@
 
         <div class="flex gap-2 items-center">
           <button
-            v-if="contentEdited"
+            v-if="contentEdited && !note.is_archived"
             @click="saveNote"
             class="btn p-1 text-sm"
           >
             Changes made
           </button>
           <button
+            v-if="!note.is_archived"
             class="btn p-1 h-min"
             @click="
               () => {
@@ -58,6 +59,14 @@
           </MenuList>
         </div>
       </div>
+    </div>
+
+    <div
+      v-if="note.is_archived"
+      class="bg-yellow-50 border border-yellow-200 rounded-md mx-2 text-yellow-800 flex gap-2 px-4 py-2 mb-2 select-none"
+    >
+      <Icon name="LockClosedIcon" class="w-6 h-6" />
+      <p>This note has been archived and is in read-only state</p>
     </div>
 
     <!-- tags -->
@@ -124,16 +133,28 @@ export default defineComponent({
     const { idle } = useIdle(5 * 1000);
     const editableNote = ref({ ...props.note });
 
-    const menu = computed(() => notestore.noteContextMenu(props.note, {}));
+    const menu = computed(() =>
+      notestore.noteContextMenu(props.note, {
+        onNoteEdited: (notes) => {
+          emit("note:changed", notes[0]);
+        },
+      })
+    );
 
     watch(
       () => props.note,
       () => {
         editableNote.value = { ...props.note };
-        const editorCommands = editor.value?.commands;
-        if (editorCommands)
-          editorCommands.setContent(editableNote.value.content);
-      }
+
+        if (editor.value) {
+          if (props.note.is_archived) {
+            editor.value.setEditable(false);
+          }
+
+          editor.value.commands.setContent(editableNote.value.content);
+        }
+      },
+      { deep: true }
     );
 
     watch(idle, async () => {
@@ -170,6 +191,7 @@ export default defineComponent({
     };
 
     const editor = useEditor({
+      editable: !props.note.is_archived,
       extensions: [
         TaskList,
         TaskItem,

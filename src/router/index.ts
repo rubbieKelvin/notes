@@ -38,16 +38,18 @@ export default createRouter({
     {
       path: "/archived",
       name: "Archive",
+      props: { default: { section: "ArchivedNote" } },
       components: {
-        default: () => import("@/views/archives.vue"),
+        default: () => import("@/views/notes.vue"),
         extended: () => import("@/views/editor.vue"),
       },
     },
     {
       path: "/archived/note-:identifier",
       name: "ArchivedNote",
+      props: { default: { section: "ArchivedNote" } },
       components: {
-        default: () => import("@/views/shared.vue"),
+        default: () => import("@/views/notes.vue"),
         extended: () => import("@/views/editor.vue"),
       },
     },

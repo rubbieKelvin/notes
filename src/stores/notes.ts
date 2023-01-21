@@ -35,15 +35,20 @@ export const useNotesStore = defineStore("notes", {
         headers: authstore.authHeader,
       });
     },
+    basicNotes: (state): Note[] => {
+      if (state.notes === null) return [];
+      return state.notes.filter((note) => !note.is_archived);
+    },
     sharedNotes: (): Note[] => {
       return [];
     },
-    archivedNotes: (): Note[] => {
-      return [];
+    archivedNotes: (state): Note[] => {
+      if (state.notes === null) return [];
+      return state.notes.filter((note) => note.is_archived);
     },
     starredNotes: (state): Note[] => {
       if (state.notes === null) return [];
-      return state.notes.filter((note) => note.is_starred);
+      return state.notes.filter((note) => note.is_starred && !note.is_archived);
     },
     trashedNotes: (): Note[] => {
       return [];
@@ -83,6 +88,35 @@ export const useNotesStore = defineStore("notes", {
             this.notes = this.notes.filter((note) => !res.includes(note.id));
 
           return res;
+        }
+        return null;
+      } catch {
+        return null;
+      }
+    },
+    async moveNotesToArchive(
+      pks: string[],
+      archive = true
+    ): Promise<Note[] | null> {
+      try {
+        const notes = await this.notemodel.updateMany({
+          objects: pks.map((pk) => ({
+            pk,
+            updatedFields: { is_archived: archive },
+          })),
+          fields: true,
+        });
+
+        if (notes) {
+          const res = notes.map((note) => note.id);
+
+          if (this.notes) {
+            this.notes = this.notes.filter((note) => !res.includes(note.id));
+          }
+
+          this.notes = [...(this.notes ?? []), ...notes];
+
+          return notes;
         }
         return null;
       } catch {
@@ -148,7 +182,11 @@ export const useNotesStore = defineStore("notes", {
     },
     noteContextMenu(
       note: Note,
-      { showOpen = false, useRouterToOpenNote = true }
+      {
+        showOpen = false,
+        useRouterToOpenNote = true,
+        onNoteEdited = (notes: Note[]) => {},
+      }
     ): MenuItem[] {
       const router = useRouter();
 
@@ -157,9 +195,35 @@ export const useNotesStore = defineStore("notes", {
           id: Symbol(),
           title: "Open",
           hidden: !showOpen,
+          icon: "BookOpenIcon",
           action: () => {
             if (useRouterToOpenNote) router.push(noteRoute(note));
             else this.openedNote = note;
+          },
+        },
+        { id: Symbol(), type: "SEPARATOR", hidden: !showOpen },
+        {
+          id: Symbol(),
+          title: "Move to archive",
+          icon: "ArchiveBoxIcon",
+          hidden: note.is_archived,
+          action: async () => {
+            const notes = await this.moveNotesToArchive([note.id]);
+            if (notes) {
+              onNoteEdited(notes);
+            }
+          },
+        },
+        {
+          id: Symbol(),
+          title: "Unarchive",
+          icon: "ArchiveBoxXMarkIcon",
+          hidden: !note.is_archived,
+          action: async () => {
+            const notes = await this.moveNotesToArchive([note.id], false);
+            if (notes) {
+              onNoteEdited(notes);
+            }
           },
         },
         { id: Symbol(), title: "Make public", hidden: true },
