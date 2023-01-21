@@ -1,10 +1,10 @@
 import { Node } from "@tiptap/core";
 import { VueNodeViewRenderer } from "@tiptap/vue-3";
-import Image from "./Image.vue";
+import Image from "./nodeview/Image.vue";
 
 // TODO: fix this extension
 export default Node.create({
-  name: 'noteImage',
+  name: "noteImage",
   addNodeView() {
     return VueNodeViewRenderer(Image);
   },
@@ -17,8 +17,8 @@ export default Node.create({
           "https://images.unsplash.com/photo-1618828665011-0abd973f7bb8?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MXx8bGFnb3N8ZW58MHx8MHx8&auto=format&fit=crop&w=900&q=60",
       },
       alt: {
-          default: "Alternative text"
-      }
+        default: "Alternative text",
+      },
     };
   },
   addCommands() {

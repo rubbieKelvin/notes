@@ -86,6 +86,73 @@
     @apply mb-0.5 hover:bg-gray-50;
   }
 
+  pre {
+    background: #f8f9fa; /* light gray background */
+    color: #343a40; /* dark gray text color */
+    font-family: "JetBrainsMono", monospace;
+    padding: 1rem; /* increase padding for readability */
+    border-radius: 8px; /* increase border radius for a softer look */
+    // box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1); /* add a subtle box shadow for depth */
+    overflow-x: auto; /* add overflow-x to prevent horizontal scrolling */
+    code {
+      color: inherit;
+      padding: 0;
+      background: none !important;
+      font-size: 0.9rem; /* increase font size for improved readability */
+    }
+
+    /* Add hover effect to highlight line */
+    code:hover {
+      background-color: #f1f1f1;
+    }
+
+    /* Add color for different code elements */
+    .hljs-comment,
+    .hljs-quote {
+      color: #6c757d; /* gray */
+    }
+    .hljs-variable,
+    .hljs-template-variable,
+    .hljs-attribute,
+    .hljs-tag,
+    .hljs-name,
+    .hljs-regexp,
+    .hljs-link,
+    .hljs-name,
+    .hljs-selector-id,
+    .hljs-selector-class {
+      color: #f9a826; /* orange */
+    }
+    .hljs-number,
+    .hljs-meta,
+    .hljs-built_in,
+    .hljs-builtin-name,
+    .hljs-literal,
+    .hljs-type,
+    .hljs-params {
+      color: #0079d3; /* blue */
+    }
+    .hljs-string,
+    .hljs-symbol,
+    .hljs-bullet {
+      color: #2e7d32; /* green */
+    }
+    .hljs-title,
+    .hljs-section {
+      color: #b926f9; /* purple */
+    }
+    .hljs-keyword,
+    .hljs-selector-tag {
+      color: #f52d56; /* pink */
+    }
+    .hljs-emphasis {
+      font-style: italic;
+    }
+    .hljs-strong {
+      font-weight: 700;
+    }
+  }
+
   p.empty-node,
   p.editor-empty {
     color: red;

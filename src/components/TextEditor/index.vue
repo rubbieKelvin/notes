@@ -99,6 +99,8 @@ import { pickProperties } from "@/utils/helpers";
 import { useIdle } from "@vueuse/core";
 import { MenuItem } from "@/types";
 import MenuList from "@/components/Popup/MenuList.vue";
+import CodeBlock from "@/components/TextEditor/extensions/CodeBlock";
+import { lowlight } from "lowlight/lib/common";
 
 export default defineComponent({
   name: "TextEditor",
@@ -171,7 +173,7 @@ export default defineComponent({
 
       const note = await notestore.updateNote(
         props.note,
-        pickProperties(editableNote.value, updated_fields)
+        pickProperties(editableNote.value as NoteUpdate, updated_fields)
       );
 
       if (note) emit("note:changed", note);
@@ -187,7 +189,10 @@ export default defineComponent({
           linkOnPaste: true,
           openOnClick: true,
         }),
-        StaterKit.configure({ heading: { levels: [1, 2, 3] } }),
+        StaterKit.configure({
+          heading: { levels: [1, 2, 3] },
+          codeBlock: false,
+        }),
         Placeholder.configure({
           emptyEditorClass: "editor-empty",
           emptyNodeClass: "empty-node",
@@ -204,6 +209,7 @@ export default defineComponent({
             return "Write Something...";
           },
         }),
+        CodeBlock.configure({ lowlight }),
       ],
       content: editableNote.value.content,
       onUpdate: () => {
