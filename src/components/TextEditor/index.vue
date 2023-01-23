@@ -144,21 +144,19 @@ export default defineComponent({
     watch(
       () => props.note,
       () => {
-        editableNote.value = { ...props.note };
-
         if (editor.value) {
-          if (props.note.is_archived) {
-            editor.value.setEditable(false);
-          }
+          if (!editor.value.isEditable) editor.value.setEditable(true);
+          editableNote.value = { ...props.note };
 
           editor.value.commands.setContent(editableNote.value.content);
+          editor.value.setEditable(!editableNote.value.is_archived);
         }
       },
       { deep: true }
     );
 
     watch(idle, async () => {
-      await saveNote();
+      // await saveNote();
     });
 
     onKeyStroke(["Control", "s"], (e) => {
@@ -169,7 +167,7 @@ export default defineComponent({
     });
 
     const saveNote = async () => {
-      if (contentEdited.value) {
+      if (contentEdited.value && !editableNote.value.is_archived) {
         const note = await updateNote(["content"]);
         if (note) contentEdited.value = false;
       }
@@ -191,7 +189,7 @@ export default defineComponent({
     };
 
     const editor = useEditor({
-      editable: !props.note.is_archived,
+      editable: !editableNote.value.is_archived,
       extensions: [
         TaskList,
         TaskItem,
