@@ -10,16 +10,26 @@
         <p>Checking for notes</p>
       </div>
       <template v-else>
-        <NotesItem
-          v-for="note in notes"
-          :key="note.id"
-          :note="note"
-          :page="section"
-          :selecting="selecting"
-          :selected="selectedNotes.includes(note.id)"
-          @select="selectedNotes.push(note.id)"
-          @deselect="selectedNotes = selectedNotes.filter((n) => n !== note.id)"
-        />
+        <template v-if="notes.length > 0">
+          <NotesItem
+            v-for="note in notes"
+            :key="note.id"
+            :note="note"
+            :page="section"
+            :selecting="selecting"
+            :selected="selectedNotes.includes(note.id)"
+            @select="selectedNotes.push(note.id)"
+            @deselect="
+              selectedNotes = selectedNotes.filter((n) => n !== note.id)
+            "
+          />
+        </template>
+        <template v-else>
+          <div class="bg-gray-100 m-2 rounded-md p-3 flex gap-2">
+            <Icon name="NoSymbolIcon" class="w-5 h-5" />
+            <span class="font-medium"> No items in {{ noteTitle }} </span>
+          </div>
+        </template>
       </template>
     </div>
   </div>
@@ -38,6 +48,7 @@ import { useModalStore } from "@/stores/modals";
 import { NotePages } from "@/plugins/useNavigation";
 import { onKeyStroke } from "@vueuse/core";
 import { useRoute } from "vue-router";
+import Icon from "@/components/Icon";
 
 export default defineComponent({
   props: {
@@ -46,7 +57,7 @@ export default defineComponent({
       default: "Note",
     },
   },
-  components: { PageHeader, NewNoteDialog, NotesItem, Loading },
+  components: { PageHeader, NewNoteDialog, NotesItem, Loading, Icon },
   setup(props) {
     const route = useRoute();
     const selecting = ref(false);
