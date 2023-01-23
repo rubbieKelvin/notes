@@ -94,7 +94,7 @@ export default defineComponent({
               {
                 id: Symbol(),
                 title:
-                  route.name === "Trash" ? "Delete Selected" : "Move to trash",
+                  route.name === "Trash" ? "Delete Selection" : "Move to trash",
                 icon: "TrashIcon",
                 action: async () => {
                   const res = await notestore.deleteNotes(
@@ -109,7 +109,7 @@ export default defineComponent({
               },
               {
                 id: Symbol(),
-                title: "Restore",
+                title: "Restore Selection",
                 hidden: route.name !== "Trash",
                 action: async () => {
                   const res = await notestore.restoreNotes(selectedNotes.value);
@@ -123,7 +123,7 @@ export default defineComponent({
 
               {
                 id: Symbol(),
-                title: "Archive Selected",
+                title: "Archive Selection",
                 icon: "ArchiveBoxIcon",
                 hidden: ["Trash", "ArchivedNote", "Archive"].includes(
                   route.name as string
