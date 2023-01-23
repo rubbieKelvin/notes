@@ -46,7 +46,10 @@ export const useUQL = (url: string, models: string[]) => {
         });
 
         // return
-        return response.data as types.UQLResponse;
+        return {
+          ...response.data,
+          statusCode: response.status,
+        } as types.UQLResponse;
       } catch (e) {
         // retry
         const error = e as AxiosError;

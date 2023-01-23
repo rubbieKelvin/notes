@@ -42,7 +42,7 @@ export const useAuthStore = defineStore("auth", {
         },
       });
 
-      if (resp.error) {
+      if (resp.error || resp.statusCode >= 300 || resp.statusCode < 200) {
         console.error(resp.error);
         return null;
       }
