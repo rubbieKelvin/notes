@@ -10,6 +10,7 @@ export type NotePages = {
   SharedNote: string;
   ArchivedNote: string;
   StarredNote: string;
+  Trash: string;
 };
 
 export const noteRoute = (

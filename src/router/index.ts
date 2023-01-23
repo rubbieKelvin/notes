@@ -56,8 +56,9 @@ export default createRouter({
     {
       path: "/trash",
       name: "Trash",
+      props: { default: { section: "Trash" } },
       components: {
-        default: () => import("@/views/trash.vue"),
+        default: () => import("@/views/notes.vue"),
         extended: () => import("@/views/editor.vue"),
       },
     },

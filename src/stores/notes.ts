@@ -37,21 +37,26 @@ export const useNotesStore = defineStore("notes", {
     },
     basicNotes: (state): Note[] => {
       if (state.notes === null) return [];
-      return state.notes.filter((note) => !note.is_archived);
+      return state.notes.filter(
+        (note) => !note.is_archived && !note.is_trashed
+      );
     },
     sharedNotes: (): Note[] => {
       return [];
     },
     archivedNotes: (state): Note[] => {
       if (state.notes === null) return [];
-      return state.notes.filter((note) => note.is_archived);
+      return state.notes.filter((note) => note.is_archived && !note.is_trashed);
     },
     starredNotes: (state): Note[] => {
       if (state.notes === null) return [];
-      return state.notes.filter((note) => note.is_starred && !note.is_archived);
+      return state.notes.filter(
+        (note) => note.is_starred && !note.is_archived && !note.is_trashed
+      );
     },
-    trashedNotes: (): Note[] => {
-      return [];
+    trashedNotes: (state): Note[] => {
+      if (state.notes === null) return [];
+      return state.notes.filter((note) => note.is_trashed);
     },
   },
   actions: {
@@ -69,16 +74,23 @@ export const useNotesStore = defineStore("notes", {
       }
       return note;
     },
-    async deleteNotes(pks: string[]): Promise<string[] | null> {
+    async deleteNotes(
+      pks: string[],
+      permernant = false
+    ): Promise<string[] | null> {
       try {
         const notes = await this.notemodel.updateMany({
           objects: pks.map((pk) => ({
             pk,
-            updatedFields: { is_deleted: true },
+            updatedFields: permernant
+              ? { is_deleted: true }
+              : { is_trashed: true },
           })),
-          fields: {
-            id: true,
-          },
+          fields: permernant
+            ? {
+                id: true,
+              }
+            : true,
         });
 
         if (notes) {
@@ -89,6 +101,8 @@ export const useNotesStore = defineStore("notes", {
 
           if (this.notes)
             this.notes = this.notes.filter((note) => !res.includes(note.id));
+
+          if (!permernant) this.notes = [...(this.notes ?? []), ...notes];
 
           return res;
         }

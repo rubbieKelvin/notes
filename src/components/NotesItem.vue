@@ -1,16 +1,21 @@
 <template>
   <ContextMenuWrapper :list="menu">
-    <div @click="handleClick" class="hover:bg-hover flex gap-2 p-2">
+    <div
+      @click="handleClick"
+      class="flex gap-2 p-2 group"
+      :class="{ 'hover:bg-hover': !note.is_trashed || selecting }"
+    >
       <input
         v-if="selecting"
         type="checkbox"
         :checked="selected"
         class="pointer-events-none"
       />
+
       <router-link
         class="flex-grow"
         :class="{ 'pointer-events-none': hide_routing }"
-        :to="noteRoute(note, page)"
+        :to="shouldDirectlyOpenNote ? '#' : noteRoute(note, page)"
       >
         <div class="w-full flex gap-2 items-center">
           <div class="flex-grow">
@@ -29,13 +34,28 @@
             </p>
           </div>
 
-          <Icon v-if="note.is_archived" name="LockClosedIcon" class="w-3 h-3" />
-          <Icon
-            v-else-if="note.is_starred"
-            name="StarIcon"
-            class="w-3 h-3 text-yellow-400"
-            solid
-          />
+          <template v-if="!note.is_trashed">
+            <Icon
+              v-if="note.is_archived"
+              name="LockClosedIcon"
+              class="w-3 h-3"
+            />
+            <Icon
+              v-else-if="note.is_starred"
+              name="StarIcon"
+              class="w-3 h-3 text-yellow-400"
+              solid
+            />
+          </template>
+          <template v-else>
+            <button
+              v-if="!selecting"
+              @click="restoreNote"
+              class="btn px-1 pointer-events-auto group-hover:flex hidden"
+            >
+              Restore
+            </button>
+          </template>
         </div>
       </router-link>
     </div>
@@ -46,10 +66,10 @@
 import { Note } from "@/types/models";
 import { NotePages, noteRoute } from "@/plugins/useNavigation";
 import { UseTimeAgo } from "@vueuse/components";
-import { computed, defineComponent } from "vue";
+import { computed, defineComponent, watch } from "vue";
 import ContextMenuWrapper from "@/components/Popup/ContextMenuWrapper.vue";
 import { MenuItem } from "@/types";
-import { useRoute, useRouter } from "vue-router";
+import { useRoute } from "vue-router";
 import { useNotesStore } from "@/stores/notes";
 import Icon from "./Icon";
 
@@ -63,11 +83,12 @@ export default defineComponent({
   components: { ContextMenuWrapper, UseTimeAgo, Icon },
   emits: ["select", "deselect"],
   setup(props, { emit }) {
-    const router = useRouter();
     const route = useRoute();
     const notestore = useNotesStore();
 
-    const shouldDirectlyOpenNote = computed(() => route.name === "Search");
+    const shouldDirectlyOpenNote = computed(() =>
+      ["Search", "Trash"].includes(route.name as string)
+    );
 
     const handleClick = () => {
       if (props.selecting) {
@@ -77,7 +98,7 @@ export default defineComponent({
         shouldDirectlyOpenNote.value &&
         props.note.readable_id !== null
       ) {
-        notestore.openNote(props.note.readable_id);
+        if (!props.note.is_trashed) notestore.openNote(props.note.readable_id);
       }
     };
 
@@ -90,11 +111,17 @@ export default defineComponent({
       useRouterToOpenNote: !shouldDirectlyOpenNote.value,
     });
 
+    const restoreNote = () => {
+      console.log("Hello");
+    };
+
     return {
       menu,
       handleClick,
       noteRoute,
       hide_routing,
+      shouldDirectlyOpenNote,
+      restoreNote,
     };
   },
 });

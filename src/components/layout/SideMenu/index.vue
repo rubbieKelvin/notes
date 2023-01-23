@@ -25,6 +25,7 @@ const navItems: Array<MenuItem> = [
     icon: "UsersIcon",
     title: "shared notes",
     link: { name: "Shared" },
+    hidden: true,
   },
   {
     id: Symbol(),

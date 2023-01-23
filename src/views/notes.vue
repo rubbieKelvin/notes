@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col h-full">
-    <PageHeader title="Notes" :menu="menu" />
+    <PageHeader :title="noteTitle" :menu="menu" />
     <div class="h-0 flex-grow overflow-y-auto">
       <div
         v-if="notestore.notes === null"
@@ -26,7 +26,7 @@
 </template>
 
 <script lang="ts">
-import { computed, ComputedRef, defineComponent, Ref, ref } from "vue";
+import { computed, ComputedRef, defineComponent, Ref, ref, watch } from "vue";
 import PageHeader from "@/components/layout/ApplicationMenu/PageHeader.vue";
 import { MenuItem } from "@/types";
 import NewNoteDialog from "@/components/Dialog/NewNoteDialog.vue";
@@ -37,6 +37,7 @@ import { useAuthStore } from "@/stores/auth";
 import { useModalStore } from "@/stores/modals";
 import { NotePages } from "@/plugins/useNavigation";
 import { onKeyStroke } from "@vueuse/core";
+import { useRoute } from "vue-router";
 
 export default defineComponent({
   props: {
@@ -47,6 +48,7 @@ export default defineComponent({
   },
   components: { PageHeader, NewNoteDialog, NotesItem, Loading },
   setup(props) {
+    const route = useRoute();
     const selecting = ref(false);
     const notestore = useNotesStore();
     const authstore = useAuthStore();
@@ -60,8 +62,17 @@ export default defineComponent({
         return notestore.starredNotes;
       } else if (props.section === "ArchivedNote") {
         return notestore.archivedNotes;
+      } else if (props.section === "Trash") {
+        return notestore.trashedNotes;
       }
       return [];
+    });
+
+    const noteTitle = computed(() => {
+      if (props.section.endsWith("Note") && props.section !== "Note") {
+        return props.section.slice(0, -4);
+      }
+      return props.section;
     });
 
     const menu: ComputedRef<Array<MenuItem>> = computed(
@@ -71,10 +82,14 @@ export default defineComponent({
               { id: Symbol(), title: "Selection", type: "HEADER" },
               {
                 id: Symbol(),
-                title: "Delete Selected",
+                title:
+                  route.name === "Trash" ? "Delete Selected" : "Move to trash",
                 icon: "TrashIcon",
                 action: async () => {
-                  const res = await notestore.deleteNotes(selectedNotes.value);
+                  const res = await notestore.deleteNotes(
+                    selectedNotes.value,
+                    route.name === "Trash"
+                  );
                   if (res) {
                     selectedNotes.value = [];
                     selecting.value = false;
@@ -85,6 +100,9 @@ export default defineComponent({
                 id: Symbol(),
                 title: "Archive Selected",
                 icon: "ArchiveBoxIcon",
+                hidden: ["Trash", "ArchivedNote", "Archive"].includes(
+                  route.name as string
+                ),
                 action: async () => {
                   const res = await notestore.moveNotesToArchive(
                     selectedNotes.value
@@ -122,11 +140,13 @@ export default defineComponent({
                 icon: "PlusIcon",
                 keybinding: ["ctrl", "alt", "n"],
                 action: () => (modalstore.createNote = true),
+                hidden: !["Note", "Notes"].includes(route.name as string),
               },
               {
                 id: Symbol(),
                 title: "Import",
                 icon: "CloudArrowDownIcon",
+                hidden: true,
               },
               {
                 id: Symbol(),
@@ -183,7 +203,24 @@ export default defineComponent({
         selecting.value = false;
       }
     });
-    return { menu, notestore, authstore, notes, selecting, selectedNotes };
+
+    watch(
+      () => route.fullPath,
+      () => {
+        selecting.value = false;
+        selectedNotes.value = [];
+      }
+    );
+
+    return {
+      menu,
+      noteTitle,
+      notestore,
+      authstore,
+      notes,
+      selecting,
+      selectedNotes,
+    };
   },
 });
 </script>

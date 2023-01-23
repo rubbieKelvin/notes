@@ -23,6 +23,7 @@ export type Note = {
   is_starred: boolean;
   is_archived: boolean;
   is_public: boolean;
+  is_trashed: boolean;
 };
 
 export type NoteInsert = {
@@ -38,4 +39,5 @@ export type NoteUpdate = {
   is_archived?: boolean;
   is_public?: boolean;
   is_deleted?: boolean;
+  is_trashed?: boolean;
 };
