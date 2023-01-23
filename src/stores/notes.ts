@@ -84,6 +84,9 @@ export const useNotesStore = defineStore("notes", {
         if (notes) {
           const res = notes.map((note) => note.id);
 
+          if (this.openedNote && res.includes(this.openedNote.id))
+            this.openedNote = null;
+
           if (this.notes)
             this.notes = this.notes.filter((note) => !res.includes(note.id));
 

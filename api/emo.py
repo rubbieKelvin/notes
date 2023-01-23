@@ -48,7 +48,7 @@ exposedmodels = [
                         "is_archived",
                         "is_public",
                     ],
-                    "row": (Q(author__id=id) | Q(is_public=True) & Q(is_deleted=False)),
+                    "row": (Q(author__id=id) | Q(is_public=True)) & Q(is_deleted=False),
                 },
                 insert={"column": ["title", "content", "author", "is_public"]},
                 update={
