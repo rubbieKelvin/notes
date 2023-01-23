@@ -237,19 +237,23 @@ export const useNotesStore = defineStore("notes", {
         {
           id: Symbol(),
           title: "Open",
-          hidden: !showOpen,
+          hidden: !showOpen || note.is_trashed,
           icon: "BookOpenIcon",
           action: () => {
             if (useRouterToOpenNote) router.push(noteRoute(note));
             else this.openedNote = note;
           },
         },
-        { id: Symbol(), type: "SEPARATOR", hidden: !showOpen },
+        {
+          id: Symbol(),
+          type: "SEPARATOR",
+          hidden: !showOpen || note.is_trashed,
+        },
         {
           id: Symbol(),
           title: "Move to archive",
           icon: "ArchiveBoxIcon",
-          hidden: note.is_archived,
+          hidden: note.is_archived || note.is_trashed,
           action: async () => {
             const notes = await this.moveNotesToArchive([note.id]);
             if (notes) {
@@ -261,7 +265,7 @@ export const useNotesStore = defineStore("notes", {
           id: Symbol(),
           title: "Unarchive",
           icon: "ArchiveBoxXMarkIcon",
-          hidden: !note.is_archived,
+          hidden: !note.is_archived || note.is_trashed,
           action: async () => {
             const notes = await this.moveNotesToArchive([note.id], false);
             if (notes) {
@@ -274,14 +278,22 @@ export const useNotesStore = defineStore("notes", {
         { id: Symbol(), title: "Export", hidden: true },
         {
           id: Symbol(),
-          title: "Delete",
+          title: note.is_trashed ? "Permanetly delete" : "Move to trash",
           icon: "TrashIcon",
           action: async () => {
-            if (await this.deleteNotes([note.id])) {
+            if (await this.deleteNotes([note.id], note.is_trashed)) {
               if (note.id === this.openedNote?.id) {
                 this.openedNote = null;
               }
             }
+          },
+        },
+        {
+          id: Symbol(),
+          title: "Restore",
+          hidden: !note.is_trashed,
+          action: async () => {
+            await this.restoreNotes([note.id]);
           },
         },
       ];

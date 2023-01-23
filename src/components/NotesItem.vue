@@ -51,7 +51,7 @@
             <button
               v-if="!selecting"
               @click="restoreNote"
-              class="btn px-1 pointer-events-auto group-hover:flex hidden"
+              class="btn p-1 text-xs pointer-events-auto group-hover:flex hidden"
             >
               Restore
             </button>
@@ -112,7 +112,7 @@ export default defineComponent({
     });
 
     const restoreNote = () => {
-      console.log("Hello");
+      notestore.restoreNotes([props.note.id]);
     };
 
     return {

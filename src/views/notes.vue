@@ -25,7 +25,7 @@
           />
         </template>
         <template v-else>
-          <div class="bg-gray-100 m-2 rounded-md p-3 flex gap-2">
+          <div class="bg-gray-100 m-2 rounded-md p-3 flex gap-2 text-gray-500">
             <Icon name="NoSymbolIcon" class="w-5 h-5" />
             <span class="font-medium"> No items in {{ noteTitle }} </span>
           </div>
