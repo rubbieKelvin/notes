@@ -72,7 +72,28 @@ export const useAuthStore = defineStore("auth", {
       localStorage.setItem("auth-token", this.token);
       return resp;
     },
-    signup: (username: string, password: string) => {},
+    async signup(username: string, password: string) {
+      const { call } = useSharedUQL();
+      const resp = await call({
+        functionName: "signup",
+        fields: { token: true, user: true },
+        args: { username, password },
+      });
+
+      if (resp.error) {
+        console.error(resp.error);
+        return resp;
+      }
+
+      const data: { user: User; token: string } = resp.data;
+
+      this.token = data.token;
+      this.user = data.user;
+
+      // save token
+      localStorage.setItem("auth-item", this.token);
+      return resp;
+    },
     async logout() {
       if (!this.isAuthenticated) return;
       const { call } = useSharedUQL();

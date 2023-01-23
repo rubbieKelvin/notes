@@ -109,15 +109,27 @@
                 autocomplete="username"
                 v-model="form.signup.username"
                 :disabled="form.signup.processing"
+                :error-message="form.signup.error.username"
+                @update:model-value="form.signup.error.username = ''"
               />
               <TextInput
                 label="Password"
                 icon="KeyIcon"
                 placeholder="secret-***"
                 autocomplete="new-password"
+                inputType="password"
                 v-model="form.signup.password"
                 :disabled="form.signup.processing"
+                :error-message="form.signup.error.password"
+                @update:model-value="form.signup.error.password = ''"
               />
+
+              <Banner
+                icon="BellIcon"
+                v-model="form.signup.error.global"
+                class="bg-red-500 text-red-500"
+              />
+
               <button
                 @click="submitSignup"
                 :disabled="form.signup.processing"
@@ -158,6 +170,7 @@ import Loading from "@/components/Loading.vue";
 import Banner from "@/components/Banner.vue";
 import { useNotesStore } from "@/stores/notes";
 import { MaxRetriesReached } from "@/plugins/uql";
+import { validatePassword, validateUsername } from "@/utils/validators";
 
 export default defineComponent({
   components: {
@@ -276,7 +289,44 @@ export default defineComponent({
     };
     const submitSignup = async () => {
       form.value.signup.processing = true;
-      // todo
+
+      // validate username
+      const usernameValid = validateUsername(form.value.signup.username);
+      const passwordValid = validatePassword(form.value.signup.password);
+
+      if (!usernameValid.valid) {
+        form.value.signup.error.username =
+          usernameValid.reason ?? "Username has errors";
+        return;
+      }
+      if (!passwordValid.valid) {
+        form.value.signup.error.password =
+          passwordValid.reason ?? "Password has errors";
+        return;
+      }
+
+      form.value.signup.processing = true;
+
+      try {
+        const res = await authstore.signup(
+          form.value.signup.username,
+          form.value.signup.password
+        );
+
+        form.value.signup.processing = false;
+
+        if (res?.error) {
+          form.value.signup.error.global = res.error.message;
+          return;
+        }
+
+        form.value.signup.username = "";
+        form.value.signup.password = "";
+
+        await setUpUser();
+      } catch {
+        form.value.signup.processing = true;
+      }
     };
 
     onMounted(async () => {
