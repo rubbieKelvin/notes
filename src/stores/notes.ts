@@ -140,6 +140,32 @@ export const useNotesStore = defineStore("notes", {
         return null;
       }
     },
+    async restoreNotes(pks: string[]): Promise<Note[] | null> {
+      try {
+        const notes = await this.notemodel.updateMany({
+          objects: pks.map((pk) => ({
+            pk,
+            updatedFields: { is_trashed: false },
+          })),
+          fields: true,
+        });
+
+        if (notes) {
+          const res = notes.map((note) => note.id);
+
+          if (this.notes) {
+            this.notes = this.notes.filter((note) => !res.includes(note.id));
+          }
+
+          this.notes = [...(this.notes ?? []), ...notes];
+
+          return notes;
+        }
+        return null;
+      } catch {
+        return null;
+      }
+    },
     async searchNotes(query: string): Promise<Note[]> {
       const notes = await this.notemodel.findMany({
         where: {

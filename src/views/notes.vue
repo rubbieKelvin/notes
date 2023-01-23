@@ -98,6 +98,20 @@ export default defineComponent({
               },
               {
                 id: Symbol(),
+                title: "Restore",
+                hidden: route.name !== "Trash",
+                action: async () => {
+                  const res = await notestore.restoreNotes(selectedNotes.value);
+
+                  if (res) {
+                    selectedNotes.value = [];
+                    selecting.value = false;
+                  }
+                },
+              },
+
+              {
+                id: Symbol(),
                 title: "Archive Selected",
                 icon: "ArchiveBoxIcon",
                 hidden: ["Trash", "ArchivedNote", "Archive"].includes(
