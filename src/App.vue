@@ -1,65 +1,68 @@
 <template>
-  <!-- base router -->
-  <router-view class="text-base" />
+  <AuthWrapper>
+    <div class="h-screen flex flex-col">
+      <AppHeader />
+      <div class="flex-grow flex">
+        <MainNav class="h-full" />
+        <ApplicationMenu class="h-full" />
+        <router-view name="extended"> </router-view>
+      </div>
+
+      <!-- ... -->
+      <Toast />
+      <NewNoteDialog v-model="modalstore.createNote" />
+    </div>
+  </AuthWrapper>
 </template>
 
-<script>
-import { useStore } from "vuex";
-import { get, values } from "idb-keyval";
-import { onMounted } from "@vue/runtime-core";
-import useNotes from "./composables/useNotes";
-// ...
-import { DELETE_NOTE, UPDATE_NOTE, UPDATE_SETTINGS } from "./constants/mutations";
-import { DEFAULT_SETTINGS } from "@/constants/settings";
-import useUtils from "./composables/useUtils";
+<script lang="ts">
+import { defineComponent, ref, watch } from "vue";
+import AppHeader from "@/components/layout/Header.vue";
+import MainNav from "@/components/layout/SideMenu/index.vue";
+import ApplicationMenu from "@/components/layout/ApplicationMenu/index.vue";
+import TextEditor from "@/components/TextEditor/index.vue";
+import Toast from "@/components/Toast.vue";
+import NewNoteDialog from "@/components/Dialog/NewNoteDialog.vue";
+import KeyboardShortcut from "@/components/KeyboardShortcut.vue";
+import AuthWrapper from "./wrappers/AuthWrapper.vue";
+import { useAuthStore } from "./stores/auth";
+import { useNotesStore } from "./stores/notes";
+import { useModalStore } from "./stores/modals";
+import { onKeyStroke } from "@vueuse/core";
 
-export default {
+export default defineComponent({
+  components: {
+    AppHeader,
+    MainNav,
+    ApplicationMenu,
+    TextEditor,
+    Toast,
+    NewNoteDialog,
+    KeyboardShortcut,
+    AuthWrapper,
+  },
   setup() {
-    const store = useStore();
-    const { isValidNoteObject } = useUtils();
+    const authstore = useAuthStore();
+    const notestore = useNotesStore();
+    const modalstore = useModalStore();
 
-    onMounted(async () => {
-      const dbvalues = await values();
-      const notekeys = Object.keys(store.state.notes);
-
-      // loop through all values in our local db
-      // we want to select all the items that have _type='note'
-      dbvalues.forEach((value) => {
-        const jsonValue = JSON.parse(value);
-        const _type = jsonValue?._type;
-        // ...
-        if (_type === "note") {
-          if (isValidNoteObject(jsonValue)) {
-            if (typeof jsonValue.ld === 'string' && jsonValue.ld?.length > 0 && !notekeys.includes(jsonValue.ld))
-              store.commit(UPDATE_NOTE, jsonValue);
-          } else {
-            // remove the object from the store
-            store.commit(DELETE_NOTE, jsonValue.ld)
-          }
-        }
-      });
-
-      // if theres no note in store after loading from db,
-      // create a welcome note
-      if (Object.keys(store.state.notes).length === 0) {
-        const { createWelcomeNote } = useNotes();
-        createWelcomeNote(store);
-      }
-
-      // get settings
-      let settings = await get("@settings");
-      try {
-        settings = JSON.parse(settings);
-        settings = { ...DEFAULT_SETTINGS, ...settings };
-        store.commit(UPDATE_SETTINGS, settings);
-      } catch {
-        // error loading up json, so just use the default settings
-        store.commit(UPDATE_SETTINGS, DEFAULT_SETTINGS);
+    onKeyStroke(["Control", "Alt", "n"], (e) => {
+      if (e.ctrlKey && e.altKey && e.key === "n") {
+        e.preventDefault();
+        modalstore.createNote = true;
       }
     });
 
-    // ...
-    return {};
+    watch(
+      () => authstore.isAuthenticated,
+      () => {
+        if (!authstore.isAuthenticated) {
+          notestore.notes = [];
+        }
+      }
+    );
+
+    return { modalstore };
   },
-};
+});
 </script>

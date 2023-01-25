@@ -22,3 +22,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Python
+__pycache__
+venv
+db.sqlite3
+
+# Explicitly ignored files
+*.gitignore

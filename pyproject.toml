@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "notes"
+version = "0.1.0"
+description = "notes app"
+authors = ["rubbie kelvin <rubbiekelvinvoltsman@gmail.com>"]
+license = "MIT License"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+Django = "^4.1.1"
+djangorestframework = "^3.14.0"
+typing-extensions = "^4.4.0"
+django-cors-headers = "^3.13.0"
+uql = {git = "https://github.com/rubbieKelvin/UntitledQL.git"}
+
+
+[tool.poetry.group.dev.dependencies]
+ipython = "^8.5.0"
+toml = "^0.10.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

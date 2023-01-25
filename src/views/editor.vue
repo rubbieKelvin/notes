@@ -1,0 +1,108 @@
+<template>
+  <div class="flex flex-grow w-full h-full">
+    <TextEditor
+      v-if="note && writableContent && authstore.isAuthenticated"
+      v-model="writableContent"
+      :note="note"
+      class="flex-grow"
+      @contextmenu:delete="deleteNote"
+      @note:changed="
+        (n) => {
+          note = n;
+        }
+      "
+    />
+    <EmptyPage v-else />
+  </div>
+</template>
+
+<script lang="ts">
+import {
+  defineComponent,
+  Ref,
+  watch,
+  ref,
+  computed,
+  WritableComputedRef,
+} from "vue";
+import EmptyPage from "@/components/EmptyPage.vue";
+import TextEditor from "@/components/TextEditor/index.vue";
+import { useRoute, useRouter } from "vue-router";
+import { Note } from "@/types/models";
+import { JSONContent } from "@tiptap/core";
+import { useNotesStore } from "@/stores/notes";
+import { useAuthStore } from "@/stores/auth";
+
+export default defineComponent({
+  components: { EmptyPage, TextEditor },
+  setup() {
+    const route = useRoute();
+    const router = useRouter();
+    const notestore = useNotesStore();
+    const authstore = useAuthStore();
+
+    const note: WritableComputedRef<Note | null> = computed({
+      get() {
+        return notestore.openedNote;
+      },
+      set(note: Note | null) {
+        notestore.openedNote = note;
+      },
+    });
+    const writableContent: Ref<JSONContent | null> = ref(null);
+
+    const openNote = async () => {
+      if (route.name?.toString().endsWith("Note")) {
+        // we want to select a note
+        const readable_id = route.params?.identifier
+          ? parseInt(route.params.identifier as string)
+          : null;
+
+        if (readable_id === null) return;
+
+        // get note
+        notestore.openNote(readable_id);
+      }
+    };
+
+    watch(
+      () => authstore.isAuthenticated,
+      async () => {
+        await openNote();
+      },
+      { immediate: true }
+    );
+
+    watch(
+      () => route.fullPath,
+      async () => {
+        await openNote();
+      },
+      {
+        deep: true,
+        immediate: true,
+      }
+    );
+
+    watch(
+      note,
+      () => {
+        writableContent.value = note.value?.content ?? null;
+      },
+      { deep: true }
+    );
+
+    const deleteNote = async () => {
+      if (note.value) {
+        const res = await notestore.deleteNotes([note.value.id]);
+        if (res) {
+          note.value = null;
+          router.back();
+        }
+      }
+    };
+
+    return { note, writableContent, authstore, deleteNote };
+  },
+});
+</script>

@@ -1,189 +1,251 @@
 <template>
-  <div class="flex flex-col">
-    <div class="flex flex-col h-28 border-b border-b-gray-200 pt-6 px-5">
-      <div class="flex flex-grow items-center gap-2">
-        <h1 class="flex-grow text-3xl">Notes</h1>
-
-        <button @click="modals.upload = true"
-          class="flex items-center gap-3 font-semibold bg-gray-100 hover:bg-gray-200 rounded-md px-3 py-2">
-          <UploadIcon class="h-5 w-5" />
-        </button>
-        <button @click="modals.newnote = true"
-          class="flex items-center gap-3 font-semibold bg-primary-basic text-white hover:bg-primary-vibrant rounded-md px-3 py-2">
-          <PlusIcon class="h-5 w-5" />
-        </button>
+  <div class="flex flex-col h-full">
+    <PageHeader :title="noteTitle" :menu="menu" />
+    <div class="h-0 flex-grow overflow-y-auto">
+      <div
+        v-if="notestore.notes === null"
+        class="flex justify-center pt-6 gap-3"
+      >
+        <Loading v-if="authstore.isAuthenticated" class="text-black" />
+        <p>Checking for notes</p>
       </div>
-      <div class="tab">
-        <button class="capitalize" @click="activeMenu = folder.enabled ? folder : activeMenu"
-          :class="{ active: activeMenu.name === folder.name }" v-for="folder in noteFolders" :key="folder.name"
-          :title="folder.enabled ? null : folder.disabledMessage">
-          <BanIcon v-if="!folder.enabled" />
-          {{ folder.name }}
-          <div class="" />
-        </button>
-      </div>
-    </div>
-
-    <!-- search -->
-    <NoteSearch @update:searchtext="setSearch" />
-
-    <!-- empty banner -->
-    <div v-if="filteredNotes.length === 0" class="p-3">
-      <div class="flex items-center gap-3 text-primary-basic p-3 rounded-md bg-primary-basic bg-opacity-10">
-        <BanIcon class="w-5 h-5" />
-        <template v-if="searchText.length === 0">
-          <p class="font-medium flex-grow">No notes in this folder</p>
-          <button @click="createNoteUnderCurrentFolder" class="rounded-md p-1">
-            Create in this folder
-            <!-- <PlusIcon class="w-4 h-4 text-white" /> -->
-          </button>
+      <template v-else>
+        <template v-if="notes.length > 0">
+          <NotesItem
+            v-for="note in notes"
+            :key="note.id"
+            :note="note"
+            :page="section"
+            :selecting="selecting"
+            :selected="selectedNotes.includes(note.id)"
+            @select="selectedNotes.push(note.id)"
+            @deselect="
+              selectedNotes = selectedNotes.filter((n) => n !== note.id)
+            "
+          />
         </template>
-        <p v-else class="font-medium flex-grow">
-          No search result for
-          <span class="font-semibold">{{ searchText }}</span>
-        </p>
-      </div>
+        <template v-else>
+          <div class="bg-gray-100 m-2 rounded-md p-3 flex gap-2 text-gray-500">
+            <Icon name="NoSymbolIcon" class="w-5 h-5" />
+            <span class="font-medium"> No items in {{ noteTitle }} </span>
+          </div>
+        </template>
+      </template>
     </div>
-
-    <!-- notes -->
-    <div class="notes">
-      <NoteItemDelegate v-for="note in filteredNotes" :key="note.ld" :data="note" />
-    </div>
-
-    <!-- modal -->
-    <Modal v-model="modals.newnote" dim closeOnClickOutside closeOnEsc>
-      <CreateNoteModal ref="cn_modal" :callback="add_note" />
-    </Modal>
-
-    <!-- upload -->
-    <Modal v-model="modals.upload" dim>
-      <UploadNote @signal:close="modals.upload = false" />
-    </Modal>
   </div>
 </template>
 
-<script>
-import { PlusIcon, BanIcon, UploadIcon } from "@heroicons/vue/outline";
-import NoteSearch from "@/components/panels/NoteSearch.vue";
-import useNotes from "@/composables/useNotes";
-import { computed, ref, watch } from "@vue/runtime-core";
-import NoteItemDelegate from "@/components/NoteItemDelegate.vue";
-import Modal from "@/components/Modal.vue";
-import { useRouter } from "vue-router";
-import CreateNoteModal from "@/components/modals/CreateNoteModal.vue";
-import { useStore } from "vuex";
-import { SETTING_KEYS } from "@/constants/settings";
-import { ORDER } from "@/constants/sorting";
-import UploadNote from "@/components/modals/UploadNote.vue";
+<script lang="ts">
+import { computed, ComputedRef, defineComponent, Ref, ref, watch } from "vue";
+import PageHeader from "@/components/layout/ApplicationMenu/PageHeader.vue";
+import { MenuItem } from "@/types";
+import NewNoteDialog from "@/components/Dialog/NewNoteDialog.vue";
+import NotesItem from "@/components/NotesItem.vue";
+import Loading from "@/components/Loading.vue";
+import { useNotesStore } from "@/stores/notes";
+import { useAuthStore } from "@/stores/auth";
+import { useModalStore } from "@/stores/modals";
+import { NotePages } from "@/plugins/useNavigation";
+import { onKeyStroke } from "@vueuse/core";
+import { useRoute } from "vue-router";
+import Icon from "@/components/Icon";
 
-export default {
-  components: {
-    PlusIcon,
-    BanIcon,
-    NoteSearch,
-    Modal,
-    NoteItemDelegate,
-    CreateNoteModal,
-    UploadIcon,
-    UploadNote,
+export default defineComponent({
+  props: {
+    section: {
+      type: String as () => keyof NotePages,
+      default: "Note",
+    },
   },
-  setup() {
-    const { push } = useRouter();
-    const store = useStore();
-    const { notes, addNote, noteFolders, sort } = useNotes();
+  components: { PageHeader, NewNoteDialog, NotesItem, Loading, Icon },
+  setup(props) {
+    const route = useRoute();
+    const selecting = ref(false);
+    const notestore = useNotesStore();
+    const authstore = useAuthStore();
+    const modalstore = useModalStore();
+    const selectedNotes: Ref<string[]> = ref([]);
 
-    const modals = ref({
-      newnote: false,
-      upload: false,
+    const notes = computed(() => {
+      if (props.section === "Note") {
+        return notestore.basicNotes;
+      } else if (props.section === "StarredNote") {
+        return notestore.starredNotes;
+      } else if (props.section === "ArchivedNote") {
+        return notestore.archivedNotes;
+      } else if (props.section === "Trash") {
+        return notestore.trashedNotes;
+      }
+      return [];
     });
-    const error = ref("");
-    const cn_modal = ref(null);
-    const searchText = ref("");
-    const activeMenu = ref(noteFolders.value[0]);
-    const order = computed(
-      () => store.state.settings[SETTING_KEYS.SORTING_ORDER]
+
+    const noteTitle = computed(() => {
+      if (props.section.endsWith("Note") && props.section !== "Note") {
+        return props.section.slice(0, -4);
+      }
+      return props.section;
+    });
+
+    const menu: ComputedRef<Array<MenuItem>> = computed(
+      (): Array<MenuItem> =>
+        selecting.value
+          ? [
+              { id: Symbol(), title: "Selection", type: "HEADER" },
+              {
+                id: Symbol(),
+                title:
+                  route.name === "Trash" ? "Delete Selection" : "Move to trash",
+                icon: "TrashIcon",
+                action: async () => {
+                  const res = await notestore.deleteNotes(
+                    selectedNotes.value,
+                    route.name === "Trash"
+                  );
+                  if (res) {
+                    selectedNotes.value = [];
+                    selecting.value = false;
+                  }
+                },
+              },
+              {
+                id: Symbol(),
+                title: "Restore Selection",
+                hidden: route.name !== "Trash",
+                action: async () => {
+                  const res = await notestore.restoreNotes(selectedNotes.value);
+
+                  if (res) {
+                    selectedNotes.value = [];
+                    selecting.value = false;
+                  }
+                },
+              },
+
+              {
+                id: Symbol(),
+                title: "Archive Selection",
+                icon: "ArchiveBoxIcon",
+                hidden: ["Trash", "ArchivedNote", "Archive"].includes(
+                  route.name as string
+                ),
+                action: async () => {
+                  const res = await notestore.moveNotesToArchive(
+                    selectedNotes.value
+                  );
+                  if (res) {
+                    selectedNotes.value = [];
+                    selecting.value = false;
+                  }
+                },
+              },
+              {
+                id: Symbol(),
+                title: "Reverse Selection",
+                icon: "ArrowPathIcon",
+                action: () => {
+                  selectedNotes.value = notes.value
+                    .map((note) => note.id)
+                    .filter((nid) => !selectedNotes.value.includes(nid));
+                },
+              },
+              {
+                id: Symbol(),
+                title: "Close Selection",
+                icon: "XMarkIcon",
+                action: () => {
+                  selectedNotes.value = [];
+                  selecting.value = false;
+                },
+              },
+            ]
+          : [
+              {
+                id: Symbol(),
+                title: "Create note",
+                icon: "PlusIcon",
+                keybinding: ["ctrl", "alt", "n"],
+                action: () => (modalstore.createNote = true),
+                hidden: !["Note", "Notes"].includes(route.name as string),
+              },
+              {
+                id: Symbol(),
+                title: "Import",
+                icon: "CloudArrowDownIcon",
+                hidden: true,
+              },
+              {
+                id: Symbol(),
+                title: "Create folder",
+                icon: "FolderPlusIcon",
+                disabled: true,
+                hidden: true,
+                subtitle: "Signin to use feature",
+              },
+              {
+                id: Symbol(),
+                title: "Sort by",
+                icon: "AdjustmentsHorizontalIcon",
+                children: [
+                  { id: Symbol(), title: "No sort" },
+                  { id: Symbol(), title: "Title" },
+                  { id: Symbol(), title: "Updated" },
+                  { id: Symbol(), title: "Created" },
+                  { id: Symbol(), type: "SEPARATOR" },
+                  {
+                    id: Symbol(),
+                    title: "Ascending",
+                    type: "CHECKBOX",
+                    value: notestore.sort.ascending,
+                    action: () => {
+                      notestore.sort.ascending = !notestore.sort.ascending;
+                    },
+                  },
+                ],
+              },
+              { id: Symbol(), type: "SEPARATOR" },
+              {
+                id: Symbol(),
+                title: "Select",
+                icon: "ListBulletIcon",
+                action: () => {
+                  selecting.value = true;
+                },
+              },
+              {
+                id: Symbol(),
+                title: "Select All",
+                action: () => {
+                  selecting.value = true;
+                  selectedNotes.value = notes.value.map((n) => n.id);
+                },
+              },
+            ]
     );
 
-    const filteredNotes = computed(() => {
-      let res = notes.value.filter((note) => {
-        return (
-          note.folder === activeMenu.value.noteTypeKey &&
-          note.name.toLowerCase().includes(searchText.value.trim())
-        );
-      });
-      const sortingName = store.state.settings[SETTING_KEYS.SORTING_TYPE];
-      const sortingFunc = sort()[sortingName];
-      if (typeof sortingFunc === "function") res = sortingFunc(res);
-
-      if (order.value === ORDER.ACSENDING) return res.reverse();
-      return res;
-    });
-
-    watch(() => modals.value.newnote, (value) => {
-      if (value) {
-        window.requestAnimationFrame(() => cn_modal.value.focus());
-      } else {
-        cn_modal.value.reset();
+    onKeyStroke(["Escape"], (e) => {
+      if (selecting.value) {
+        e.preventDefault();
+        selecting.value = false;
       }
     });
 
-    const add_note = (title, folder) => {
-      const note = addNote(title, folder);
-      modals.value.newnote = false;
-      push(`/${note.ld}`);
-    };
-
-    const setSearch = (value) => (searchText.value = value);
-
-    const createNoteUnderCurrentFolder = () => {
-      cn_modal.value.setComboValue(activeMenu.value);
-      modals.value.newnote = true;
-    };
+    watch(
+      () => route.fullPath,
+      () => {
+        selecting.value = false;
+        selectedNotes.value = [];
+      }
+    );
 
     return {
+      menu,
+      noteTitle,
+      notestore,
+      authstore,
       notes,
-      noteFolders,
-      setSearch,
-      add_note,
-      activeMenu,
-      filteredNotes,
-      cn_modal,
-      searchText,
-      error,
-      createNoteUnderCurrentFolder,
-      modals,
+      selecting,
+      selectedNotes,
     };
   },
-};
+});
 </script>
-
-<style lang="scss" scoped>
-.tab {
-  @apply flex gap-3;
-
-  >button {
-    @apply flex items-center gap-2 font-semibold py-3 px-2 text-sm text-gray-400;
-
-    > :deep(svg) {
-      @apply w-4 h-4;
-    }
-
-    >div {
-      @apply h-4 absolute;
-    }
-  }
-
-  >button.active {
-    @apply overflow-clip text-gray-700 relative;
-
-    >div {
-      @apply rounded-md bg-primary-basic left-0 right-0 top-10;
-    }
-  }
-
-}
-
-.notes {
-  @apply overflow-y-auto custom-scrollbar flex-grow h-0;
-}
-</style>

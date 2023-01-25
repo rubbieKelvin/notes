@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+html,
+body {
+  height: 100%;
+  color: #323232;
+}
+
 button,
 a {
   cursor: default;
@@ -21,21 +27,24 @@ button {
 }
 
 @layer components {
-  .input-text {
-    @apply rounded px-4 py-3 outline-gray-200;
-    @apply focus:outline-primary-basic outline-2 outline;
+  .form-input-wrapper {
+    display: flex;
+    gap: 7px;
+    flex-direction: column;
   }
 
-  label.label {
-    @apply text-sm text-primary-vibrant flex;
+  .text-input {
+    @apply rounded px-4 py-2 outline-stroke;
+    @apply focus:outline-accent outline-1 focus:outline-2 outline;
   }
 
-  label.label > .text {
-    @apply flex-grow uppercase;
+  label {
+    @apply text-xs uppercase font-medium text-gray-600;
   }
 
-  label.label > .error {
-    @apply text-red-500 text-xs font-medium;
+  .btn {
+    @apply rounded-md hover:bg-hover border border-stroke active:bg-gray-200 select-none;
+    @apply focus:outline-black focus:outline-1;
   }
 }
 
