@@ -13,10 +13,11 @@ djangorestframework = "^3.14.0"
 typing-extensions = "^4.4.0"
 django-cors-headers = "^3.13.0"
 uql = {git = "https://github.com/rubbieKelvin/UntitledQL.git"}
-dj-database-url = "^1.2.0"
-psycopg2 = "^2.9.5"
-whitenoise = {extras = ["brotli"], version = "^6.3.0"}
-gunicorn = "^20.1.0"
+
+
+[tool.poetry.group.dev.dependencies]
+ipython = "^8.5.0"
+toml = "^0.10.2"
 
 [build-system]
 requires = ["poetry-core"]
