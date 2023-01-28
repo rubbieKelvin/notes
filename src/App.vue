@@ -3,8 +3,8 @@
     <div class="h-screen flex flex-col">
       <AppHeader />
       <div class="flex-grow flex">
-        <MainNav class="h-full" />
-        <ApplicationMenu class="h-full" />
+        <MainNav v-if="!isPublicNotePage" class="h-full" />
+        <ApplicationMenu v-if="!isPublicNotePage" class="h-full" />
         <router-view name="extended"> </router-view>
       </div>
 
@@ -29,6 +29,7 @@ import { useAuthStore } from "./stores/auth";
 import { useNotesStore } from "./stores/notes";
 import { useModalStore } from "./stores/modals";
 import { onKeyStroke } from "@vueuse/core";
+import useUtils from "./composables/useUtils";
 
 export default defineComponent({
   components: {
@@ -42,6 +43,7 @@ export default defineComponent({
     AuthWrapper,
   },
   setup() {
+    const utils = useUtils();
     const authstore = useAuthStore();
     const notestore = useNotesStore();
     const modalstore = useModalStore();
@@ -62,7 +64,7 @@ export default defineComponent({
       }
     );
 
-    return { modalstore };
+    return { modalstore, authstore, ...utils };
   },
 });
 </script>

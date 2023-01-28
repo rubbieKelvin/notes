@@ -1,10 +1,11 @@
 import { Note, NoteInsert, NoteUpdate, Tag } from "@/types/models";
 import { defineStore } from "pinia";
-import useSharedUQL from "@/plugins/uql";
+import useSharedUQL from "@/composables/uql";
 import { useAuthStore } from "./auth";
 import { MenuItem } from "@/types";
 import { useRouter } from "vue-router";
-import { noteRoute } from "@/plugins/useNavigation";
+import { noteRoute } from "@/composables/useNavigation";
+import { Pk } from "@/composables/uql/types";
 
 interface State {
   notes: Note[] | null;
@@ -14,6 +15,16 @@ interface State {
     by: keyof Note | null;
     ascending: boolean;
   };
+}
+
+interface UpdateNoteAction {
+  objects: {
+    updatedFields: NoteUpdate;
+    pk: Pk;
+  }[];
+  fields?: Record<any, any> | boolean;
+  removeFromList?: boolean;
+  closeNoteIfAffected?: boolean;
 }
 
 export const useNotesStore = defineStore("notes", {
@@ -60,10 +71,46 @@ export const useNotesStore = defineStore("notes", {
     },
   },
   actions: {
-    async openNote(rid: number) {
+    async _updateManyNotes({
+      objects,
+      fields = true,
+      removeFromList = false,
+      closeNoteIfAffected = true,
+    }: UpdateNoteAction): Promise<Note[] | null> {
+      try {
+        const notes = await this.notemodel.updateMany({
+          objects,
+          fields,
+        });
+
+        if (notes) {
+          const res = notes.map((note) => note.id);
+
+          if (
+            this.openedNote &&
+            res.includes(this.openedNote.id) &&
+            closeNoteIfAffected
+          )
+            this.openedNote = null;
+
+          if (this.notes)
+            this.notes = this.notes.filter((note) => !res.includes(note.id));
+
+          if (!removeFromList) this.notes = [...(this.notes ?? []), ...notes];
+
+          return notes;
+        }
+        return null;
+      } catch {
+        return null;
+      }
+    },
+    async openNote(rid: number, username: string | null = null) {
       const authstore = useAuthStore();
       if (authstore.isAuthenticated) {
         this.openedNote = await this.getNoteByRiD(rid);
+      } else if (username) {
+        this.openedNote = await this.getNoteByRiD(rid, username);
       }
     },
     async createNote(object: NoteInsert) {
@@ -78,93 +125,57 @@ export const useNotesStore = defineStore("notes", {
       pks: string[],
       permernant = false
     ): Promise<string[] | null> {
-      try {
-        const notes = await this.notemodel.updateMany({
-          objects: pks.map((pk) => ({
-            pk,
-            updatedFields: permernant
-              ? { is_deleted: true }
-              : { is_trashed: true },
-          })),
-          fields: permernant
-            ? {
-                id: true,
-              }
-            : true,
-        });
+      const res = await this._updateManyNotes({
+        objects: pks.map((pk) => ({
+          pk,
+          updatedFields: permernant
+            ? { is_deleted: true }
+            : { is_trashed: true },
+        })),
+        fields: permernant
+          ? {
+              id: true,
+            }
+          : true,
+        removeFromList: permernant,
+      });
 
-        if (notes) {
-          const res = notes.map((note) => note.id);
-
-          if (this.openedNote && res.includes(this.openedNote.id))
-            this.openedNote = null;
-
-          if (this.notes)
-            this.notes = this.notes.filter((note) => !res.includes(note.id));
-
-          if (!permernant) this.notes = [...(this.notes ?? []), ...notes];
-
-          return res;
-        }
-        return null;
-      } catch {
-        return null;
-      }
+      if (res !== null) return res.map((note) => note.id);
+      return null;
     },
     async moveNotesToArchive(
       pks: string[],
       archive = true
     ): Promise<Note[] | null> {
-      try {
-        const notes = await this.notemodel.updateMany({
-          objects: pks.map((pk) => ({
-            pk,
-            updatedFields: { is_archived: archive },
-          })),
-          fields: true,
-        });
-
-        if (notes) {
-          const res = notes.map((note) => note.id);
-
-          if (this.notes) {
-            this.notes = this.notes.filter((note) => !res.includes(note.id));
-          }
-
-          this.notes = [...(this.notes ?? []), ...notes];
-
-          return notes;
-        }
-        return null;
-      } catch {
-        return null;
-      }
+      return await this._updateManyNotes({
+        objects: pks.map((pk) => ({
+          pk,
+          updatedFields: { is_archived: archive },
+        })),
+        fields: true,
+        closeNoteIfAffected: false,
+      });
     },
     async restoreNotes(pks: string[]): Promise<Note[] | null> {
-      try {
-        const notes = await this.notemodel.updateMany({
-          objects: pks.map((pk) => ({
-            pk,
-            updatedFields: { is_trashed: false },
-          })),
-          fields: true,
-        });
-
-        if (notes) {
-          const res = notes.map((note) => note.id);
-
-          if (this.notes) {
-            this.notes = this.notes.filter((note) => !res.includes(note.id));
-          }
-
-          this.notes = [...(this.notes ?? []), ...notes];
-
-          return notes;
-        }
-        return null;
-      } catch {
-        return null;
-      }
+      return await this._updateManyNotes({
+        objects: pks.map((pk) => ({
+          pk,
+          updatedFields: { is_trashed: false },
+        })),
+        fields: true,
+      });
+    },
+    async setNotesPublic(
+      pks: string[],
+      is_public: boolean
+    ): Promise<Note[] | null> {
+      return await this._updateManyNotes({
+        objects: pks.map((pk) => ({
+          pk,
+          updatedFields: { is_public },
+        })),
+        closeNoteIfAffected: false,
+      });
     },
     async searchNotes(query: string): Promise<Note[]> {
       const notes = await this.notemodel.findMany({
@@ -180,12 +191,17 @@ export const useNotesStore = defineStore("notes", {
 
       return notes ?? [];
     },
-    async getNoteByRiD(rid: number) {
+    async getNoteByRiD(rid: number, username: string | null = null) {
       if (this.notes === null) {
         const note =
           (
             await this.notemodel.findMany({
-              where: { readable_id: { _eq: rid } },
+              where: {
+                readable_id: { _eq: rid },
+                ...(username
+                  ? { author: { username: { _eq: username } } }
+                  : {}),
+              },
               fields: true,
               limit: 1,
             })
@@ -216,12 +232,17 @@ export const useNotesStore = defineStore("notes", {
       return updatedNote;
     },
     async fetchNotes() {
-      const notes = await this.notemodel.findMany({
-        where: { is_deleted: { _eq: false } },
-        fields: true,
-      });
+      const authstore = useAuthStore();
 
-      this.notes = notes;
+      if (authstore.isAuthenticated) {
+        const notes = await this.notemodel.findMany({
+          // adding author id to query so we dont get other peoples public note in this call
+          where: { author: { id: { _eq: authstore.user?.id } } },
+          fields: true,
+        });
+
+        this.notes = notes;
+      }
     },
     noteContextMenu(
       note: Note,
@@ -273,7 +294,31 @@ export const useNotesStore = defineStore("notes", {
             }
           },
         },
-        { id: Symbol(), title: "Make public", hidden: true },
+        {
+          id: Symbol(),
+          title: "Share to",
+          icon: "ShareIcon",
+          hidden: note.is_trashed || true,
+        },
+        {
+          id: Symbol(),
+          title: "Make public",
+          icon: "UserGroupIcon",
+          hidden: note.is_trashed || note.is_public,
+          action: async () => {
+            const notes = await this.setNotesPublic([note.id], true);
+            if (notes) onNoteEdited(notes);
+          },
+        },
+        {
+          id: Symbol(),
+          title: "Remove public access",
+          hidden: note.is_trashed || !note.is_public,
+          action: async () => {
+            const notes = await this.setNotesPublic([note.id], false);
+            if (notes) onNoteEdited(notes);
+          },
+        },
         { id: Symbol(), title: "Share", hidden: true },
         { id: Symbol(), title: "Export", hidden: true },
         {

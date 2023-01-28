@@ -20,6 +20,11 @@ export default createRouter({
       },
     },
     {
+      path: "/public/:username/note-:identifier",
+      name: "PublicNote",
+      components: { extended: () => import("@/views/editor.vue") },
+    },
+    {
       path: "/shared",
       name: "Shared",
       components: {

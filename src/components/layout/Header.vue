@@ -7,10 +7,11 @@
       </h1>
     </div>
     <div class="flex-grow">
-      <SearchBar />
+      <SearchBar v-if="!isPublicNotePage" />
     </div>
     <div>
-      <Avatar />
+      <Avatar v-if="authstore.isAuthenticated" />
+      <router-link v-else class="btn px-2 py-1" to="/">Sign In</router-link>
     </div>
   </div>
 </template>
@@ -20,9 +21,15 @@ import { defineComponent } from "vue";
 import { MagnifyingGlassIcon, NewspaperIcon } from "@heroicons/vue/24/outline";
 import Avatar from "@/components/Avatar.vue";
 import SearchBar from "@/components/SearchBar.vue";
+import { useAuthStore } from "@/stores/auth";
+import useUtils from "@/composables/useUtils";
 
 export default defineComponent({
   components: { MagnifyingGlassIcon, Avatar, NewspaperIcon, SearchBar },
-  setup() {},
+  setup() {
+    const utils = useUtils();
+    const authstore = useAuthStore();
+    return { authstore, ...utils };
+  },
 });
 </script>

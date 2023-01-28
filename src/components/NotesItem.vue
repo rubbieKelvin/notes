@@ -64,7 +64,7 @@
 
 <script lang="ts">
 import { Note } from "@/types/models";
-import { NotePages, noteRoute } from "@/plugins/useNavigation";
+import { NotePages, noteRoute } from "@/composables/useNavigation";
 import { UseTimeAgo } from "@vueuse/components";
 import { computed, defineComponent, watch } from "vue";
 import ContextMenuWrapper from "@/components/Popup/ContextMenuWrapper.vue";
@@ -106,10 +106,12 @@ export default defineComponent({
       return props.selecting || shouldDirectlyOpenNote.value;
     });
 
-    const menu: MenuItem[] = notestore.noteContextMenu(props.note, {
-      showOpen: true,
-      useRouterToOpenNote: !shouldDirectlyOpenNote.value,
-    });
+    const menu = computed((): MenuItem[] =>
+      notestore.noteContextMenu(props.note, {
+        showOpen: true,
+        useRouterToOpenNote: !shouldDirectlyOpenNote.value,
+      })
+    );
 
     const restoreNote = () => {
       notestore.restoreNotes([props.note.id]);

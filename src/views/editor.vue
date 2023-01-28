@@ -1,7 +1,10 @@
 <template>
-  <div class="flex flex-grow w-full h-full">
+  <div
+    class="flex flex-grow w-full h-full"
+    :class="{ 'px-5': isPublicNotePage }"
+  >
     <TextEditor
-      v-if="note && writableContent && authstore.isAuthenticated"
+      v-if="note && writableContent"
       v-model="writableContent"
       :note="note"
       class="flex-grow"
@@ -32,10 +35,12 @@ import { Note } from "@/types/models";
 import { JSONContent } from "@tiptap/core";
 import { useNotesStore } from "@/stores/notes";
 import { useAuthStore } from "@/stores/auth";
+import useUtils from "@/composables/useUtils";
 
 export default defineComponent({
   components: { EmptyPage, TextEditor },
   setup() {
+    const utils = useUtils();
     const route = useRoute();
     const router = useRouter();
     const notestore = useNotesStore();
@@ -61,7 +66,10 @@ export default defineComponent({
         if (readable_id === null) return;
 
         // get note
-        notestore.openNote(readable_id);
+        notestore.openNote(
+          readable_id,
+          authstore.user?.username ?? (route.params?.username as string)
+        );
       }
     };
 
@@ -102,7 +110,7 @@ export default defineComponent({
       }
     };
 
-    return { note, writableContent, authstore, deleteNote };
+    return { note, writableContent, authstore, deleteNote, ...utils };
   },
 });
 </script>
