@@ -13,18 +13,28 @@
             @keypress.enter="() => updateNote(['title'])"
             @blur="() => updateNote(['title'])"
           />
-          <p class="text-gray-500 text-sm">
-            Last updated
-            <UseTimeAgo
-              v-slot="{ timeAgo }"
-              :time="new Date(note.last_updated)"
-            >
-              {{ timeAgo }}
-            </UseTimeAgo>
+
+          <p class="text-gray-500 text-sm flex gap-2 items-center">
+            <span>
+              Last updated
+              <UseTimeAgo
+                v-slot="{ timeAgo }"
+                :time="new Date(note.last_updated)"
+              >
+                {{ timeAgo }}
+              </UseTimeAgo>
+            </span>
+            <span title="This note is accessible to everyone">
+              <Icon
+                v-if="editableNote.is_public"
+                name="GlobeEuropeAfricaIcon"
+                class="w-5 h-5"
+              />
+            </span>
           </p>
         </div>
 
-        <div class="flex gap-2 items-center">
+        <div v-if="!isPublicNotePage" class="flex gap-2 items-center">
           <button
             v-if="contentEdited && !note.is_archived"
             @click="saveNote"
@@ -111,6 +121,8 @@ import { MenuItem } from "@/types";
 import MenuList from "@/components/Popup/MenuList.vue";
 import CodeBlock from "@/components/TextEditor/extensions/CodeBlock";
 import { lowlight } from "lowlight/lib/common";
+import { useAuthStore } from "@/stores/auth";
+import useUtils from "@/composables/useUtils";
 
 export default defineComponent({
   name: "TextEditor",
@@ -127,11 +139,16 @@ export default defineComponent({
   },
   emits: ["note:changed", "contextmenu:delete"],
   setup(props, { emit }) {
+    const utils = useUtils();
     const notestore = useNotesStore();
+    const authstore = useAuthStore();
 
     const contentEdited = ref(false);
     const { idle } = useIdle(5 * 1000);
     const editableNote = ref({ ...props.note });
+
+    const checkEditable = (note: Note) =>
+      !note.is_archived && !note.is_public && !note.is_trashed;
 
     const menu = computed(() =>
       notestore.noteContextMenu(props.note, {
@@ -149,7 +166,7 @@ export default defineComponent({
           editableNote.value = { ...props.note };
 
           editor.value.commands.setContent(editableNote.value.content);
-          editor.value.setEditable(!editableNote.value.is_archived);
+          editor.value.setEditable(checkEditable(editableNote.value));
         }
       },
       { deep: true }
@@ -167,7 +184,7 @@ export default defineComponent({
     });
 
     const saveNote = async () => {
-      if (contentEdited.value && !editableNote.value.is_archived) {
+      if (contentEdited.value && checkEditable(editableNote.value)) {
         const note = await updateNote(["content"]);
         if (note) contentEdited.value = false;
       }
@@ -189,7 +206,7 @@ export default defineComponent({
     };
 
     const editor = useEditor({
-      editable: !editableNote.value.is_archived,
+      editable: checkEditable(editableNote.value),
       extensions: [
         TaskList,
         TaskItem,
@@ -233,7 +250,17 @@ export default defineComponent({
       },
     });
 
-    return { contentEdited, editableNote, updateNote, editor, saveNote, menu };
+    return {
+      contentEdited,
+      editableNote,
+      updateNote,
+      editor,
+      saveNote,
+      menu,
+      authstore,
+      notestore,
+      ...utils,
+    };
   },
 });
 </script>
@@ -257,7 +284,7 @@ export default defineComponent({
   &-input {
     flex-grow: 1;
     overflow-y: auto;
-    @apply custom-scrollbar h-1 px-2 pb-10;
+    @apply custom-scrollbar h-1 px-1 pb-10;
 
     div {
       height: 100%;

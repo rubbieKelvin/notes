@@ -1,4 +1,5 @@
 import { Note } from "@/types/models";
+import { useRouter } from "vue-router";
 
 export type Route = {
   name: string;
@@ -23,4 +24,9 @@ export const noteRoute = (
       identifier: note.readable_id,
     },
   };
+};
+
+export const goToLogin = () => {
+  const router = useRouter();
+  router.push("/");
 };

@@ -36,7 +36,7 @@ import Dialog from "./index.vue";
 import Icon from "@/components/Icon";
 import { useFocus } from "@vueuse/core";
 import { useNotesStore } from "@/stores/notes";
-import { noteRoute } from "@/plugins/useNavigation";
+import { noteRoute } from "@/composables/useNavigation";
 import { useAuthStore } from "@/stores/auth";
 import { useRouter } from "vue-router";
 

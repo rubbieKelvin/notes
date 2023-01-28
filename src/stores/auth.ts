@@ -1,6 +1,6 @@
 import { User } from "@/types/models";
 import { defineStore } from "pinia";
-import useSharedUQL from "@/plugins/uql";
+import useSharedUQL from "@/composables/uql";
 
 interface State {
   user: User | null;

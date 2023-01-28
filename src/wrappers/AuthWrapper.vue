@@ -1,9 +1,6 @@
 <template>
   <div authwrapper>
-    <div
-      :disabled="!authstore.isAuthenticated"
-      :class="{ 'pointer-events-none': !authstore.isAuthenticated }"
-    >
+    <div :disabled="modalOpen" :class="{ 'pointer-events-none': modalOpen }">
       <slot />
     </div>
     <UiDialog dim glasseffect v-model="modalOpen">
@@ -162,15 +159,17 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, onMounted, Ref, ref } from "vue";
+import { computed, defineComponent, onMounted, Ref, ref, watch } from "vue";
 import UiDialog from "@/components/Dialog/index.vue";
 import { useAuthStore } from "@/stores/auth";
 import TextInput from "@/components/TextInput.vue";
 import Loading from "@/components/Loading.vue";
 import Banner from "@/components/Banner.vue";
 import { useNotesStore } from "@/stores/notes";
-import { MaxRetriesReached } from "@/plugins/uql";
+import { MaxRetriesReached } from "@/composables/uql";
 import { validatePassword, validateUsername } from "@/utils/validators";
+import { useRoute } from "vue-router";
+import useUtils from "@/composables/useUtils";
 
 export default defineComponent({
   components: {
@@ -180,6 +179,8 @@ export default defineComponent({
     Banner,
   },
   setup() {
+    const { isPublicNotePage } = useUtils();
+    const route = useRoute();
     const authstore = useAuthStore();
     const notestore = useNotesStore();
 
@@ -329,12 +330,24 @@ export default defineComponent({
       }
     };
 
+    watch(
+      () => route.fullPath,
+      async () => {
+        if (!isPublicNotePage.value && !authstore.isAuthenticated)
+          await doAuth();
+      }
+    );
+
     onMounted(async () => {
-      await doAuth();
+      if (!isPublicNotePage.value) {
+        await doAuth();
+      }
     });
 
     return {
-      modalOpen: computed(() => !authstore.isAuthenticated),
+      modalOpen: computed(
+        () => !authstore.isAuthenticated && !isPublicNotePage.value
+      ),
       authenticating,
       form,
       tab,

@@ -45,7 +45,7 @@ import Loading from "@/components/Loading.vue";
 import { useNotesStore } from "@/stores/notes";
 import { useAuthStore } from "@/stores/auth";
 import { useModalStore } from "@/stores/modals";
-import { NotePages } from "@/plugins/useNavigation";
+import { NotePages } from "@/composables/useNavigation";
 import { onKeyStroke } from "@vueuse/core";
 import { useRoute } from "vue-router";
 import Icon from "@/components/Icon";
