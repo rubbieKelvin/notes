@@ -169,6 +169,7 @@ import { useNotesStore } from "@/stores/notes";
 import { MaxRetriesReached } from "@/composables/uql";
 import { validatePassword, validateUsername } from "@/utils/validators";
 import { useRoute } from "vue-router";
+import useUtils from "@/composables/useUtils";
 
 export default defineComponent({
   components: {
@@ -178,6 +179,7 @@ export default defineComponent({
     Banner,
   },
   setup() {
+    const { isPublicNotePage } = useUtils();
     const route = useRoute();
     const authstore = useAuthStore();
     const notestore = useNotesStore();
@@ -211,10 +213,6 @@ export default defineComponent({
         username: "",
         password: "",
       },
-    });
-
-    const isPublicPage = computed(() => {
-      return route.name == "PublicNote";
     });
 
     const doAuth = async () => {
@@ -335,19 +333,20 @@ export default defineComponent({
     watch(
       () => route.fullPath,
       async () => {
-        if (!isPublicPage.value && !authstore.isAuthenticated) await doAuth();
+        if (!isPublicNotePage.value && !authstore.isAuthenticated)
+          await doAuth();
       }
     );
 
     onMounted(async () => {
-      if (!isPublicPage.value) {
+      if (!isPublicNotePage.value) {
         await doAuth();
       }
     });
 
     return {
       modalOpen: computed(
-        () => !authstore.isAuthenticated && !isPublicPage.value
+        () => !authstore.isAuthenticated && !isPublicNotePage.value
       ),
       authenticating,
       form,
