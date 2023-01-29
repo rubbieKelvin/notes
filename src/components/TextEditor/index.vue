@@ -139,16 +139,16 @@ export default defineComponent({
   },
   emits: ["note:changed", "contextmenu:delete"],
   setup(props, { emit }) {
-    const utils = useUtils();
+    const { isPublicNotePage } = useUtils();
     const notestore = useNotesStore();
     const authstore = useAuthStore();
 
     const contentEdited = ref(false);
-    const { idle } = useIdle(5 * 1000);
+    const { idle } = useIdle(10 * 1000);
     const editableNote = ref({ ...props.note });
 
     const checkEditable = (note: Note) =>
-      !note.is_archived && !note.is_public && !note.is_trashed;
+      !note.is_archived && !note.is_trashed && !isPublicNotePage.value;
 
     const menu = computed(() =>
       notestore.noteContextMenu(props.note, {
@@ -160,10 +160,21 @@ export default defineComponent({
 
     watch(
       () => props.note,
-      () => {
+      (currentPropNote: Note, oldPropNote: Note) => {
         if (editor.value) {
           if (!editor.value.isEditable) editor.value.setEditable(true);
-          editableNote.value = { ...props.note };
+
+          // update the editable note with the actual note
+          // ...also we dont want to overrite the note we have when we update another attribute of the notes
+          // so when we refresh a note, anf the id is the same as the one we;re currently writng,
+          // if the content of the old note is the same as the content of the new note, dont write the editable note
+          editableNote.value = {
+            ...currentPropNote,
+            ...(oldPropNote.id === currentPropNote.id &&
+            notestore.hasSimilarContent(oldPropNote, currentPropNote)
+              ? { content: editableNote.value.content }
+              : {}),
+          };
 
           editor.value.commands.setContent(editableNote.value.content);
           editor.value.setEditable(checkEditable(editableNote.value));
@@ -173,7 +184,7 @@ export default defineComponent({
     );
 
     watch(idle, async () => {
-      // await saveNote();
+      if (notestore.settings.autosave) await saveNote();
     });
 
     onKeyStroke(["Control", "s"], (e) => {
@@ -259,7 +270,7 @@ export default defineComponent({
       menu,
       authstore,
       notestore,
-      ...utils,
+      isPublicNotePage,
     };
   },
 });
