@@ -15,7 +15,9 @@ REST_FRAMEWORK = {
     ],
 }
 
-CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
+CORS_ALLOWED_ORIGINS = [
+    i for i in os.getenv("CORS_ALLOWED_ORIGINS", "").split(",") if i
+]
 
 if DevelopmentMode.DEV:
     CORS_ALLOWED_ORIGINS.append("http://127.0.0.1:5173")
