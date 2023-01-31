@@ -5,7 +5,7 @@
       <input
         ref="input"
         type="text"
-        class="w-full py-2 outline-none"
+        class="w-full py-2 outline-none bg-transparent"
         placeholder="Search tags, notes, folders, friends..."
         v-model="searchText"
         @keypress.enter="search"
