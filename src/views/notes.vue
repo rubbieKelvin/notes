@@ -195,9 +195,10 @@ export default defineComponent({
                     id: Symbol(),
                     title: "Ascending",
                     type: "CHECKBOX",
-                    value: notestore.sort.ascending,
+                    value: notestore.settings.sort.ascending,
                     action: () => {
-                      notestore.sort.ascending = !notestore.sort.ascending;
+                      notestore.settings.sort.ascending =
+                        !notestore.settings.sort.ascending;
                     },
                   },
                 ],
