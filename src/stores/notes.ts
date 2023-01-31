@@ -11,9 +11,12 @@ interface State {
   notes: Note[] | null;
   openedNote: Note | null;
   tags: Tag[];
-  sort: {
-    by: keyof Note | null;
-    ascending: boolean;
+  settings: {
+    autosave: boolean;
+    sort: {
+      by: keyof Note | null;
+      ascending: boolean;
+    };
   };
 }
 
@@ -32,9 +35,12 @@ export const useNotesStore = defineStore("notes", {
     notes: null,
     openedNote: null,
     tags: [],
-    sort: {
-      by: null,
-      ascending: true,
+    settings: {
+      autosave: true,
+      sort: {
+        by: null,
+        ascending: true,
+      },
     },
   }),
   getters: {
@@ -71,6 +77,11 @@ export const useNotesStore = defineStore("notes", {
     },
   },
   actions: {
+    hasSimilarContent(noteA: Note, noteB: Note): boolean {
+      // checks if two notes are the same
+      return JSON.stringify(noteA.content) === JSON.stringify(noteB.content);
+    },
+
     async _updateManyNotes({
       objects,
       fields = true,
