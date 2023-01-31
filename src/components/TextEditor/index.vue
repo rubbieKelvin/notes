@@ -8,7 +8,7 @@
             type="text"
             placeholder="Untitled"
             v-model="editableNote.title"
-            class="outline-0 w-full text-lg focus:outline-none"
+            class="outline-0 w-full text-lg focus:outline-none bg-transparent"
             maxlength="60"
             @keypress.enter="() => updateNote(['title'])"
             @blur="() => updateNote(['title'])"

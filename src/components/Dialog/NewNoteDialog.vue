@@ -14,7 +14,7 @@
           <label class="text-input-label">title</label>
           <input
             v-model="data.title"
-            class="text-input"
+            class="text-input bg-transparent"
             type="text"
             placeholder="Title"
             ref="noteTitleRef"
