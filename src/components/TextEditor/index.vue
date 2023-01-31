@@ -91,7 +91,7 @@
     </div> -->
 
     <!-- input -->
-    <div class="texteditor-input">
+    <div class="texteditor-input custom-scrollbar">
       <editor-content :editor="editor" />
     </div>
   </div>
@@ -284,7 +284,7 @@ export default defineComponent({
   &-input {
     flex-grow: 1;
     overflow-y: auto;
-    @apply custom-scrollbar h-1 px-1 pb-10;
+    @apply h-1 px-1 pb-10;
 
     div {
       height: 100%;

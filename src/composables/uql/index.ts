@@ -241,6 +241,5 @@ export const useUQL = (url: string, models: string[]) => {
   return { call, model };
 };
 
-export default createSharedComposable(() =>
-  useUQL("http://127.0.0.1:8000/uql/", ["api.note"])
-);
+const URL = import.meta.env.VITE_UQL_BASE || "http://127.0.0.1:8000/uql/";
+export default createSharedComposable(() => useUQL(URL, ["api.note"]));
