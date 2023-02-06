@@ -1,6 +1,10 @@
 <template>
-  <div authwrapper>
-    <div :disabled="modalOpen" :class="{ 'pointer-events-none': modalOpen }">
+  <div authwrapper class="h-full">
+    <div
+      :disabled="modalOpen"
+      class="h-full"
+      :class="{ 'pointer-events-none': modalOpen }"
+    >
       <slot />
     </div>
     <UiDialog dim glasseffect v-model="modalOpen">
