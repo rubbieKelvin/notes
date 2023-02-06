@@ -1,5 +1,7 @@
 <template>
-  <div class="w-72 border-r border-stroke p-3">
+  <div
+    class="md:w-96 md:border-r md:border-t-0 border-r-0 md:border-r-stroke border-t border-t-stroke py-2 md:p-3 h-min md:h-auto"
+  >
     <template v-for="item in navItems" :key="item.id">
       <NavItem v-if="!item.hidden" :item="item" />
     </template>
