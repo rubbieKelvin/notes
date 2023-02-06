@@ -36,7 +36,7 @@
 
         <div v-if="!isPublicNotePage" class="flex gap-2 items-center">
           <button
-            v-if="contentEdited && !note.is_archived"
+            v-if="contentUpdated && !note.is_archived"
             @click="saveNote"
             class="btn p-1 text-sm"
           >
@@ -91,38 +91,26 @@
     </div> -->
 
     <!-- input -->
-    <div class="texteditor-input custom-scrollbar">
+    <div v-if="editor" class="texteditor-input custom-scrollbar">
       <editor-content :editor="editor" />
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import {
-  EditorContent,
-  useEditor,
-  BubbleMenu,
-  JSONContent,
-} from "@tiptap/vue-3";
+import { EditorContent, BubbleMenu, JSONContent } from "@tiptap/vue-3";
 import { UseTimeAgo } from "@vueuse/components";
-import StaterKit from "@tiptap/starter-kit";
 import { ref, defineComponent, watch, computed } from "vue";
-import Placeholder from "@tiptap/extension-placeholder";
-import Link from "@tiptap/extension-link";
-import TaskList from "@tiptap/extension-task-list";
-import TaskItem from "@tiptap/extension-task-item";
 import Icon from "@/components/Icon";
 import { Note, NoteUpdate } from "@/types/models";
 import { onKeyStroke } from "@vueuse/core";
 import { useNotesStore } from "@/stores/notes";
 import { pickProperties } from "@/utils/helpers";
 import { useIdle } from "@vueuse/core";
-import { MenuItem } from "@/types";
 import MenuList from "@/components/Popup/MenuList.vue";
-import CodeBlock from "@/components/TextEditor/extensions/CodeBlock";
-import { lowlight } from "lowlight/lib/common";
 import { useAuthStore } from "@/stores/auth";
 import useUtils from "@/composables/useUtils";
+import useTextEditor from "@/composables/useTextEditor";
 
 export default defineComponent({
   name: "TextEditor",
@@ -142,8 +130,8 @@ export default defineComponent({
     const { isPublicNotePage } = useUtils();
     const notestore = useNotesStore();
     const authstore = useAuthStore();
+    const { editor, configureEditor, contentUpdated } = useTextEditor();
 
-    const contentEdited = ref(false);
     const { idle } = useIdle(10 * 1000);
     const editableNote = ref({ ...props.note });
 
@@ -162,22 +150,30 @@ export default defineComponent({
       () => props.note,
       (currentPropNote: Note, oldPropNote: Note) => {
         if (editor.value) {
-          if (!editor.value.isEditable) editor.value.setEditable(true);
+          editableNote.value = { ...currentPropNote };
+          // edit the content of the editor if the notes are not the same
+          console.log({
+            oldPropNote: { ...oldPropNote },
+            currentPropNote: { ...currentPropNote },
+          });
+          configureEditor(editableNote, oldPropNote.id !== currentPropNote.id);
 
-          // update the editable note with the actual note
-          // ...also we dont want to overrite the note we have when we update another attribute of the notes
-          // so when we refresh a note, anf the id is the same as the one we;re currently writng,
-          // if the content of the old note is the same as the content of the new note, dont write the editable note
-          editableNote.value = {
-            ...currentPropNote,
-            ...(oldPropNote.id === currentPropNote.id &&
-            notestore.hasSimilarContent(oldPropNote, currentPropNote)
-              ? { content: editableNote.value.content }
-              : {}),
-          };
+          // if (!editor.value.isEditable) editor.value.setEditable(true);
 
-          editor.value.commands.setContent(editableNote.value.content);
-          editor.value.setEditable(checkEditable(editableNote.value));
+          // // update the editable note with the actual note
+          // // ...also we dont want to overrite the note we have when we update another attribute of the notes
+          // // so when we refresh a note, anf the id is the same as the one we;re currently writng,
+          // // if the content of the old note is the same as the content of the new note, dont write the editable note
+          // editableNote.value = {
+          //   ...currentPropNote,
+          //   ...(oldPropNote.id === currentPropNote.id &&
+          //   notestore.hasSimilarContent(oldPropNote, currentPropNote)
+          //     ? { content: editableNote.value.content }
+          //     : {}),
+          // };
+
+          // editor.value.commands.setContent(editableNote.value.content);
+          // editor.value.setEditable(checkEditable(editableNote.value));
         }
       },
       { deep: true }
@@ -195,9 +191,9 @@ export default defineComponent({
     });
 
     const saveNote = async () => {
-      if (contentEdited.value && checkEditable(editableNote.value)) {
+      if (contentUpdated.value && checkEditable(editableNote.value)) {
         const note = await updateNote(["content"]);
-        if (note) contentEdited.value = false;
+        if (note) contentUpdated.value = false;
       }
     };
 
@@ -216,53 +212,10 @@ export default defineComponent({
       return note;
     };
 
-    const editor = useEditor({
-      editable: checkEditable(editableNote.value),
-      extensions: [
-        TaskList,
-        TaskItem,
-        Link.configure({
-          autolink: true,
-          linkOnPaste: true,
-          openOnClick: true,
-        }),
-        StaterKit.configure({
-          heading: { levels: [1, 2, 3] },
-          codeBlock: false,
-        }),
-        Placeholder.configure({
-          emptyEditorClass: "editor-empty",
-          emptyNodeClass: "empty-node",
-          placeholder: ({ node }) => {
-            if (node.type.name === "heading") {
-              if (node.attrs.level === 1)
-                return "What's are we writing about?...";
-              else if (node.attrs.level === 2)
-                return "A Nice title under our main topic...";
-              else node.attrs.level === 3;
-              return "Let's discuss a point...";
-            }
-
-            return "Write Something...";
-          },
-        }),
-        CodeBlock.configure({ lowlight }),
-      ],
-      content: editableNote.value.content,
-      onUpdate: () => {
-        const content = editor?.value?.getJSON();
-        if (
-          content &&
-          JSON.stringify(content) !== JSON.stringify(editableNote.value.content)
-        ) {
-          editableNote.value.content = content;
-          contentEdited.value = true;
-        }
-      },
-    });
+    configureEditor(editableNote);
 
     return {
-      contentEdited,
+      contentUpdated,
       editableNote,
       updateNote,
       editor,
