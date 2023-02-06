@@ -1,9 +1,18 @@
 <template>
-  <div class="flex gap-10 px-6 py-3 border-b border-stroke items-center">
+  <div
+    class="flex gap-4 md:gap-10 px-6 py-3 border-b border-stroke items-center"
+  >
     <div class="h-min">
-      <h1 class="inline-flex gap-2 text-black">
-        <NewspaperIcon class="w-5 h-5" />
-        <span class="select-none">OpenNotes</span>
+      <h1 class="gap-2 text-black flex">
+        <NewspaperIcon class="w-5 h-5" :class="{ 'mobile-hide': isNotePage }" />
+        <button
+          @click="goBack"
+          class="btn p-2 only-on-mobile"
+          :class="{ 'mobile-hide': !isNotePage }"
+        >
+          <ChevronLeftIcon class="w-5 h-5" />
+        </button>
+        <span class="select-none hidden md:inline">OpenNotes</span>
       </h1>
     </div>
     <div class="flex-grow">
@@ -18,18 +27,36 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { MagnifyingGlassIcon, NewspaperIcon } from "@heroicons/vue/24/outline";
+import {
+  ArrowLeftIcon,
+  ChevronLeftIcon,
+  MagnifyingGlassIcon,
+  NewspaperIcon,
+} from "@heroicons/vue/24/outline";
 import Avatar from "@/components/Avatar.vue";
 import SearchBar from "@/components/SearchBar.vue";
 import { useAuthStore } from "@/stores/auth";
 import useUtils from "@/composables/useUtils";
+import { useRouter } from "vue-router";
 
 export default defineComponent({
-  components: { MagnifyingGlassIcon, Avatar, NewspaperIcon, SearchBar },
+  components: {
+    MagnifyingGlassIcon,
+    Avatar,
+    NewspaperIcon,
+    SearchBar,
+    ArrowLeftIcon,
+    ChevronLeftIcon,
+  },
   setup() {
     const utils = useUtils();
+    const router = useRouter();
     const authstore = useAuthStore();
-    return { authstore, ...utils };
+
+    const goBack = () => {
+      router.back();
+    };
+    return { authstore, ...utils, goBack };
   },
 });
 </script>

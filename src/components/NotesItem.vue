@@ -2,7 +2,7 @@
   <ContextMenuWrapper :list="menu">
     <div
       @click="handleClick"
-      class="flex gap-2 p-2 group"
+      class="flex gap-2 md:p-2 py-2 px-6 group"
       :class="{ 'hover:bg-hover': !note.is_trashed || selecting }"
     >
       <input

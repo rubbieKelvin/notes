@@ -1,0 +1,15 @@
+.mobile-hide {
+  display: none;
+}
+
+@screen md {
+  .mobile-hide {
+    display: initial;
+  }
+}
+
+@screen md {
+  .only-on-mobile {
+    display: none !important;
+  }
+}

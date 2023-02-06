@@ -1,5 +1,5 @@
 <template>
-  <div class="h-11 border-b border-stroke flex items-center px-2">
+  <div class="h-11 border-b border-stroke flex items-center px-6 md:px-2">
     <h2 class="flex-grow text-black">{{ title }}</h2>
     <slot>
       <MenuList :list="menu" alignRight>

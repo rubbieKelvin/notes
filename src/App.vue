@@ -2,11 +2,25 @@
   <AuthWrapper>
     <div class="h-screen flex flex-col">
       <AppHeader />
+
       <div class="flex-grow flex">
-        <MainNav v-if="!isPublicNotePage" class="h-full" />
-        <ApplicationMenu v-if="!isPublicNotePage" class="h-full" />
-        <router-view name="extended"> </router-view>
+        <MainNav
+          v-if="!isPublicNotePage"
+          class="h-full hidden md:flex flex-col"
+        />
+        <ApplicationMenu
+          v-if="!isPublicNotePage"
+          class="h-full md:flex-auto flex-grow"
+          :class="{ 'mobile-hide': isNotePage }"
+        />
+        <router-view name="extended" :class="{ 'mobile-hide': !isNotePage }">
+        </router-view>
       </div>
+
+      <MainNav
+        v-if="!isPublicNotePage"
+        class="h-full flex md:hidden justify-center gap-12 sm:gap-20"
+      />
 
       <!-- ... -->
       <Toast />
