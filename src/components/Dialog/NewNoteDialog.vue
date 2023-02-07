@@ -1,11 +1,21 @@
 <template>
-  <Dialog v-model="visible" dim escape closeOnClickOutside>
+  <Dialog
+    v-model="visible"
+    dim
+    :escape="!creating"
+    :closeOnClickOutside="!creating"
+  >
     <div
       class="bg-white border border-stroke py-2 rounded-md min-w-[400px] flex gap-3 flex-col"
     >
       <div class="pb-2 px-3 border-b border-stroke flex">
         <p class="flex-grow font-medium">New note</p>
-        <button class="btn p-1" @click="visible = false">
+        <button
+          :disabled="creating"
+          class="btn p-1"
+          :class="{ 'text-gray-300': creating }"
+          @click="visible = false"
+        >
           <Icon name="XMarkIcon" class="w-5 h-5" />
         </button>
       </div>
@@ -23,7 +33,10 @@
           />
         </div>
         <div class="flex justify-end">
-          <button class="btn px-4 py-2" @click="create">Create</button>
+          <button :disabled="creating" class="btn px-4 py-2" @click="create">
+            <loading v-if="creating" class="w-5 h-5" />
+            <span v-else>Create</span>
+          </button>
         </div>
       </div>
     </div>
@@ -39,9 +52,10 @@ import { useNotesStore } from "@/stores/notes";
 import { noteRoute } from "@/composables/useNavigation";
 import { useAuthStore } from "@/stores/auth";
 import { useRouter } from "vue-router";
+import Loading from "../Loading.vue";
 
 export default defineComponent({
-  components: { Dialog, Icon },
+  components: { Dialog, Icon, Loading },
   props: {
     modelValue: Boolean,
   },
@@ -52,6 +66,7 @@ export default defineComponent({
     const notestore = useNotesStore();
     const router = useRouter();
     const noteTitleRef: Ref<HTMLInputElement | null> = ref(null);
+    const creating = ref(false);
 
     const visible = computed({
       get() {
@@ -73,18 +88,29 @@ export default defineComponent({
       }
     });
     const create = async () => {
-      if (authstore.isAuthenticated && authstore.user) {
-        const note = await notestore.createNote({
-          title: data.value.title,
-          author: authstore.user.id,
-        });
-        if (note) {
-          visible.value = false;
-          router.push(noteRoute(note));
-        }
+      if (creating.value) return;
+
+      creating.value = true;
+      if (
+        authstore.isAuthenticated &&
+        authstore.user &&
+        data.value.title.trim()
+      ) {
+        try {
+          const note = await notestore.createNote({
+            title: data.value.title,
+            author: authstore.user.id,
+          });
+          if (note) {
+            visible.value = false;
+            router.push(noteRoute(note));
+          }
+        } catch {}
       }
+
+      creating.value = false;
     };
-    return { visible, noteTitleRef, data, create };
+    return { visible, noteTitleRef, data, create, creating };
   },
 });
 </script>
