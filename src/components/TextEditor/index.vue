@@ -57,7 +57,7 @@
               />
             </svg>
             <span
-              class="text-xs font-bold"
+              class="text-xs font-bold md:inline hidden"
               :class="[
                 saveStatus === 'error' ? 'text-red-500' : 'text-gray-600',
               ]"
