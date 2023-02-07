@@ -12,6 +12,37 @@ import { lowlight } from "lowlight/lib/common";
 import useUtils from "@/composables/useUtils";
 import { Editor } from "@tiptap/vue-3";
 import { watchOnce } from "@vueuse/core";
+import { generateHTML } from "@tiptap/vue-3";
+
+const extensions = [
+  TaskList,
+  TaskItem,
+  Link.configure({
+    autolink: true,
+    linkOnPaste: true,
+    openOnClick: true,
+  }),
+  StaterKit.configure({
+    heading: { levels: [1, 2, 3] },
+    codeBlock: false,
+  }),
+  Placeholder.configure({
+    emptyEditorClass: "editor-empty",
+    emptyNodeClass: "empty-node",
+    placeholder: ({ node }) => {
+      if (node.type.name === "heading") {
+        if (node.attrs.level === 1) return "What's are we writing about?...";
+        else if (node.attrs.level === 2)
+          return "A Nice title under our main topic...";
+        else node.attrs.level === 3;
+        return "Let's discuss a point...";
+      }
+
+      return "Write Something...";
+    },
+  }),
+  CodeBlock.configure({ lowlight }),
+];
 
 export default (defaultNote: Note) => {
   const { isPublicNotePage } = useUtils();
@@ -26,14 +57,16 @@ export default (defaultNote: Note) => {
   }
 
   function onUpdate() {
-    const content = shalloweditor?.value?.getJSON();
-    if (
-      shalloweditor.value &&
-      content &&
-      JSON.stringify(content) !== JSON.stringify(editableNote.value.content)
-    ) {
-      editableNote.value.content = content;
-      contentUpdated.value = true;
+    if (editor.value) {
+      const content = editor.value.getJSON();
+
+      if (
+        editor.value.getHTML() !==
+        generateHTML(editableNote.value.content, extensions)
+      ) {
+        editableNote.value.content = content;
+        contentUpdated.value = true;
+      }
     }
   }
 
@@ -57,36 +90,7 @@ export default (defaultNote: Note) => {
 
     shalloweditor = useEditor({
       editable: isEditable(editableNote.value),
-      extensions: [
-        TaskList,
-        TaskItem,
-        Link.configure({
-          autolink: true,
-          linkOnPaste: true,
-          openOnClick: true,
-        }),
-        StaterKit.configure({
-          heading: { levels: [1, 2, 3] },
-          codeBlock: false,
-        }),
-        Placeholder.configure({
-          emptyEditorClass: "editor-empty",
-          emptyNodeClass: "empty-node",
-          placeholder: ({ node }) => {
-            if (node.type.name === "heading") {
-              if (node.attrs.level === 1)
-                return "What's are we writing about?...";
-              else if (node.attrs.level === 2)
-                return "A Nice title under our main topic...";
-              else node.attrs.level === 3;
-              return "Let's discuss a point...";
-            }
-
-            return "Write Something...";
-          },
-        }),
-        CodeBlock.configure({ lowlight }),
-      ],
+      extensions,
       content: editableNote.value.content,
     });
 
