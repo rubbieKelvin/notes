@@ -1,4 +1,4 @@
-import { useEditor } from "@tiptap/vue-3";
+import { JSONContent, useEditor } from "@tiptap/vue-3";
 
 import StaterKit from "@tiptap/starter-kit";
 import { ShallowRef, Ref, shallowRef, ref } from "vue";
@@ -13,22 +13,31 @@ import useUtils from "@/composables/useUtils";
 import { Editor } from "@tiptap/vue-3";
 import { watchOnce } from "@vueuse/core";
 
-export default () => {
+export default (defaultNote: Note) => {
   const { isPublicNotePage } = useUtils();
 
   let shalloweditor: ShallowRef<Editor | undefined> = shallowRef();
   const editor: Ref<Editor | undefined> = ref();
-
+  const editableNote: Ref<Note> = ref({ ...defaultNote });
   const contentUpdated = ref(false);
 
-  const isEditable = (note: Note): boolean => {
+  function isEditable(note: Note): boolean {
     return !note.is_archived && !note.is_trashed && !isPublicNotePage.value;
-  };
+  }
 
-  const configureEditor = (
-    note: Ref<Note>,
-    setContentOnUpdate: boolean = true
-  ) => {
+  function onUpdate() {
+    const content = shalloweditor?.value?.getJSON();
+    if (
+      shalloweditor.value &&
+      content &&
+      JSON.stringify(content) !== JSON.stringify(editableNote.value.content)
+    ) {
+      editableNote.value.content = content;
+      contentUpdated.value = true;
+    }
+  }
+
+  function configureEditor(setContentOnUpdate: boolean = true) {
     contentUpdated.value = false;
 
     if (editor.value) {
@@ -36,16 +45,18 @@ export default () => {
       // ...
 
       if (setContentOnUpdate) {
+        editor.value.off("update", onUpdate);
         editor.value.setEditable(true);
-        editor.value.commands.setContent(note.value.content);
+        editor.value.commands.setContent(editableNote.value.content);
+        editor.value.on("update", onUpdate);
       }
 
-      editor.value.setEditable(isEditable(note.value));
+      editor.value.setEditable(isEditable(editableNote.value));
       return editor;
     }
 
     shalloweditor = useEditor({
-      editable: isEditable(note.value),
+      editable: isEditable(editableNote.value),
       extensions: [
         TaskList,
         TaskItem,
@@ -76,30 +87,20 @@ export default () => {
         }),
         CodeBlock.configure({ lowlight }),
       ],
-      content: note.value.content,
-      onUpdate: () => {
-        const content = shalloweditor?.value?.getJSON();
-        if (
-          shalloweditor.value &&
-          content &&
-          JSON.stringify(content) !== JSON.stringify(note.value.content)
-        ) {
-          note.value.content = content;
-          contentUpdated.value = true;
-        }
-      },
+      content: editableNote.value.content,
     });
 
     watchOnce(shalloweditor, (value) => {
-      console.log("editor value changed");
       editor.value = value;
+      editor.value?.on("update", onUpdate);
     });
 
     return shalloweditor;
-  };
+  }
 
   return {
     editor,
+    editableNote,
     configureEditor,
     isEditable,
     contentUpdated,

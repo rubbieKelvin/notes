@@ -38,9 +38,35 @@
           <button
             v-if="contentUpdated && !note.is_archived"
             @click="saveNote"
-            class="btn p-1 text-sm"
+            :disabled="saveStatus === 'saving'"
+            class="btn p-2 text-sm flex items-center gap-2"
+            :title="`Changes made to ${note.title}. click to save`"
           >
-            Changes made
+            <Icon
+              v-if="saveStatus === 'error'"
+              name="ExclamationTriangleIcon"
+              class="text-red-500 w-4 h-4"
+            />
+            <svg v-else class="overflow-visible" width="12" height="12">
+              <circle
+                cx="6"
+                cy="6"
+                r="3"
+                class="fill-current"
+                :class="{ tofrocircle: saveStatus === 'saving' }"
+              />
+            </svg>
+            <span
+              class="text-xs font-bold"
+              :class="[
+                saveStatus === 'error' ? 'text-red-500' : 'text-gray-600',
+              ]"
+              >{{
+                { saving: "Saving", error: "Save error", null: "Changes made" }[
+                  `${saveStatus}`
+                ]
+              }}</span
+            >
           </button>
           <button
             v-if="!note.is_archived"
@@ -100,7 +126,7 @@
 <script lang="ts">
 import { EditorContent, BubbleMenu, JSONContent } from "@tiptap/vue-3";
 import { UseTimeAgo } from "@vueuse/components";
-import { ref, defineComponent, watch, computed } from "vue";
+import { ref, defineComponent, watch, computed, Ref } from "vue";
 import Icon from "@/components/Icon";
 import { Note, NoteUpdate } from "@/types/models";
 import { onKeyStroke } from "@vueuse/core";
@@ -111,6 +137,8 @@ import MenuList from "@/components/Popup/MenuList.vue";
 import { useAuthStore } from "@/stores/auth";
 import useUtils from "@/composables/useUtils";
 import useTextEditor from "@/composables/useTextEditor";
+
+type SaveStatus = "saving" | "error" | null;
 
 export default defineComponent({
   name: "TextEditor",
@@ -127,13 +155,16 @@ export default defineComponent({
   },
   emits: ["note:changed", "contextmenu:delete"],
   setup(props, { emit }) {
+    // maps a notes id to it's status
+    const savingStatuses: Ref<Record<string, SaveStatus>> = ref({});
+
     const { isPublicNotePage } = useUtils();
     const notestore = useNotesStore();
     const authstore = useAuthStore();
-    const { editor, configureEditor, contentUpdated } = useTextEditor();
+    const { editor, configureEditor, contentUpdated, editableNote } =
+      useTextEditor(props.note);
 
     const { idle } = useIdle(10 * 1000);
-    const editableNote = ref({ ...props.note });
 
     const checkEditable = (note: Note) =>
       !note.is_archived && !note.is_trashed && !isPublicNotePage.value;
@@ -146,42 +177,28 @@ export default defineComponent({
       })
     );
 
+    const saveStatus = computed(() => {
+      const stat = savingStatuses.value[editableNote.value.id] ?? null;
+      return stat;
+    });
+
     watch(
       () => props.note,
       (currentPropNote: Note, oldPropNote: Note) => {
         if (editor.value) {
           editableNote.value = { ...currentPropNote };
+
           // edit the content of the editor if the notes are not the same
-          console.log({
-            oldPropNote: { ...oldPropNote },
-            currentPropNote: { ...currentPropNote },
-          });
-          configureEditor(editableNote, oldPropNote.id !== currentPropNote.id);
-
-          // if (!editor.value.isEditable) editor.value.setEditable(true);
-
-          // // update the editable note with the actual note
-          // // ...also we dont want to overrite the note we have when we update another attribute of the notes
-          // // so when we refresh a note, anf the id is the same as the one we;re currently writng,
-          // // if the content of the old note is the same as the content of the new note, dont write the editable note
-          // editableNote.value = {
-          //   ...currentPropNote,
-          //   ...(oldPropNote.id === currentPropNote.id &&
-          //   notestore.hasSimilarContent(oldPropNote, currentPropNote)
-          //     ? { content: editableNote.value.content }
-          //     : {}),
-          // };
-
-          // editor.value.commands.setContent(editableNote.value.content);
-          // editor.value.setEditable(checkEditable(editableNote.value));
+          const isTheSameNote = oldPropNote.id === currentPropNote.id;
+          configureEditor(!isTheSameNote);
         }
       },
       { deep: true }
     );
 
-    watch(idle, async () => {
-      if (notestore.settings.autosave) await saveNote();
-    });
+    // watch(idle, async () => {
+    //   if (notestore.settings.autosave) await saveNote();
+    // });
 
     onKeyStroke(["Control", "s"], (e) => {
       if (e.ctrlKey && e.key === "s") {
@@ -191,9 +208,34 @@ export default defineComponent({
     });
 
     const saveNote = async () => {
-      if (contentUpdated.value && checkEditable(editableNote.value)) {
-        const note = await updateNote(["content"]);
-        if (note) contentUpdated.value = false;
+      if (
+        contentUpdated.value &&
+        checkEditable(editableNote.value) &&
+        saveStatus.value !== "saving"
+      ) {
+        savingStatuses.value[editableNote.value.id] = "saving";
+
+        // a snapshot of the note we are saving
+        const noteWereCurrentlySaving = {
+          ...editableNote.value,
+          content: { ...editableNote.value.content },
+        };
+
+        try {
+          const note = await updateNote(["content"]);
+          if (note && noteWereCurrentlySaving.id === editableNote.value.id) {
+            // if the note was updated and were currelty seeing that note, update the updated status
+            // at this point if we edited the note prior, we still want to see changes made
+            contentUpdated.value =
+              JSON.stringify(noteWereCurrentlySaving.content) !==
+              JSON.stringify(editableNote.value.content);
+            savingStatuses.value[editableNote.value.id] = null;
+          } else {
+            savingStatuses.value[editableNote.value.id] = "error";
+          }
+        } catch {
+          savingStatuses.value[editableNote.value.id] = "error";
+        }
       }
     };
 
@@ -212,9 +254,10 @@ export default defineComponent({
       return note;
     };
 
-    configureEditor(editableNote);
+    configureEditor();
 
     return {
+      saveStatus,
       contentUpdated,
       editableNote,
       updateNote,
@@ -254,5 +297,22 @@ export default defineComponent({
       height: 100%;
     }
   }
+}
+
+@keyframes tofro {
+  0% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.tofrocircle {
+  translate: 50%;
+  animation: tofro 1s linear infinite;
 }
 </style>
