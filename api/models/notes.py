@@ -3,7 +3,7 @@ from django.db import models
 
 
 def defaultContent():
-    return {"content": [], "type": "doc"}
+    return {"content": [{"type": "paragraph"}], "type": "doc"}
 
 
 class Note(models.Model):
