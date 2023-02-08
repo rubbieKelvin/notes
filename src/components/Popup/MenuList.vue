@@ -80,7 +80,7 @@
                 item.type === 'NORMAL' || item.type === 'CHECKBOX' || !item.type
               "
               @click="!item.disabled && itemClicked(item)"
-              class="px-2 py-1 transition-colors flex gap-1 items-center relative select-none"
+              class="px-3 md:px-2 py-3 md:py-1 transition-colors flex gap-1 items-center relative select-none"
               :class="{
                 'hover:text-black hover:bg-hover': !item.disabled,
                 'text-gray-400': !!item.disabled,
