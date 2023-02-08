@@ -1,6 +1,6 @@
 <template>
   <div
-    class="flex gap-3 flex-col text-gray-600 items-center justify-center flex-grow"
+    class="flex gap-3 h-full flex-col text-gray-600 items-center justify-center flex-grow"
   >
     <span class="font-bold text-2xl">Empty page</span>
 
