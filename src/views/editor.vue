@@ -7,7 +7,7 @@
       v-if="note && writableContent"
       v-model="writableContent"
       :note="note"
-      class="flex-grow"
+      class="flex-grow h-full"
       @contextmenu:delete="deleteNote"
       @note:changed="
         (n) => {
