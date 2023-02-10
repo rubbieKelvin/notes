@@ -7,13 +7,22 @@
     <div
       class="bg-themed-bg rounded-md border border-themed-stroke p-1 shadow-md flex w-fit"
     >
-      <template v-for="item in menu">
+      <template v-for="(item, index) in menu">
+        <div
+          v-if="item.isdivider"
+          :key="index"
+          class="w-[1px] bg-themed-stroke h-full"
+        />
         <button
-          v-if="!item.disabled"
+          v-else-if="item.title && item.iconPath && !item.disabled"
           class="p-2 hover:bg-themed-hover-bg rounded-md"
           :title="item.title"
           :key="item.title"
-          :class="{ ' text-themed-accent-bg': editor.isActive(item.title) }"
+          :class="{
+            ' text-themed-accent-bg': item.isActive
+              ? item.isActive()
+              : editor.isActive(item.title),
+          }"
           @click="item.action"
         >
           <mdi-icon :path="item.iconPath" class="w-5 h-5" />
@@ -31,6 +40,9 @@ import {
   mdiCodeBraces,
   mdiCodeTags,
   mdiFormatBold,
+  mdiFormatHeader1,
+  mdiFormatHeader2,
+  mdiFormatHeader3,
   mdiFormatItalic,
   mdiFormatListBulleted,
   mdiFormatListCheckbox,
@@ -40,13 +52,18 @@ import {
   mdiFormatSuperscript,
   mdiFormatUnderline,
 } from "@mdi/js";
+import { Level } from "@tiptap/extension-heading";
 
 interface FloatingMenuItem {
-  title: string;
-  iconPath: string;
-  action: () => any;
+  title?: string;
+  iconPath?: string;
+  action?: () => any;
   disabled?: boolean;
+  isdivider?: boolean;
+  isActive?: () => boolean;
 }
+
+const divider = (): FloatingMenuItem => ({ isdivider: true });
 
 export default defineComponent({
   name: "FloatingMenu",
@@ -56,6 +73,16 @@ export default defineComponent({
   components: { BubbleMenu, MdiIcon },
   setup(props) {
     const menu: Array<FloatingMenuItem> = [
+      ...([1, 2, 3] as Array<Level>).map((level) => ({
+        title: `heading-${level}`,
+        iconPath: [mdiFormatHeader1, mdiFormatHeader2, mdiFormatHeader3][
+          level - 1
+        ],
+        action: () =>
+          props.editor.chain().focus().toggleHeading({ level }).run(),
+        isActive: () => props.editor.isActive("heading", { level }),
+      })),
+      divider(),
       {
         title: "bold",
         iconPath: mdiFormatBold,

@@ -31,19 +31,14 @@ const extensions = [
   StaterKit.configure({
     heading: { levels: [1, 2, 3] },
     codeBlock: false,
+    dropcursor: { color: "#ff0000" },
   }),
   Placeholder.configure({
     emptyEditorClass: "editor-empty",
     emptyNodeClass: "empty-node",
     placeholder: ({ node }) => {
-      if (node.type.name === "heading") {
-        if (node.attrs.level === 1) return "What's are we writing about?...";
-        else if (node.attrs.level === 2)
-          return "A Nice title under our main topic...";
-        else node.attrs.level === 3;
-        return "Let's discuss a point...";
-      }
-
+      if (node.type.name === "heading")
+        return "What's are we writing about?...";
       return "Write Something...";
     },
   }),
