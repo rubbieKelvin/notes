@@ -35,8 +35,8 @@ button {
   }
 
   .text-input {
-    @apply rounded px-4 py-2 outline-stroke;
-    @apply focus:outline-accent outline-1 focus:outline-2 outline;
+    @apply rounded px-4 py-2 outline-themed-stroke;
+    @apply focus:outline-themed-accent-bg outline-1 focus:outline-2 outline;
   }
 
   label {
@@ -44,7 +44,7 @@ button {
   }
 
   .btn {
-    @apply rounded-md hover:bg-hover border border-stroke active:bg-gray-200 select-none;
+    @apply rounded-md hover:bg-themed-hover-bg border border-themed-stroke active:bg-gray-200 select-none;
     @apply focus:outline-black focus:outline-1;
   }
 }

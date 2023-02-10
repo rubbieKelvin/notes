@@ -1,4 +1,4 @@
-import { JSONContent, useEditor } from "@tiptap/vue-3";
+import { useEditor } from "@tiptap/vue-3";
 
 import StaterKit from "@tiptap/starter-kit";
 import { ShallowRef, Ref, shallowRef, ref } from "vue";
@@ -13,10 +13,16 @@ import useUtils from "@/composables/useUtils";
 import { Editor } from "@tiptap/vue-3";
 import { watchOnce } from "@vueuse/core";
 import { generateHTML } from "@tiptap/vue-3";
+import { Subscript } from "@tiptap/extension-subscript";
+import { Superscript } from "@tiptap/extension-superscript";
+import { Underline } from "@tiptap/extension-underline";
 
 const extensions = [
   TaskList,
   TaskItem,
+  Superscript,
+  Subscript,
+  Underline,
   Link.configure({
     autolink: true,
     linkOnPaste: true,

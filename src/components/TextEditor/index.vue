@@ -118,13 +118,14 @@
 
     <!-- input -->
     <div v-if="editor" class="texteditor-input custom-scrollbar">
+      <floating-menu :editor="editor" />
       <editor-content :editor="editor" />
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { EditorContent, BubbleMenu, JSONContent } from "@tiptap/vue-3";
+import { EditorContent, JSONContent } from "@tiptap/vue-3";
 import { UseTimeAgo } from "@vueuse/components";
 import { ref, defineComponent, watch, computed, Ref } from "vue";
 import Icon from "@/components/Icon";
@@ -137,6 +138,7 @@ import MenuList from "@/components/Popup/MenuList.vue";
 import { useAuthStore } from "@/stores/auth";
 import useUtils from "@/composables/useUtils";
 import useTextEditor from "@/composables/useTextEditor";
+import FloatingMenu from "./FloatingMenu.vue";
 
 type SaveStatus = "saving" | "error" | null;
 
@@ -144,10 +146,10 @@ export default defineComponent({
   name: "TextEditor",
   components: {
     EditorContent,
-    BubbleMenu,
     Icon,
     UseTimeAgo,
     MenuList,
+    FloatingMenu,
   },
   props: {
     modelValue: Object as () => JSONContent,
@@ -196,9 +198,9 @@ export default defineComponent({
       { deep: true }
     );
 
-    // watch(idle, async () => {
-    //   if (notestore.settings.autosave) await saveNote();
-    // });
+    watch(idle, async () => {
+      if (notestore.settings.autosave) await saveNote();
+    });
 
     onKeyStroke(["Control", "s"], (e) => {
       if (e.ctrlKey && e.key === "s") {

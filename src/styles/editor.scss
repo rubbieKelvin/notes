@@ -10,7 +10,10 @@
     @apply text-blue-500 underline cursor-default;
   }
 
-  p > code {
+  p > code,
+  h1 > code,
+  h2 > code,
+  h3 > code {
     background-color: rgba(#ffe99f, 0.6);
     color: #a06f13;
     padding: 2px 2px;
@@ -84,7 +87,7 @@
   }
 
   li {
-    @apply mb-0.5 hover:bg-gray-50;
+    @apply mb-0.5;
   }
 
   pre {

@@ -1,6 +1,6 @@
 <template>
   <AuthWrapper>
-    <div class="h-full flex flex-col">
+    <div class="h-full flex flex-col bg-bg">
       <AppHeader />
 
       <div class="flex-grow flex">
