@@ -11,7 +11,7 @@ import CodeBlock from "@/components/TextEditor/extensions/CodeBlock";
 import { lowlight } from "lowlight/lib/common";
 import useUtils from "@/composables/useUtils";
 import { Editor } from "@tiptap/vue-3";
-import { watchOnce } from "@vueuse/core";
+import { createSharedComposable, watchOnce } from "@vueuse/core";
 import { generateHTML } from "@tiptap/vue-3";
 import { Subscript } from "@tiptap/extension-subscript";
 import { Superscript } from "@tiptap/extension-superscript";
@@ -49,12 +49,15 @@ const extensions = [
   CodeBlock.configure({ lowlight }),
 ];
 
-export default (defaultNote: Note) => {
+export default createSharedComposable(() => {
   const { isPublicNotePage } = useUtils();
 
   let shalloweditor: ShallowRef<Editor | undefined> = shallowRef();
   const editor: Ref<Editor | undefined> = ref();
-  const editableNote: Ref<Note> = ref({ ...defaultNote });
+  const editableNote: Ref<Note> = ref({
+    id: "",
+    content: { type: "doc" },
+  } as Note);
   const contentUpdated = ref(false);
 
   function isEditable(note: Note): boolean {
@@ -114,4 +117,4 @@ export default (defaultNote: Note) => {
     isEditable,
     contentUpdated,
   };
-};
+});

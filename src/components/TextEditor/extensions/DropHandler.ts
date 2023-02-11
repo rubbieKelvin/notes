@@ -17,9 +17,6 @@ export const DropHandler = Extension.create({
           handleDrop(view, event, slice, moved) {
             const fileslist: Array<File> = [];
 
-            // Prevent default behavior (Prevent file from being opened)
-            event.preventDefault();
-
             const doFileAppend = (file: File | null): void => {
               if (
                 file &&
@@ -47,6 +44,11 @@ export const DropHandler = Extension.create({
                 doFileAppend(file);
               });
             }
+
+            if (fileslist.length < 1) return false;
+
+            // Prevent default behavior (Prevent file from being opened)
+            event.preventDefault();
 
             const imageNode = view.state.schema.nodes?.imageNode as
               | NodeType

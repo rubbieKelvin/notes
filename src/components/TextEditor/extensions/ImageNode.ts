@@ -9,6 +9,7 @@ export interface ImageExtensionOptions {
 export interface ImageExtensionAttributes {
   title: string;
   row: boolean;
+  compact: boolean;
   images:
     | {
         url: string;
@@ -43,6 +44,9 @@ export const ImageExtension = Node.create<ImageExtensionOptions>({
         default: "Images",
       },
       row: {
+        default: true,
+      },
+      compact: {
         default: true,
       },
       images: {

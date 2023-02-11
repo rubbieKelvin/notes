@@ -164,7 +164,7 @@ export default defineComponent({
     const notestore = useNotesStore();
     const authstore = useAuthStore();
     const { editor, configureEditor, contentUpdated, editableNote } =
-      useTextEditor(props.note);
+      useTextEditor();
 
     const { idle } = useIdle(10 * 1000);
 
@@ -256,6 +256,7 @@ export default defineComponent({
       return note;
     };
 
+    editableNote.value = props.note;
     configureEditor();
 
     return {

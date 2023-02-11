@@ -2,24 +2,42 @@
   <NodeViewWrapper>
     <div
       class="flex overflow-clip rounded-md flex-col"
+      draggable="true"
+      data-drag-handle
       :class="[
         selected ? 'border-2 border-red-600' : 'border border-themed-stroke',
       ]"
     >
       <!-- header -->
-      <div class="flex bg-themed-bg-elevated px-2 py-1">
-        <p class="text-sm text-themed-text select-none">
-          {{ attrs.title }}
-          <span v-if="attrs.images" class="text-themed-text-subtle">{{
-            attrs.images.length
-          }}</span>
-        </p>
+      <div
+        class="flex items-center"
+        :class="[
+          attrs.compact
+            ? 'bg-transparent absolute p-4 w-full'
+            : 'bg-themed-bg-elevated px-2 py-1',
+        ]"
+      >
+        <div
+          class="py-1 px-2 flex items-center justify-center"
+          :class="{ 'bg-themed-bg rounded-md': attrs.compact }"
+        >
+          <input
+            class="text-sm text-themed-text select-none outline-0 focus:outline-none bg-transparent"
+            v-model="title"
+          />
+        </div>
+
         <span class="flex-grow" />
         <MenuList :list="menu" alignRight>
           <template v-slot:trigger="{ open }">
-            <button @click="open" class="btn p-1">
-              <Icon name="EllipsisVerticalIcon" class="w-5 h-5" />
-            </button>
+            <div
+              class="flex items-center justify-center"
+              :class="{ 'bg-themed-bg rounded-md': attrs.compact }"
+            >
+              <button @click="open" class="btn p-1">
+                <Icon name="EllipsisVerticalIcon" class="w-5 h-5" />
+              </button>
+            </div>
           </template>
         </MenuList>
       </div>
@@ -48,7 +66,7 @@
 import { NodeViewWrapper, nodeViewProps } from "@tiptap/vue-3";
 import { defineComponent, computed } from "vue";
 import { ImageExtensionAttributes } from "../ImageNode";
-import { mdiTableColumn, mdiTableRow } from "@mdi/js";
+import { mdiTableColumn, mdiTableRow, mdiViewCompact } from "@mdi/js";
 import { MenuItem } from "@/types";
 import Icon from "@/components/Icon";
 import MenuList from "@/components/Popup/MenuList.vue";
@@ -61,14 +79,31 @@ export default defineComponent({
     MenuList,
   },
   setup(props) {
+    function updateAttrs(update: Partial<ImageExtensionAttributes>) {
+      props.updateAttributes(update);
+    }
+
     const attrs = computed(() => props.node.attrs as ImageExtensionAttributes);
+    const title = computed({
+      get: () => props.node.attrs.title as string,
+      set: (val: string) => {
+        updateAttrs({ title: val });
+      },
+    });
+
     const menu = computed((): MenuItem[] => [
       {
         id: Symbol(),
         mdiIconPath: attrs.value.row ? mdiTableColumn : mdiTableRow,
         hidden: (attrs.value.images?.length ?? 0) < 2,
         title: "Switch layout",
-        action: () => props.updateAttributes({ row: !attrs.value.row }),
+        action: () => updateAttrs({ row: !attrs.value.row }),
+      },
+      {
+        id: Symbol(),
+        mdiIconPath: mdiViewCompact,
+        title: attrs.value.compact ? "Normal view" : "Compact view",
+        action: () => updateAttrs({ compact: !attrs.value.compact }),
       },
       {
         id: Symbol(),
@@ -91,6 +126,7 @@ export default defineComponent({
     }
 
     return {
+      title,
       attrs,
       onLoad,
       onLoadError,
