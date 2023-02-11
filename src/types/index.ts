@@ -14,6 +14,7 @@ export type MenuItem = {
   title?: string;
   subtitle?: string;
   icon?: IconName;
+  mdiIconPath?: string;
   badgeText?: string;
   action?: () => any;
   value?: any;

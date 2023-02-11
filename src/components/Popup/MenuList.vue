@@ -18,7 +18,7 @@
       >
         <button
           @click="navigation.history.pop()"
-          class="hover:border-stroke border border-transparent rounded-md hover:bg-hover"
+          class="hover:border-stroke border border-transparent rounded-md hover:bg-themed-hover-bg"
         >
           <Icon name="ChevronLeftIcon" class="w-5 h-5" />
         </button>
@@ -36,7 +36,7 @@
         <p class="uppercase text-sm font-medium">Couldn't get items</p>
         <button
           @click="reloadMenuItems"
-          class="border border-stroke w-full py-1 rounded-md hover:bg-hover"
+          class="border border-stroke w-full py-1 rounded-md hover:bg-themed-hover-bg"
         >
           refresh
         </button>
@@ -82,14 +82,19 @@
               @click="!item.disabled && itemClicked(item)"
               class="px-3 md:px-2 py-3 md:py-1 transition-colors flex gap-1 items-center relative select-none"
               :class="{
-                'hover:text-black hover:bg-hover': !item.disabled,
+                'hover:text-black hover:bg-themed-hover-bg': !item.disabled,
                 'text-gray-400': !!item.disabled,
               }"
               :disabled="!!item.disabled"
             >
               <!-- icon -->
-              <div v-if="item.icon">
-                <Icon :name="item.icon" class="w-5 h-5" />
+              <div v-if="item.icon || item.mdiIconPath">
+                <Icon v-if="item.icon" :name="item.icon" class="w-5 h-5" />
+                <MdiIcon
+                  v-else-if="item.mdiIconPath"
+                  :path="item.mdiIconPath"
+                  class="w-5 h-5"
+                />
               </div>
               <div v-else-if="listHasIcon(current)" class="w-5 h-5" />
               <!-- checkbox -->
@@ -167,6 +172,7 @@ import Popup from "./index.vue";
 import { onKeyDown } from "@vueuse/core";
 import { v4 as uuid4 } from "uuid";
 import KeyboardShortcut from "@/components/KeyboardShortcut.vue";
+import MdiIcon from "../MdiIcon.vue";
 
 export default defineComponent({
   props: {
@@ -179,7 +185,7 @@ export default defineComponent({
     },
   },
   emits: ["update:modelValue"],
-  components: { Popup, Icon, KeyboardShortcut },
+  components: { Popup, Icon, KeyboardShortcut, MdiIcon },
   setup(props, { emit }) {
     const visible = ref(false);
     const current = ref(props.list);
@@ -283,7 +289,7 @@ export default defineComponent({
     });
 
     function listHasIcon(list: Array<MenuItem>) {
-      return !!list.find((item) => !!item.icon);
+      return !!list.find((item) => item.icon || item.mdiIconPath);
     }
 
     function isExternalUrl(url: string) {

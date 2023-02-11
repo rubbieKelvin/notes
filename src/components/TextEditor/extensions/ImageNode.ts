@@ -1,39 +1,31 @@
-// import { Node } from "@tiptap/core";
-// import { VueNodeViewRenderer } from "@tiptap/vue-3";
-// import ImageNode from "./nodeview/ImageNode.vue";
-
-// // export interface ImageUploadOptions {
-// //   upload(file: File): Promise<string>;
-// // }
-
-// export const ImageExtension = Node.create({
-//   name: "imageNode",
-//   group: 'block',
-//   addNodeView() {
-//     return VueNodeViewRenderer(ImageNode);
-//   },
-// });
-
-import { Node, nodeInputRule } from "@tiptap/core";
+import { Node } from "@tiptap/core";
 import { VueNodeViewRenderer } from "@tiptap/vue-3";
 import ImageNode from "./nodeview/ImageNode.vue";
 
-export interface ImagePlaceholderOptions {
+export interface ImageExtensionOptions {
   inline: boolean;
-  HTMLAttributes: Record<string, any>;
 }
 
-export const inputRegex =
-  /(?:^|\s)(!\[(.+|:?)]\((\S+)(?:(?:\s+)["'](\S+)["'])?\))$/;
+export interface ImageExtensionAttributes {
+  title: string;
+  row: boolean;
+  images:
+    | {
+        url: string;
+        alt: string | null;
+      }[]
+    | null;
+}
 
-export const ImageExtension = Node.create<ImagePlaceholderOptions>({
+export const ImageExtension = Node.create<ImageExtensionOptions>({
   name: "imageNode",
-  draggable: false,
+  atom: true,
+  draggable: true,
+  selectable: true,
 
   addOptions() {
     return {
       inline: false,
-      HTMLAttributes: {},
     };
   },
 
@@ -45,8 +37,18 @@ export const ImageExtension = Node.create<ImagePlaceholderOptions>({
     return this.options.inline ? "inline" : "block";
   },
 
-  addAttributes() {
-    return {};
+  addAttributes(): Record<keyof ImageExtensionAttributes, { default: any }> {
+    return {
+      title: {
+        default: "Images",
+      },
+      row: {
+        default: true,
+      },
+      images: {
+        default: null,
+      },
+    };
   },
 
   parseHTML() {
@@ -59,19 +61,5 @@ export const ImageExtension = Node.create<ImagePlaceholderOptions>({
 
   addNodeView() {
     return VueNodeViewRenderer(ImageNode);
-  },
-
-  addInputRules() {
-    return [
-      nodeInputRule({
-        find: inputRegex,
-        type: this.type,
-        // getAttributes: (match) => {
-        //   const [, , uploadId] = match;
-
-        //   return { uploadId };
-        // },
-      }),
-    ];
   },
 });

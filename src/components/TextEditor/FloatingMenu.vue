@@ -139,6 +139,7 @@ export default defineComponent({
         action: () => props.editor.chain().focus().toggleUnderline().run(),
       },
     ];
+
     return { menu };
   },
 });
