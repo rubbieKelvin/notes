@@ -1,5 +1,6 @@
 import { Extension } from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
+import { NodeType } from "@tiptap/pm/model";
 
 const ALLOWED_FILE_TYPES = ["image/jpeg", "image/png"];
 const MAX_FILE_SIZE = 5_000_000;
@@ -46,7 +47,20 @@ export const DropHandler = Extension.create({
               });
             }
 
-            // console.log(fileslist);
+            const imageNode = view.state.schema.nodes?.imageNode as
+              | NodeType
+              | undefined;
+
+            if (imageNode) {
+              const node = imageNode.create({
+                inline: false,
+                HTMLAttributes: {},
+              });
+              const transaction = view.state.tr;
+              transaction.replaceSelectionWith(node);
+              view.dispatch(transaction);
+              return true;
+            }
           },
         },
       }),

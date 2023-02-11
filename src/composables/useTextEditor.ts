@@ -17,6 +17,7 @@ import { Subscript } from "@tiptap/extension-subscript";
 import { Superscript } from "@tiptap/extension-superscript";
 import { Underline } from "@tiptap/extension-underline";
 import { DropHandler } from "@/components/TextEditor/extensions/DropHandler";
+import { ImageExtension } from "@/components/TextEditor/extensions/ImageNode";
 
 const extensions = [
   TaskList,
@@ -25,6 +26,7 @@ const extensions = [
   Subscript,
   Underline,
   DropHandler,
+  ImageExtension,
   Link.configure({
     autolink: true,
     linkOnPaste: true,
