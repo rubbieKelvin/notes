@@ -1,9 +1,11 @@
 import uuid
+import os
 from django.db import models
 
 
 def upload_to(instance: models.Model, filename: str) -> str:
-    return f".bucket/opennotes/images/${uuid.uuid4().__str__()}"
+    _, ext = os.path.splitext(filename)
+    return f".bucket/opennotes/images/${uuid.uuid4().__str__()}{ext or ''}"
 
 
 class Upload(models.Model):

@@ -41,3 +41,11 @@ urlpatterns = [
         ).as_view(),
     ),  # uql
 ]
+
+from django.conf import settings
+from django.conf.urls.static import static
+from core.settings.constants import DevelopmentMode
+
+# Serve media files on local
+if DevelopmentMode.DEV:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
