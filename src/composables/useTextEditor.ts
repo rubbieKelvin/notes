@@ -16,6 +16,7 @@ import { generateHTML } from "@tiptap/vue-3";
 import { Subscript } from "@tiptap/extension-subscript";
 import { Superscript } from "@tiptap/extension-superscript";
 import { Underline } from "@tiptap/extension-underline";
+import { DropHandler } from "@/components/TextEditor/extensions/DropHandler";
 
 const extensions = [
   TaskList,
@@ -23,6 +24,7 @@ const extensions = [
   Superscript,
   Subscript,
   Underline,
+  DropHandler,
   Link.configure({
     autolink: true,
     linkOnPaste: true,
