@@ -18,6 +18,7 @@ from django.urls import path
 
 from uql.views import createUQLView
 from api.functions import authentication
+from api.functions import uploads
 
 from api.emo import exposedmodels
 
@@ -33,6 +34,8 @@ urlpatterns = [
                 authentication.logout,
                 authentication.signup,
                 authentication.me,
+                # ...
+                uploads.uploadImage,
             ],
             raiseExceptions=False,
         ).as_view(),
