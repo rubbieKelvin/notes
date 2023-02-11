@@ -1,4 +1,4 @@
-import { Node } from "@tiptap/core";
+import { mergeAttributes, Node } from "@tiptap/core";
 import { VueNodeViewRenderer } from "@tiptap/vue-3";
 import ImageNode from "./nodeview/ImageNode.vue";
 
@@ -56,11 +56,17 @@ export const ImageExtension = Node.create<ImageExtensionOptions>({
   },
 
   parseHTML() {
-    return [{ tag: "image-placeholder" }];
+    return [{ tag: "opennotes-imagenode" }];
   },
 
-  renderHTML() {
-    return ["div"];
+  renderHTML({ HTMLAttributes }) {
+    return [
+      "opennotes-imagenode",
+      mergeAttributes({
+        ...HTMLAttributes,
+        images: JSON.stringify(HTMLAttributes.images),
+      }),
+    ];
   },
 
   addNodeView() {
