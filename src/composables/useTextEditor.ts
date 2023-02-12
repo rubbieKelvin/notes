@@ -1,4 +1,4 @@
-import { JSONContent, useEditor } from "@tiptap/vue-3";
+import { useEditor } from "@tiptap/vue-3";
 
 import StaterKit from "@tiptap/starter-kit";
 import { ShallowRef, Ref, shallowRef, ref } from "vue";
@@ -11,12 +11,22 @@ import CodeBlock from "@/components/TextEditor/extensions/CodeBlock";
 import { lowlight } from "lowlight/lib/common";
 import useUtils from "@/composables/useUtils";
 import { Editor } from "@tiptap/vue-3";
-import { watchOnce } from "@vueuse/core";
+import { createSharedComposable, watchOnce } from "@vueuse/core";
 import { generateHTML } from "@tiptap/vue-3";
+import { Subscript } from "@tiptap/extension-subscript";
+import { Superscript } from "@tiptap/extension-superscript";
+import { Underline } from "@tiptap/extension-underline";
+import { DropHandler } from "@/components/TextEditor/extensions/DropHandler";
+import { ImageExtension } from "@/components/TextEditor/extensions/ImageNode";
 
 const extensions = [
   TaskList,
   TaskItem,
+  Superscript,
+  Subscript,
+  Underline,
+  DropHandler,
+  ImageExtension,
   Link.configure({
     autolink: true,
     linkOnPaste: true,
@@ -25,31 +35,29 @@ const extensions = [
   StaterKit.configure({
     heading: { levels: [1, 2, 3] },
     codeBlock: false,
+    dropcursor: { color: "#ff0000" },
   }),
   Placeholder.configure({
     emptyEditorClass: "editor-empty",
     emptyNodeClass: "empty-node",
     placeholder: ({ node }) => {
-      if (node.type.name === "heading") {
-        if (node.attrs.level === 1) return "What's are we writing about?...";
-        else if (node.attrs.level === 2)
-          return "A Nice title under our main topic...";
-        else node.attrs.level === 3;
-        return "Let's discuss a point...";
-      }
-
+      if (node.type.name === "heading")
+        return "What's are we writing about?...";
       return "Write Something...";
     },
   }),
   CodeBlock.configure({ lowlight }),
 ];
 
-export default (defaultNote: Note) => {
+export default createSharedComposable(() => {
   const { isPublicNotePage } = useUtils();
 
   let shalloweditor: ShallowRef<Editor | undefined> = shallowRef();
   const editor: Ref<Editor | undefined> = ref();
-  const editableNote: Ref<Note> = ref({ ...defaultNote });
+  const editableNote: Ref<Note> = ref({
+    id: "",
+    content: { type: "doc" },
+  } as Note);
   const contentUpdated = ref(false);
 
   function isEditable(note: Note): boolean {
@@ -59,11 +67,11 @@ export default (defaultNote: Note) => {
   function onUpdate() {
     if (editor.value) {
       const content = editor.value.getJSON();
+      const similarContent =
+        editor.value.getHTML() ===
+        generateHTML(editableNote.value.content, extensions);
 
-      if (
-        editor.value.getHTML() !==
-        generateHTML(editableNote.value.content, extensions)
-      ) {
+      if (!similarContent) {
         editableNote.value.content = content;
         contentUpdated.value = true;
       }
@@ -91,11 +99,13 @@ export default (defaultNote: Note) => {
     shalloweditor = useEditor({
       editable: isEditable(editableNote.value),
       extensions,
-      content: editableNote.value.content,
     });
 
     watchOnce(shalloweditor, (value) => {
       editor.value = value;
+
+      if (!editor.value) return;
+      editor.value?.commands.setContent(editableNote.value.content);
       editor.value?.on("update", onUpdate);
     });
 
@@ -109,4 +119,4 @@ export default (defaultNote: Note) => {
     isEditable,
     contentUpdated,
   };
-};
+});

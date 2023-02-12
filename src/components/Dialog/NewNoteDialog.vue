@@ -6,7 +6,7 @@
     :closeOnClickOutside="!creating"
   >
     <div
-      class="bg-white border border-stroke py-2 rounded-md min-w-[400px] flex gap-3 flex-col"
+      class="bg-themed-bg border border-stroke py-2 rounded-md min-w-[400px] flex gap-3 flex-col"
     >
       <div class="pb-2 px-3 border-b border-stroke flex">
         <p class="flex-grow font-medium">New note</p>

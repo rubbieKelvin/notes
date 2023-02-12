@@ -367,14 +367,14 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .submit-btn {
-  @apply flex items-center justify-center outline-none p-3 bg-accent text-white rounded-md;
+  @apply flex items-center justify-center outline-none p-3 bg-themed-accent-bg text-white rounded-md;
 
   &:hover:not(.disabled) {
-    @apply bg-accentHint;
+    @apply bg-themed-accent-hover-bg;
   }
 
   &:active:not(.disabled) {
-    @apply bg-accentHintLighter;
+    @apply bg-themed-accent-active-bg;
   }
 }
 </style>

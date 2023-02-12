@@ -30,3 +30,7 @@ class Note(models.Model):
 
     def __str__(self) -> str:
         return f"{self.author.username}/NOTE-{self.readable_id} {self.title}"
+
+    @staticmethod
+    def activeNoteQ() -> models.Q:
+        return models.Q(is_deleted=False, is_trashed=False, is_archived=False)

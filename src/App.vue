@@ -1,6 +1,6 @@
 <template>
   <AuthWrapper>
-    <div class="h-full flex flex-col">
+    <div class="h-full flex flex-col bg-bg">
       <AppHeader />
 
       <div class="flex-grow flex">
@@ -44,6 +44,7 @@ import { useNotesStore } from "./stores/notes";
 import { useModalStore } from "./stores/modals";
 import { onKeyStroke } from "@vueuse/core";
 import useUtils from "./composables/useUtils";
+import { useUploadStore } from "./stores/upload";
 
 export default defineComponent({
   components: {
@@ -61,6 +62,7 @@ export default defineComponent({
     const authstore = useAuthStore();
     const notestore = useNotesStore();
     const modalstore = useModalStore();
+    const uploads = useUploadStore()
 
     onKeyStroke(["Control", "Alt", "n"], (e) => {
       if (e.ctrlKey && e.altKey && e.key === "n") {

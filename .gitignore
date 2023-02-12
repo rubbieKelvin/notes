@@ -30,3 +30,6 @@ db.sqlite3
 
 # Explicitly ignored files
 *.gitignore
+
+# Folders
+.bucket

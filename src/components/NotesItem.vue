@@ -3,7 +3,10 @@
     <div
       @click="handleClick"
       class="flex gap-2 md:p-2 py-2 px-6 group"
-      :class="{ 'hover:bg-hover': !note.is_trashed || selecting }"
+      :class="{
+        'hover:bg-themed-hover-bg hover:text-themed-hover-text':
+          !note.is_trashed || selecting,
+      }"
     >
       <input
         v-if="selecting"
@@ -24,7 +27,9 @@
                 {{ note.title }}
               </p>
             </div>
-            <p class="text-xs text-gray-600">
+            <p
+              class="text-xs group-hover:text-themed-hover-text-subtle text-themed-text-subtle"
+            >
               <UseTimeAgo
                 v-slot="{ timeAgo }"
                 :time="new Date(note.last_updated)"

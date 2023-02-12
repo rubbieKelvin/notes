@@ -14,11 +14,12 @@ export type MenuItem = {
   title?: string;
   subtitle?: string;
   icon?: IconName;
+  mdiIconPath?: string;
   badgeText?: string;
   action?: () => any;
   value?: any;
   disabled?: boolean;
-  hidden?: boolean;
+  hidden?: boolean | (() => boolean);
   link?: string | { name: RouteName; params?: Record<string, string> };
   colorClasses?: {
     bg?: string;
@@ -64,4 +65,9 @@ export interface ModelHandler<Model> {
   add: (data: Model) => void;
   update: (func: (model: Model) => boolean, update: Model) => void;
   delete: (func: (model: Model) => boolean) => void;
+}
+
+export interface TaggedFile {
+  id: string;
+  file: File;
 }
