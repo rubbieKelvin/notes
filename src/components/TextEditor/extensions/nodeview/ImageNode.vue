@@ -10,7 +10,7 @@
     >
       <!-- header -->
       <div
-        class="flex items-center"
+        class="flex items-center z-20"
         :class="[
           attrs.compact
             ? 'bg-transparent absolute p-4 w-full'

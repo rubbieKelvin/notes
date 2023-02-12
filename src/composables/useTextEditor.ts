@@ -67,11 +67,11 @@ export default createSharedComposable(() => {
   function onUpdate() {
     if (editor.value) {
       const content = editor.value.getJSON();
+      const similarContent =
+        editor.value.getHTML() ===
+        generateHTML(editableNote.value.content, extensions);
 
-      if (
-        editor.value.getHTML() !==
-        generateHTML(editableNote.value.content, extensions)
-      ) {
+      if (!similarContent) {
         editableNote.value.content = content;
         contentUpdated.value = true;
       }
@@ -99,11 +99,13 @@ export default createSharedComposable(() => {
     shalloweditor = useEditor({
       editable: isEditable(editableNote.value),
       extensions,
-      content: editableNote.value.content,
     });
 
     watchOnce(shalloweditor, (value) => {
       editor.value = value;
+
+      if (!editor.value) return;
+      editor.value?.commands.setContent(editableNote.value.content);
       editor.value?.on("update", onUpdate);
     });
 
