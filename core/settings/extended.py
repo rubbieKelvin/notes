@@ -29,3 +29,15 @@ DEFAULT_FILE_STORAGE = (
     if DevelopmentMode.DEV
     else "cloudinary_storage.storage.MediaCloudinaryStorage"
 )
+
+STATICFILES_STORAGE = (
+    "django.contrib.staticfiles.storage.StaticFilesStorage"
+    if DevelopmentMode.DEV
+    else "cloudinary_storage.storage.StaticHashedCloudinaryStorage"
+)
+
+CLOUDINARY_STORAGE = {
+    # other settings, like credentials
+    "STATICFILES_MANIFEST_ROOT": BASE_DIR
+    / "manifests"
+}
