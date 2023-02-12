@@ -73,7 +73,11 @@
       <!-- list -->
       <div v-else class="max-h-[50vh] overflow-y-auto pb-1">
         <template v-for="item in current" :key="item.id">
-          <template v-if="!item.hidden">
+          <template
+            v-if="
+              typeof item.hidden === 'function' ? !item.hidden() : !item.hidden
+            "
+          >
             <!-- normal -->
             <div
               v-if="

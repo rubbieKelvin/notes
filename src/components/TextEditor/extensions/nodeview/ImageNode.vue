@@ -1,8 +1,5 @@
 <template>
-  <NodeViewWrapper
-    class="max-w-full"
-    :class="[!attrs.row ? 'w-96' : 'w-max']"
-  >
+  <NodeViewWrapper class="max-w-full" :class="[!attrs.row ? 'w-96' : 'w-max']">
     <div
       class="flex rounded-md flex-col"
       draggable="true"
@@ -25,6 +22,7 @@
           :class="{ 'bg-themed-bg rounded-md': attrs.compact }"
         >
           <input
+            :disabled="!editor.isEditable"
             class="text-sm text-themed-text select-none outline-0 focus:outline-none bg-transparent"
             v-model="title"
           />
@@ -84,6 +82,7 @@ export default defineComponent({
   },
   setup(props) {
     function updateAttrs(update: Partial<ImageExtensionAttributes>) {
+      if (!props.editor.isEditable) return;
       props.updateAttributes(update);
     }
 
@@ -98,21 +97,29 @@ export default defineComponent({
     const menu = computed((): MenuItem[] => [
       {
         id: Symbol(),
+        type: "HEADER",
+        title: "No edit action",
+        hidden: () => props.editor.isEditable,
+      },
+      {
+        id: Symbol(),
         mdiIconPath: attrs.value.row ? mdiTableColumn : mdiTableRow,
-        hidden: (attrs.value.images?.length ?? 0) < 2,
+        hidden: () =>
+          (attrs.value.images?.length ?? 0) < 2 || !props.editor.isEditable,
         title: "Switch layout",
         action: () => updateAttrs({ row: !attrs.value.row }),
       },
       {
         id: Symbol(),
         mdiIconPath: mdiViewCompact,
-        hidden: true,
+        hidden: () => !props.editor.isEditable,
         title: attrs.value.compact ? "Normal view" : "Compact view",
         action: () => updateAttrs({ compact: !attrs.value.compact }),
       },
       {
         id: Symbol(),
         icon: "TrashIcon",
+        hidden: () => !props.editor.isEditable,
         title: `Delete ${(attrs.value.images?.length ?? 0) < 2 ? "" : " all"}`,
         action: () => deleteNode(),
       },

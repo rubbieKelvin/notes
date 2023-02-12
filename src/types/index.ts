@@ -19,7 +19,7 @@ export type MenuItem = {
   action?: () => any;
   value?: any;
   disabled?: boolean;
-  hidden?: boolean;
+  hidden?: boolean | (() => boolean);
   link?: string | { name: RouteName; params?: Record<string, string> };
   colorClasses?: {
     bg?: string;
