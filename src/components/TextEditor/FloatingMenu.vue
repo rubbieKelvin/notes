@@ -2,7 +2,7 @@
   <bubble-menu
     v-if="editor"
     :editor="editor"
-    :tippy-options="{ duration: 100 }"
+    :tippy-options="{ duration: 100, zIndex: 9000 }"
   >
     <div
       class="bg-themed-bg rounded-md border border-themed-stroke p-1 shadow-md flex w-fit"

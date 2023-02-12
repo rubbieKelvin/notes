@@ -18,6 +18,8 @@ export const DropHandler = Extension.create({
         key: new PluginKey("dropHandler"),
         props: {
           handleDrop(view, event, slice, moved) {
+            if (!view.editable) return;
+
             const fileslist: Array<File> = [];
 
             const doFileAppend = (file: File | null): void => {
