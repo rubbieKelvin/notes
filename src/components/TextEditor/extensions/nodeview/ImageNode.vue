@@ -1,11 +1,14 @@
 <template>
-  <NodeViewWrapper>
+  <NodeViewWrapper
+    class="max-w-full"
+    :class="[!attrs.row ? 'w-96' : 'w-max']"
+  >
     <div
-      class="flex overflow-clip rounded-md flex-col"
+      class="flex rounded-md flex-col"
       draggable="true"
       data-drag-handle
       :class="[
-        selected ? 'border-2 border-red-600' : 'border border-themed-stroke',
+        selected ? 'border-2 border-blue-500' : 'border border-themed-stroke',
       ]"
     >
       <!-- header -->
@@ -13,7 +16,7 @@
         class="flex items-center z-20"
         :class="[
           attrs.compact
-            ? 'bg-transparent absolute p-4 w-full'
+            ? 'bg-transparent absolute p-4'
             : 'bg-themed-bg-elevated px-2 py-1',
         ]"
       >
@@ -44,14 +47,15 @@
       <!-- images -->
       <div class="p-2">
         <div
-          class="flex flex-grow gap-1 rounded-md overflow-clip"
+          class="flex gap-1 rounded-md overflow-clip"
           :class="[attrs.row ? 'flex-row' : 'flex-col']"
         >
           <SingleImageNode
             v-for="image in attrs.images"
-            class="flex-grow max-h-96"
+            class="max-h-96 flex-grow"
             :key="image.uploadID"
             :imagedata="image"
+            :row="attrs.row"
             @update="updateImageCell"
           />
         </div>
@@ -102,6 +106,7 @@ export default defineComponent({
       {
         id: Symbol(),
         mdiIconPath: mdiViewCompact,
+        hidden: true,
         title: attrs.value.compact ? "Normal view" : "Compact view",
         action: () => updateAttrs({ compact: !attrs.value.compact }),
       },

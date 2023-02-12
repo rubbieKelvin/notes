@@ -1,5 +1,5 @@
 <template>
-  <div class="flex relative">
+  <div class="bg-black overflow-clip">
     <div v-if="resolvedData.uploading">
       <p>uploading</p>
     </div>
@@ -14,14 +14,11 @@
       v-else
       :src="resolvedData.url"
       :alt="resolvedData.alt ?? undefined"
-      class="object-center flex-grow object-cover"
+      class="object-center object-cover hover:opacity-70 w-full"
+      :class="{ 'h-52': row }"
+      @click="modalOpen = true"
       @load="onLoad"
       @error="onLoadError"
-    />
-
-    <div
-      @click="modalOpen = true"
-      class="absolute left-0 top-0 z-10 right-0 bottom-0 hover:bg-black hover:bg-opacity-10"
     />
 
     <Dialog
@@ -62,6 +59,7 @@ const resolveUploadedUrl = (url: string | null | undefined): string | null => {
 export default defineComponent({
   components: { Dialog },
   props: {
+    row: Boolean,
     imagedata: {
       type: Object as () => StructuredImageData,
       required: true,

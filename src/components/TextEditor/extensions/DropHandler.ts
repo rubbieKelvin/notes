@@ -50,7 +50,8 @@ export const DropHandler = Extension.create({
               });
             }
 
-            if (fileslist.length < 1) return false;
+            // count constraints
+            if (fileslist.length < 1 || fileslist.length > 4) return false;
 
             // Prevent default behavior (Prevent file from being opened)
             event.preventDefault();
