@@ -188,13 +188,6 @@
     prosemirror-view "^1.28.2"
     tippy.js "^6.3.7"
 
-"@tiptap/extension-floating-menu@^2.0.0-beta.217":
-  version "2.0.0-beta.217"
-  resolved "https://registry.yarnpkg.com/@tiptap/extension-floating-menu/-/extension-floating-menu-2.0.0-beta.217.tgz#0c571bc1526b00c1831930467be8b1ba996a799b"
-  integrity sha512-mP77UrimZo3sdC+Xam0DsPeYfXn29hl4ixEuZeiQQBMqz7g1K9T7vOEsRMQCBVFS7Hsc7MWBqLa1lL1GtyBB9Q==
-  dependencies:
-    tippy.js "^6.3.7"
-
 "@tiptap/extension-gapcursor@^2.0.0-beta.199":
   version "2.0.0-beta.199"
   resolved "https://registry.yarnpkg.com/@tiptap/extension-gapcursor/-/extension-gapcursor-2.0.0-beta.199.tgz#ec801e30690d1b30183b9751d64615724311be97"
