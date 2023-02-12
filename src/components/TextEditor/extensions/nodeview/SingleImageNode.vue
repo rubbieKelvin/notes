@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-black overflow-clip">
+  <div class="overflow-clip bg-gray-700">
     <div v-if="resolvedData.uploading">
       <p>uploading</p>
     </div>
