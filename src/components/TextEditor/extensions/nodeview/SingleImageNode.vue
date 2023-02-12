@@ -15,7 +15,7 @@
       :src="resolvedData.url"
       :alt="resolvedData.alt ?? undefined"
       class="object-center object-cover hover:opacity-70 w-full"
-      :class="{ 'h-52': row }"
+      :class="{ 'h-96': row }"
       @click="modalOpen = true"
       @load="onLoad"
       @error="onLoadError"

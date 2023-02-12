@@ -1,11 +1,14 @@
 <template>
-  <NodeViewWrapper class="max-w-full" :class="[!attrs.row ? 'w-96' : 'w-max']">
+  <NodeViewWrapper class="max-w-full flex justify-center">
     <div
-      class="flex rounded-md flex-col"
+      class="flex rounded-md flex-col w-full relative"
       draggable="true"
       data-drag-handle
       :class="[
         selected ? 'border-2 border-blue-500' : 'border border-themed-stroke',
+        attrs.row
+          ? 'lg:w-[70%] lg:max-w-[70rem]'
+          : 'lg:w-[60%] md:max-w-[60rem]',
       ]"
     >
       <!-- header -->
@@ -13,7 +16,7 @@
         class="flex items-center z-20"
         :class="[
           attrs.compact
-            ? 'bg-transparent absolute p-4'
+            ? 'bg-transparent absolute p-4 left-0 right-0'
             : 'bg-themed-bg-elevated px-2 py-1',
         ]"
       >
@@ -51,6 +54,9 @@
           <SingleImageNode
             v-for="image in attrs.images"
             class="max-h-96 flex-grow"
+            :class="[
+              (attrs.images?.length || 1) > 1 ? 'max-h-96' : 'max-h-[50rem]',
+            ]"
             :key="image.uploadID"
             :imagedata="image"
             :row="attrs.row"

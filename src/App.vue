@@ -30,7 +30,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watch } from "vue";
+import { defineComponent, watch } from "vue";
 import AppHeader from "@/components/layout/Header.vue";
 import MainNav from "@/components/layout/SideMenu/index.vue";
 import ApplicationMenu from "@/components/layout/ApplicationMenu/index.vue";
@@ -62,7 +62,7 @@ export default defineComponent({
     const authstore = useAuthStore();
     const notestore = useNotesStore();
     const modalstore = useModalStore();
-    const uploads = useUploadStore()
+    const uploads = useUploadStore();
 
     onKeyStroke(["Control", "Alt", "n"], (e) => {
       if (e.ctrlKey && e.altKey && e.key === "n") {
