@@ -1,6 +1,6 @@
 <template>
   <div
-    class="flex flex-grow max-w-[70vw] w-full h-full"
+    class="flex flex-grow md:max-w-[70vw] w-full h-full"
     :class="{ 'px-5': isPublicNotePage }"
   >
     <TextEditor

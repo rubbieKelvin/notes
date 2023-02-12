@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-black overflow-clip">
+  <div class="overflow-clip bg-gray-700">
     <div v-if="resolvedData.uploading">
       <p>uploading</p>
     </div>
@@ -15,7 +15,7 @@
       :src="resolvedData.url"
       :alt="resolvedData.alt ?? undefined"
       class="object-center object-cover hover:opacity-70 w-full"
-      :class="{ 'h-52': row }"
+      :class="{ 'h-96': row }"
       @click="modalOpen = true"
       @load="onLoad"
       @error="onLoadError"

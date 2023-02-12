@@ -80,8 +80,7 @@ export const DropHandler = Extension.create({
 
               const transaction = view.state.tr;
               transaction.replaceSelectionWith(node);
-
-              // console.log(node)
+              
               view.dispatch(transaction);
               return true;
             }
