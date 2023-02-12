@@ -2,6 +2,9 @@ import { Extension } from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { NodeType } from "@tiptap/pm/model";
 import { ImageExtensionAttributes } from "./ImageNode";
+import { useUploadStore } from "@/stores/upload";
+import { TaggedFile } from "@/types";
+import { v4 as uuid4 } from "uuid";
 
 const ALLOWED_FILE_TYPES = ["image/jpeg", "image/png"];
 const MAX_FILE_SIZE = 5_000_000;
@@ -55,20 +58,27 @@ export const DropHandler = Extension.create({
               | undefined;
 
             if (imageNode) {
+              const uploadstore = useUploadStore();
+
+              const taggedimages: TaggedFile[] = fileslist.map((file) => ({
+                id: uuid4(),
+                file,
+              }));
+
+              uploadstore.uploadImages(taggedimages);
+
               const node = imageNode.create(<ImageExtensionAttributes>{
-                images: [
-                  {
-                    url: "https://i.pinimg.com/736x/ca/84/d6/ca84d6365dbc9e67822d9f828a72716e.jpg",
-                    alt: null,
-                  },
-                  {
-                    url: "https://wallpaperaccess.com/full/3089644.jpg",
-                    alt: "Girl",
-                  },
-                ],
+                images: taggedimages.map((ti) => ({
+                  uploadID: ti.id,
+                  url: null,
+                  alt: null,
+                })),
               });
+
               const transaction = view.state.tr;
               transaction.replaceSelectionWith(node);
+
+              // console.log(node)
               view.dispatch(transaction);
               return true;
             }

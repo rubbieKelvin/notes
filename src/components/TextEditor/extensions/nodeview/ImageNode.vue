@@ -47,14 +47,12 @@
           class="flex flex-grow gap-1 rounded-md overflow-clip"
           :class="[attrs.row ? 'flex-row' : 'flex-col']"
         >
-          <img
-            v-for="(image, index) in attrs.images"
-            :key="index"
-            :src="image.url"
-            :alt="image.alt ?? undefined"
-            class="flex-grow max-h-96 object-center object-cover"
-            @load="onLoad"
-            @error="onLoadError"
+          <SingleImageNode
+            v-for="image in attrs.images"
+            class="flex-grow max-h-96"
+            :key="image.uploadID"
+            :imagedata="image"
+            @update="updateImageCell"
           />
         </div>
       </div>
@@ -70,6 +68,7 @@ import { mdiTableColumn, mdiTableRow, mdiViewCompact } from "@mdi/js";
 import { MenuItem } from "@/types";
 import Icon from "@/components/Icon";
 import MenuList from "@/components/Popup/MenuList.vue";
+import SingleImageNode from "./SingleImageNode.vue";
 
 export default defineComponent({
   props: nodeViewProps,
@@ -77,6 +76,7 @@ export default defineComponent({
     NodeViewWrapper,
     Icon,
     MenuList,
+    SingleImageNode,
   },
   setup(props) {
     function updateAttrs(update: Partial<ImageExtensionAttributes>) {
@@ -125,6 +125,18 @@ export default defineComponent({
       view.dispatch(transaction);
     }
 
+    function updateImageCell(payload: { url: string; uploadID: string }) {
+      const images = attrs.value.images;
+      if (!images) return;
+
+      const index = images.findIndex((i) => i.uploadID === payload.uploadID);
+      const data = images[index];
+      data.url = payload.url;
+
+      images[index] = data;
+      updateAttrs({ images });
+    }
+
     return {
       title,
       attrs,
@@ -134,6 +146,7 @@ export default defineComponent({
       mdiTableColumn,
       menu,
       deleteNode,
+      updateImageCell,
     };
   },
 });

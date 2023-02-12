@@ -66,3 +66,8 @@ export interface ModelHandler<Model> {
   update: (func: (model: Model) => boolean, update: Model) => void;
   delete: (func: (model: Model) => boolean) => void;
 }
+
+export interface TaggedFile {
+  id: string;
+  file: File;
+}

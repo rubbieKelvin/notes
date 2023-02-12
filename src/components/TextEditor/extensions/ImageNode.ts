@@ -6,16 +6,17 @@ export interface ImageExtensionOptions {
   inline: boolean;
 }
 
+export interface StructuredImageData {
+  uploadID: string;
+  url: string | null;
+  alt: string | null;
+}
+
 export interface ImageExtensionAttributes {
   title: string;
   row: boolean;
   compact: boolean;
-  images:
-    | {
-        url: string;
-        alt: string | null;
-      }[]
-    | null;
+  images: StructuredImageData[] | null;
 }
 
 export const ImageExtension = Node.create<ImageExtensionOptions>({
@@ -47,7 +48,7 @@ export const ImageExtension = Node.create<ImageExtensionOptions>({
         default: true,
       },
       compact: {
-        default: true,
+        default: false,
       },
       images: {
         default: null,
