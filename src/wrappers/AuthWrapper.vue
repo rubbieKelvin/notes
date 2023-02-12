@@ -293,8 +293,6 @@ export default defineComponent({
       }
     };
     const submitSignup = async () => {
-      form.value.signup.processing = true;
-
       // validate username
       const usernameValid = validateUsername(form.value.signup.username);
       const passwordValid = validatePassword(form.value.signup.password);
