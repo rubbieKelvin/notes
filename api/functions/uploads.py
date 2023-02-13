@@ -1,4 +1,3 @@
-import uuid
 import typing
 from uql.utils import dto
 
