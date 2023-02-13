@@ -1,15 +1,17 @@
 import typing
-from uql.utils import dto
 
 from api.utils import helpers
 from api.constants import getUserRole
 from api.models.users import User
 from api.models.notes import Note
 from api.models.sharing import SharedNote
+
+from uql.utils import dto
 from uql.functions import ApiFunction
 from uql.models import ExposedModel
 
 from django.db import models
+from django.db.utils import IntegrityError
 
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -36,17 +38,28 @@ def shareNote(request: Request, args: dict):
     allow_edit = typing.cast(bool, args.get("allow_edit", False))
 
     # subject note
-    note = Note.objects.get(
-        Note.activeNoteQ() & models.Q(author=request.user, id=note_id)
-    )
+    try:
+        note = Note.objects.get(
+            Note.activeNoteQ() & models.Q(author=request.user, id=note_id)
+        )
+    except Note.DoesNotExist:
+        raise Note.DoesNotExist(
+            "Cant find note this note in your library. might be deleted or trashed", 404
+        )
 
     # user we're sharing to
-    share_to = User.objects.get(models.Q(id=share_to_id, is_active=True))
+    try:
+        share_to = User.objects.get(models.Q(id=share_to_id, is_active=True))
+    except User.DoesNotExist:
+        raise User.DoesNotExist("User not found", 404)
 
     # create note
-    shared_note = SharedNote.objects.create(
-        note=note, shared_to=share_to, allow_edit=allow_edit
-    )
+    try:
+        shared_note = SharedNote.objects.create(
+            note=note, shared_to=share_to, allow_edit=allow_edit
+        )
+    except IntegrityError as e:
+        raise Exception("Already shared to this user", 400)
 
     role = getUserRole(request.user)
     sr = ExposedModel.getExposedModel(SharedNote).getSerializerClass(role)

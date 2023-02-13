@@ -16,8 +16,18 @@ class SharedNote(models.Model):
     content = models.JSONField(
         default=None,
         null=True,
+        blank=True,
         help_text="Users can edit shared notes, but note directly on the main notes app",
     )
 
     def __str__(self) -> str:
         return f"{self.shared_to.username}/{self.note.author.username}/NOTE-{self.note.readable_id}"
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["shared_to", "note"],
+                condition=models.Q(is_active=True),
+                name="share_note_to_user_once",
+            )
+        ]
