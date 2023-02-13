@@ -36,7 +36,7 @@ import MainNav from "@/components/layout/SideMenu/index.vue";
 import ApplicationMenu from "@/components/layout/ApplicationMenu/index.vue";
 import TextEditor from "@/components/TextEditor/index.vue";
 import Toast from "@/components/Toast.vue";
-import NewNoteDialog from "@/components/Dialog/NewNoteDialog.vue";
+import NewNoteDialog from "@/modals/NewNoteDialog.vue";
 import KeyboardShortcut from "@/components/KeyboardShortcut.vue";
 import AuthWrapper from "./wrappers/AuthWrapper.vue";
 import { useAuthStore } from "./stores/auth";

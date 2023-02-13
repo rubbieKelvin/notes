@@ -45,14 +45,14 @@
 
 <script lang="ts">
 import { computed, defineComponent, Ref, ref, watch } from "vue";
-import Dialog from "./index.vue";
+import Dialog from "@/components/Dialog/index.vue";
 import Icon from "@/components/Icon";
 import { useFocus } from "@vueuse/core";
 import { useNotesStore } from "@/stores/notes";
 import { noteRoute } from "@/composables/useNavigation";
 import { useAuthStore } from "@/stores/auth";
 import { useRouter } from "vue-router";
-import Loading from "../Loading.vue";
+import Loading from "@/components/Loading.vue";
 
 export default defineComponent({
   components: { Dialog, Icon, Loading },
