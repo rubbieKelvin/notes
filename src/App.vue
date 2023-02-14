@@ -25,7 +25,10 @@
       <!-- ... -->
       <Toast />
       <NewNoteDialog v-model="modalstore.modalstates.createNote" />
-      <NotesDetailsDialog v-model="modalstore.modalstates.noteDetails" />
+      <NotesDetailsDialog
+        v-if="notestore.openedNote"
+        v-model="modalstore.modalstates.noteDetails"
+      />
     </div>
   </AuthWrapper>
 </template>
@@ -83,7 +86,7 @@ export default defineComponent({
       }
     );
 
-    return { modalstore, authstore, ...utils };
+    return { modalstore, authstore, ...utils, notestore };
   },
 });
 </script>
