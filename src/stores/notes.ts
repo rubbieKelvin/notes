@@ -320,6 +320,8 @@ export const useNotesStore = defineStore("notes", {
           hidden: note.is_trashed || note.is_public,
           action: async () => {
             const notes = await this.setNotesPublic([note.id], true);
+            // move to details to get link
+            modalstore.modalstates.noteDetails = true;
             if (notes) onNoteEdited(notes);
           },
         },
