@@ -1,9 +1,19 @@
 import { defineStore } from "pinia";
 
+export interface State {
+  modalstates: {
+    createNote: boolean;
+    noteDetails: boolean;
+  };
+}
+
 export const useModalStore = defineStore("modal", {
-  state: () => {
+  state: (): State => {
     return {
-      createNote: false,
+      modalstates: {
+        createNote: false,
+        noteDetails: false,
+      },
     };
   },
 });

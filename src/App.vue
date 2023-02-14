@@ -24,7 +24,8 @@
 
       <!-- ... -->
       <Toast />
-      <NewNoteDialog v-model="modalstore.createNote" />
+      <NewNoteDialog v-model="modalstore.modalstates.createNote" />
+      <NotesDetailsDialog v-model="modalstore.modalstates.noteDetails" />
     </div>
   </AuthWrapper>
 </template>
@@ -45,6 +46,7 @@ import { useModalStore } from "./stores/modals";
 import { onKeyStroke } from "@vueuse/core";
 import useUtils from "./composables/useUtils";
 import { useUploadStore } from "./stores/upload";
+import NotesDetailsDialog from "./modals/NotesDetailsDialog.vue";
 
 export default defineComponent({
   components: {
@@ -56,6 +58,7 @@ export default defineComponent({
     NewNoteDialog,
     KeyboardShortcut,
     AuthWrapper,
+    NotesDetailsDialog,
   },
   setup() {
     const utils = useUtils();
@@ -67,7 +70,7 @@ export default defineComponent({
     onKeyStroke(["Control", "Alt", "n"], (e) => {
       if (e.ctrlKey && e.altKey && e.key === "n") {
         e.preventDefault();
-        modalstore.createNote = true;
+        modalstore.modalstates.createNote = true;
       }
     });
 

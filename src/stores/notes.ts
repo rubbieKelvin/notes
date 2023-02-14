@@ -6,6 +6,7 @@ import { MenuItem } from "@/types";
 import { useRouter } from "vue-router";
 import { noteRoute } from "@/composables/useNavigation";
 import { Pk } from "@/composables/uql/types";
+import { useModalStore } from "./modals";
 
 interface State {
   notes: Note[] | null;
@@ -77,11 +78,6 @@ export const useNotesStore = defineStore("notes", {
     },
   },
   actions: {
-    hasSimilarContent(noteA: Note, noteB: Note): boolean {
-      // checks if two notes are the same
-      return JSON.stringify(noteA.content) === JSON.stringify(noteB.content);
-    },
-
     async _updateManyNotes({
       objects,
       fields = true,
@@ -118,10 +114,10 @@ export const useNotesStore = defineStore("notes", {
     },
     async openNote(rid: number, username: string | null = null) {
       const authstore = useAuthStore();
-      if (authstore.isAuthenticated) {
-        this.openedNote = await this.getNoteByRiD(rid);
-      } else if (username) {
+      if (username) {
         this.openedNote = await this.getNoteByRiD(rid, username);
+      } else if (authstore.isAuthenticated) {
+        this.openedNote = await this.getNoteByRiD(rid);
       }
     },
     async createNote(object: NoteInsert) {
@@ -264,6 +260,7 @@ export const useNotesStore = defineStore("notes", {
       }
     ): MenuItem[] {
       const router = useRouter();
+      const modalstore = useModalStore();
 
       return [
         {
@@ -278,8 +275,12 @@ export const useNotesStore = defineStore("notes", {
         },
         {
           id: Symbol(),
-          type: "SEPARATOR",
-          hidden: !showOpen || note.is_trashed,
+          title: "Details",
+          icon: "InformationCircleIcon",
+          hidden: note.is_trashed,
+          action: () => {
+            modalstore.modalstates.noteDetails = true;
+          },
         },
         {
           id: Symbol(),

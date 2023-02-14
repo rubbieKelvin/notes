@@ -1,43 +1,57 @@
 import { JSONContent } from "@tiptap/vue-3";
 
-export type User = {
-  id: string;
+export type UUID = string;
+export type DateTime = string;
+export type NoteContent = JSONContent;
+
+export interface User {
+  id: UUID;
   username: string;
-  date_created: string;
-  last_login: string | null;
+  date_created: DateTime;
+  last_login: DateTime | null;
   first_name: string | null;
   last_name: string | null;
   notes: Note[];
-};
+}
 
-export type Tag = {};
+export interface Tag {}
 
-export type Note = {
-  id: string;
+export interface Note {
+  id: UUID;
   title: string;
-  content: JSONContent;
-  readable_id: number | null;
-  author: User | null;
-  date_created: string;
-  last_updated: string;
+  content: NoteContent;
+  readable_id: number;
+  author: User;
+  date_created: DateTime;
+  last_updated: DateTime;
   is_starred: boolean;
   is_archived: boolean;
   is_public: boolean;
   is_trashed: boolean;
-};
+}
 
-export type NoteInsert = {
+export interface NoteInsert {
   title: string;
   author: string;
   is_public?: boolean;
-};
+}
 
-export type NoteUpdate = {
+export interface NoteUpdate {
   title?: string;
-  content?: JSONContent;
+  content?: NoteContent;
   is_starred?: boolean;
   is_archived?: boolean;
   is_public?: boolean;
   is_deleted?: boolean;
   is_trashed?: boolean;
-};
+}
+
+export interface SharedNote {
+  id: UUID;
+  note: Note;
+  shared_to: User;
+  is_active: boolean;
+  allow_edit: boolean;
+  shared_on: DateTime;
+  content: NoteContent | null;
+}

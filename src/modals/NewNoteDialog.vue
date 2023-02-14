@@ -6,21 +6,22 @@
     :closeOnClickOutside="!creating"
   >
     <div
-      class="bg-themed-bg border border-stroke py-2 rounded-md min-w-[400px] flex gap-3 flex-col"
+      class="bg-themed-bg border border-stroke py-2 rounded-md w-screen h-screen md:h-auto md:w-auto md:min-w-[400px] flex gap-3 flex-col"
     >
-      <div class="pb-2 px-3 border-b border-stroke flex">
-        <p class="flex-grow font-medium">New note</p>
-        <button
-          :disabled="creating"
-          class="btn p-1"
-          :class="{ 'text-gray-300': creating }"
-          @click="visible = false"
-        >
-          <Icon name="XMarkIcon" class="w-5 h-5" />
-        </button>
-      </div>
-      <div class="px-3 flex flex-col gap-2">
-        <div class="form-input-wrapper">
+      <DialogHeading
+        title="New Note"
+        :buttons="[
+          {
+            icon: 'XMarkIcon',
+            disabled: creating,
+            action: () => {
+              visible = false;
+            },
+          },
+        ]"
+      />
+      <div class="px-3 flex flex-col gap-2 h-full">
+        <div class="form-input-wrapper flex-grow">
           <label class="text-input-label">title</label>
           <input
             v-model="data.title"
@@ -33,7 +34,11 @@
           />
         </div>
         <div class="flex justify-end">
-          <button :disabled="creating" class="btn px-4 py-2" @click="create">
+          <button
+            :disabled="creating"
+            class="btn px-4 py-2 md:w-auto flex-grow"
+            @click="create"
+          >
             <loading v-if="creating" class="w-5 h-5" />
             <span v-else>Create</span>
           </button>
@@ -53,9 +58,10 @@ import { noteRoute } from "@/composables/useNavigation";
 import { useAuthStore } from "@/stores/auth";
 import { useRouter } from "vue-router";
 import Loading from "@/components/Loading.vue";
+import DialogHeading from "@/components/Dialog/Heading.vue";
 
 export default defineComponent({
-  components: { Dialog, Icon, Loading },
+  components: { Dialog, Icon, Loading, DialogHeading },
   props: {
     modelValue: Boolean,
   },

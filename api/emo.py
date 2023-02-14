@@ -41,7 +41,6 @@ NOTES_EMO = (
                     "content",
                     "readable_id",
                     "author",
-                    "shares",
                     "date_created",
                     "last_updated",
                     "is_starred",
@@ -104,7 +103,6 @@ USERS_EMO = (
                     "last_name",
                     "date_created",
                     "notes",
-                    "shared_accesses",
                 ],
                 "row": Q(is_active=True),
             }
@@ -134,7 +132,15 @@ SHARED_NOTES_EMO = ExposedModel(model=SharedNote, operations=[]).addPermission(
                 "shared_on",
                 "content",
             ],
-            "row": Q(note__is_trashed=False, note__is_deleted=False),
+            # show the shared note if the user note is active,
+            # also if the note is active or the person requesting is not the owner of the note,
+            # so we can show the user that thier acces has been revoked if they had edit access.
+            # this is because we'd like the user to keep his edit access
+            "row": (
+                (Q(shared_to__id=id) | Q(note__author__id=id))
+                & Q(note__is_trashed=False, note__is_deleted=False)
+                & (Q(is_active=True) | (~Q(note__author__id=id) & Q(allow_edit=True)))
+            ),
         }
     ),
 )

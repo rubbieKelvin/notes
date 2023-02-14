@@ -12,7 +12,7 @@
     <button
       v-if="authstore.isAuthenticated"
       class="btn p-1 flex items-center justify-center gap-2"
-      @click="() => (modalstore.createNote = true)"
+      @click="() => (modalstore.modalstates.createNote = true)"
     >
       <span> Create note </span>
       <KeyboardShortcut :sequence="['ctrl', 'alt', 'n']" />

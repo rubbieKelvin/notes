@@ -163,7 +163,7 @@ export default defineComponent({
                 title: "Create note",
                 icon: "PlusIcon",
                 keybinding: ["ctrl", "alt", "n"],
-                action: () => (modalstore.createNote = true),
+                action: () => (modalstore.modalstates.createNote = true),
                 hidden: !["Note", "Notes"].includes(route.name as string),
               },
               {
