@@ -23,7 +23,9 @@
         >
           <Icon v-if="detail.icon" :name="detail.icon" class="w-6 h-6" />
           <div class="flex-grow">
-            <h1 class="font-medium capitalize text-sm">{{ detail.title }}</h1>
+            <h1 class="font-medium capitalize text-sm select-none">
+              {{ detail.title }}
+            </h1>
             <p class="text-gray-600">{{ detail.subtitle }}</p>
           </div>
           <div class="flex items-center">

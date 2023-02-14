@@ -71,9 +71,18 @@ export default defineComponent({
     const uploads = useUploadStore();
 
     onKeyStroke(["Control", "Alt", "n"], (e) => {
+      // create new note
       if (e.ctrlKey && e.altKey && e.key === "n") {
         e.preventDefault();
         modalstore.modalstates.createNote = true;
+      }
+    });
+
+    onKeyStroke(["Control", "Alt", "i"], (e) => {
+      // show note information
+      if (e.ctrlKey && e.altKey && e.key === "i" && notestore.openedNote?.id) {
+        e.preventDefault();
+        modalstore.modalstates.noteDetails = true;
       }
     });
 

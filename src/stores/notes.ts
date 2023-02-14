@@ -278,6 +278,7 @@ export const useNotesStore = defineStore("notes", {
           title: "Details",
           icon: "InformationCircleIcon",
           hidden: note.is_trashed,
+          keybinding: ["ctrl", "alt", "i"],
           action: () => {
             modalstore.modalstates.noteDetails = true;
           },
