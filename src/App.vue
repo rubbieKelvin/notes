@@ -19,7 +19,7 @@
 
       <MainNav
         v-if="!isPublicNotePage"
-        class="h-full flex md:hidden justify-center gap-12 sm:gap-20"
+        class="h-full flex px-6 sm:px-0 md:hidden justify-between sm:justify-center gap-0 sm:gap-20"
       />
 
       <!-- ... -->

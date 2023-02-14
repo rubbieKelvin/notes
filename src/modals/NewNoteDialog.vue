@@ -36,7 +36,7 @@
         <div class="flex justify-end">
           <button
             :disabled="creating"
-            class="btn px-4 py-2 md:w-auto flex-grow"
+            class="btn px-4 py-2 flex flex-grow md:flex-grow-0 justify-center items-center"
             @click="create"
           >
             <loading v-if="creating" class="w-5 h-5" />

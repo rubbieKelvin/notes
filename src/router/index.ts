@@ -20,6 +20,15 @@ export default createRouter({
       },
     },
     {
+      path: "/public/mine/",
+      name: "Public",
+      props: { default: { section: "PublicNote" } },
+      components: {
+        default: () => import("@/views/notes.vue"),
+        extended: () => import("@/views/editor.vue"),
+      },
+    },
+    {
       path: "/public/:username/note-:identifier",
       name: "PublicNote",
       components: { extended: () => import("@/views/editor.vue") },

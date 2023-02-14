@@ -59,6 +59,9 @@ export const useNotesStore = defineStore("notes", {
         (note) => !note.is_archived && !note.is_trashed
       );
     },
+    publicNotes(state): Note[] {
+      return this.basicNotes.filter((note) => note.is_public);
+    },
     sharedNotes: (): Note[] => {
       return [];
     },

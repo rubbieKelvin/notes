@@ -1,5 +1,5 @@
 <template>
-  <div class="w-[30rem] max-w-[30rem] border-r border-stroke">
+  <div class="w-full md:w-80 md:max-w-sm border-r border-stroke">
     <router-view />
   </div>
 </template>

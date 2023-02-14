@@ -7,7 +7,8 @@ export type RouteName =
   | "Archive"
   | "Trash"
   | "Starred"
-  | "Tags";
+  | "Tags"
+  | "Public";
 
 export type MenuItem = {
   id: string | number | symbol;
