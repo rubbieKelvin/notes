@@ -6,23 +6,67 @@
       <div class="h-min">
         <h1 class="gap-2 text-black flex">
           <NewspaperIcon class="w-5 h-5" />
-          <span class="select-none hidden md:inline">OpenNotes</span>
+          <span class="select-none">OpenNotes</span>
         </h1>
       </div>
+      <button class="btn p-1 md:hidden" @click="dialogOpen = true">
+        <Icon name="EllipsisVerticalIcon" class="w-5 h-5" />
+      </button>
     </div>
+
+    <Dialog
+      v-if="note"
+      v-model="dialogOpen"
+      class="md:hidden"
+      dim
+      escape
+      closeOnClickOutside
+    >
+      <div
+        class="bg-themed-bg border border-stroke py-2 rounded-md w-screen h-screen md:h-auto md:w-auto md:min-w-[400px] flex gap-3 flex-col"
+      >
+        <DialogHeading
+          :title="note.title"
+          :buttons="[
+            {
+              icon: 'XMarkIcon',
+              action: () => {
+                dialogOpen = false;
+              },
+            },
+          ]"
+        />
+        <NoteDetails :note="note" class="w-full px-4 pt-3" />
+      </div>
+    </Dialog>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import NoteDetails from "@/components/NoteDetails.vue";
+
+import Dialog from "@/components/Dialog/index.vue";
+import DialogHeading from "@/components/Dialog/Heading.vue";
+import { defineComponent, ref } from "vue";
 import { NewspaperIcon } from "@heroicons/vue/24/outline";
+import { Note } from "@/types/models";
+import Icon from "@/components/Icon";
 
 export default defineComponent({
   components: {
     NewspaperIcon,
+    Dialog,
+    DialogHeading,
+    Icon,
+    NoteDetails,
+  },
+  props: {
+    note: { type: Object as () => Note },
   },
   setup() {
-    return {};
+    const dialogOpen = ref(false);
+
+    return { dialogOpen };
   },
 });
 </script>

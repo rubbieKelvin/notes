@@ -1,6 +1,6 @@
 <template>
   <div class="h-full flex flex-col">
-    <public-heading />
+    <public-heading :note="note || undefined" />
     <template v-if="note">
       <div class="container mx-auto flex px-4 flex-grow">
         <NoteDetails
@@ -8,7 +8,7 @@
           class="w-72 md:inline-block hidden px-4 pt-6"
         />
         <div
-          class="h-full flex flex-col flex-grow border-l border-l-themed-stroke px-4 pt-6"
+          class="h-full flex flex-col flex-grow md:border-l md:border-l-themed-stroke px-2 md:px-4 pt-6"
         >
           <div class="pb-4">
             <h1 class="text-2xl font-medium">{{ note.title }}</h1>
@@ -26,7 +26,7 @@
 <script lang="ts">
 import NoteDetails from "@/components/NoteDetails.vue";
 import { useNotesStore } from "@/stores/notes";
-import { EditorContent, JSONContent, useEditor } from "@tiptap/vue-3";
+import { EditorContent, useEditor } from "@tiptap/vue-3";
 import { Note } from "@/types/models";
 import { defineComponent, onMounted, Ref, ref } from "vue";
 import { useRoute } from "vue-router";
@@ -34,7 +34,11 @@ import PublicHeading from "./PublicHeading.vue";
 import { extensions } from "@/composables/useTextEditor";
 
 export default defineComponent({
-  components: { PublicHeading, NoteDetails, EditorContent },
+  components: {
+    PublicHeading,
+    NoteDetails,
+    EditorContent,
+  },
   setup() {
     const note: Ref<Note | null> = ref(null);
     const fetchState = ref({
