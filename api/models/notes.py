@@ -9,7 +9,7 @@ def defaultContent():
 class Note(models.Model):
     id = models.UUIDField(default=uuid4, primary_key=True)
     title = models.CharField(max_length=60, null=False)
-    content = models.JSONField(default=defaultContent)
+    content = models.JSONField(default=defaultContent, editable=False)
     readable_id = models.BigIntegerField(null=True, default=None, blank=True)
     author = models.ForeignKey(
         "api.User", on_delete=models.CASCADE, related_name="notes"

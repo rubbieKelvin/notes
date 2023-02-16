@@ -34,7 +34,7 @@
           </p>
         </div>
 
-        <div v-if="!isPublicNotePage" class="flex gap-2 items-center">
+        <div class="flex gap-2 items-center">
           <button
             v-if="contentUpdated && !note.is_archived"
             @click="saveNote"
@@ -160,7 +160,6 @@ export default defineComponent({
     // maps a notes id to it's status
     const savingStatuses: Ref<Record<string, SaveStatus>> = ref({});
 
-    const { isPublicNotePage } = useUtils();
     const notestore = useNotesStore();
     const authstore = useAuthStore();
     const { editor, configureEditor, contentUpdated, editableNote } =
@@ -168,8 +167,7 @@ export default defineComponent({
 
     const { idle } = useIdle(10 * 1000);
 
-    const checkEditable = (note: Note) =>
-      !note.is_archived && !note.is_trashed && !isPublicNotePage.value;
+    const checkEditable = (note: Note) => !note.is_archived && !note.is_trashed;
 
     const menu = computed(() =>
       notestore.noteContextMenu(props.note, {
@@ -269,7 +267,6 @@ export default defineComponent({
       menu,
       authstore,
       notestore,
-      isPublicNotePage,
     };
   },
 });
