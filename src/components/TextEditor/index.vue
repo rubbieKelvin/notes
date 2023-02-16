@@ -1,5 +1,5 @@
 <template>
-  <div class="texteditor md:px-0 px-4 w-full md:w-auto">
+  <div class="texteditor md:px-0 px-4 w-full md:w-min">
     <!-- heading -->
     <div class="texteditor-heading">
       <div class="flex">
