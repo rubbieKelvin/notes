@@ -19,7 +19,7 @@ import { Underline } from "@tiptap/extension-underline";
 import { DropHandler } from "@/components/TextEditor/extensions/DropHandler";
 import { ImageExtension } from "@/components/TextEditor/extensions/ImageNode";
 
-const extensions = [
+export const extensions = [
   TaskList,
   TaskItem,
   Superscript,

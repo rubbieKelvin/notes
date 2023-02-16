@@ -10,3 +10,5 @@ export const pickProperties = <T extends object, K extends keyof T>(
   }
   return picked;
 };
+
+export const boolToString = (val: boolean): string => (val ? "Yes" : "No");

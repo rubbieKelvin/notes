@@ -34,11 +34,6 @@ export default createRouter({
           },
         },
         {
-          path: "/public/:username/note-:identifier",
-          name: "PublicNote",
-          components: { extended: () => import("@/views/editor.vue") },
-        },
-        {
           path: "/shared",
           name: "Shared",
           components: {
@@ -100,14 +95,6 @@ export default createRouter({
           },
         },
         {
-          path: "/tags",
-          name: "Tags",
-          components: {
-            default: () => import("@/views/tags.vue"),
-            extended: () => import("@/views/editor.vue"),
-          },
-        },
-        {
           path: "/search",
           name: "Search",
           components: {
@@ -116,6 +103,11 @@ export default createRouter({
           },
         },
       ],
+    },
+    {
+      path: "/public/:username/note-:identifier",
+      name: "PublicNote",
+      component: () => import("@/views/public/index.vue"),
     },
   ],
 });

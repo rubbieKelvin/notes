@@ -201,8 +201,12 @@ export const useNotesStore = defineStore("notes", {
 
       return notes ?? [];
     },
-    async getNoteByRiD(rid: number, username: string | null = null) {
-      if (this.notes === null) {
+    async getNoteByRiD(
+      rid: number,
+      username: string | null = null,
+      forceRemote: boolean = false
+    ) {
+      if (this.notes === null || forceRemote) {
         const note =
           (
             await this.notemodel.findMany({
