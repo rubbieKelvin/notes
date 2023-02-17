@@ -1,8 +1,5 @@
 <template>
-  <div
-    class="flex flex-grow md:max-w-[70vw] w-full h-full"
-    :class="{ 'px-5': isPublicNotePage }"
-  >
+  <div class="flex flex-grow h-full" :class="{ 'px-5': isPublicNotePage }">
     <TextEditor
       v-if="note && writableContent"
       v-model="writableContent"
@@ -40,7 +37,7 @@ import useUtils from "@/composables/useUtils";
 export default defineComponent({
   components: { EmptyPage, TextEditor },
   setup() {
-    const utils = useUtils();
+    const { isPublicNotePage } = useUtils();
     const route = useRoute();
     const router = useRouter();
     const notestore = useNotesStore();
@@ -68,7 +65,7 @@ export default defineComponent({
         // get note
         notestore.openNote(
           readable_id,
-          authstore.user?.username ?? (route.params?.username as string)
+          isPublicNotePage.value ? (route.params?.username as string) : null
         );
       }
     };
@@ -110,7 +107,7 @@ export default defineComponent({
       }
     };
 
-    return { note, writableContent, authstore, deleteNote, ...utils };
+    return { note, writableContent, authstore, deleteNote, isPublicNotePage };
   },
 });
 </script>

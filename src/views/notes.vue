@@ -39,7 +39,6 @@
 import { computed, ComputedRef, defineComponent, Ref, ref, watch } from "vue";
 import PageHeader from "@/components/layout/ApplicationMenu/PageHeader.vue";
 import { MenuItem } from "@/types";
-import NewNoteDialog from "@/components/Dialog/NewNoteDialog.vue";
 import NotesItem from "@/components/NotesItem.vue";
 import Loading from "@/components/Loading.vue";
 import { useNotesStore } from "@/stores/notes";
@@ -57,7 +56,7 @@ export default defineComponent({
       default: "Note",
     },
   },
-  components: { PageHeader, NewNoteDialog, NotesItem, Loading, Icon },
+  components: { PageHeader, NotesItem, Loading, Icon },
   setup(props) {
     const route = useRoute();
     const selecting = ref(false);
@@ -75,6 +74,8 @@ export default defineComponent({
         return notestore.archivedNotes;
       } else if (props.section === "Trash") {
         return notestore.trashedNotes;
+      } else if (props.section === "PublicNote") {
+        return notestore.publicNotes;
       }
       return [];
     });
@@ -164,7 +165,7 @@ export default defineComponent({
                 title: "Create note",
                 icon: "PlusIcon",
                 keybinding: ["ctrl", "alt", "n"],
-                action: () => (modalstore.createNote = true),
+                action: () => (modalstore.modalstates.createNote = true),
                 hidden: !["Note", "Notes"].includes(route.name as string),
               },
               {

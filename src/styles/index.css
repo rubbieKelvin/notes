@@ -6,7 +6,7 @@ html,
 body,
 #app {
   height: 100%;
-  color: #323232;
+  @apply text-themed-text;
 }
 
 button,

@@ -77,7 +77,7 @@ export default defineComponent({
   > .popup {
     position: absolute;
     margin-top: 0.5em;
-    z-index: 10;
+    z-index: 1000;
 
     + &-right {
       right: 0;

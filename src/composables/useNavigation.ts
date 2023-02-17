@@ -12,6 +12,7 @@ export type NotePages = {
   ArchivedNote: string;
   StarredNote: string;
   Trash: string;
+  PublicNote: string;
 };
 
 export const noteRoute = (
@@ -19,7 +20,7 @@ export const noteRoute = (
   name: keyof NotePages = "Note"
 ): Route => {
   return {
-    name,
+    name: name === "PublicNote" ? "Note" : name,
     params: {
       identifier: note.readable_id,
     },
