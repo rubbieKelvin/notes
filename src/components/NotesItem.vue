@@ -114,7 +114,7 @@ export default defineComponent({
 
     const menu = computed((): MenuItem[] =>
       noteContextMenu(props.note, {
-        showOpen: true,
+        showMenuItemOpen: true,
         useRouterToOpenNote: !shouldDirectlyOpenNote.value,
       })
     );

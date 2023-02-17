@@ -153,17 +153,18 @@ export const useNotesStore = defineStore("notes", {
       if (res !== null) return res.map((note) => note.id);
       return null;
     },
-    async moveNotesToArchive(
-      pks: string[],
-      archive = true
-    ): Promise<Note[] | null> {
+    async setManyNoteAttrs(options: {
+      pks: string[];
+      attrs: Partial<Note>;
+      closeNoteIfAffected?: boolean;
+    }): Promise<Note[] | null> {
       return await this._updateManyNotes({
-        objects: pks.map((pk) => ({
+        objects: options.pks.map((pk) => ({
           pk,
-          updatedFields: { is_archived: archive },
+          updatedFields: options.attrs,
         })),
         fields: true,
-        closeNoteIfAffected: false,
+        closeNoteIfAffected: !!options.closeNoteIfAffected,
       });
     },
     async restoreNotes(pks: string[]): Promise<Note[] | null> {
