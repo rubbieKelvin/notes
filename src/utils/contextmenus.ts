@@ -104,7 +104,10 @@ export const noteContextMenu = (
       icon: "UserGroupIcon",
       hidden: !showMenuItemSharePublic || note.is_trashed || note.is_public,
       action: async () => {
-        const notes = await notestore.setNotesPublic([note.id], true);
+        const notes = await notestore.setManyNoteAttrs({
+          pks: [note.id],
+          attrs: { is_public: true },
+        });
         // move to details to get link
         modalstore.modalstates.noteDetails = true;
         if (notes) onNoteEdited(notes);
@@ -115,7 +118,10 @@ export const noteContextMenu = (
       title: "Remove public access",
       hidden: !showMenuItemSharePublic || note.is_trashed || !note.is_public,
       action: async () => {
-        const notes = await notestore.setNotesPublic([note.id], false);
+        const notes = await notestore.setManyNoteAttrs({
+          pks: [note.id],
+          attrs: { is_public: false },
+        });
         if (notes) onNoteEdited(notes);
       },
     },
