@@ -77,6 +77,7 @@ import { MenuItem } from "@/types";
 import { useRoute } from "vue-router";
 import { useNotesStore } from "@/stores/notes";
 import Icon from "./Icon";
+import { noteContextMenu } from "@/utils/contextmenus";
 
 export default defineComponent({
   props: {
@@ -112,8 +113,8 @@ export default defineComponent({
     });
 
     const menu = computed((): MenuItem[] =>
-      notestore.noteContextMenu(props.note, {
-        showOpen: true,
+      noteContextMenu(props.note, {
+        showMenuItemOpen: true,
         useRouterToOpenNote: !shouldDirectlyOpenNote.value,
       })
     );

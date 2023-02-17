@@ -136,7 +136,7 @@ import { pickProperties } from "@/utils/helpers";
 import { useIdle } from "@vueuse/core";
 import MenuList from "@/components/Popup/MenuList.vue";
 import { useAuthStore } from "@/stores/auth";
-import useUtils from "@/composables/useUtils";
+import { noteContextMenu } from "@/utils/contextmenus";
 import useTextEditor from "@/composables/useTextEditor";
 import FloatingMenu from "./FloatingMenu.vue";
 
@@ -170,7 +170,7 @@ export default defineComponent({
     const checkEditable = (note: Note) => !note.is_archived && !note.is_trashed;
 
     const menu = computed(() =>
-      notestore.noteContextMenu(props.note, {
+      noteContextMenu(props.note, {
         onNoteEdited: (notes) => {
           emit("note:changed", notes[0]);
         },

@@ -48,6 +48,7 @@ import { NotePages } from "@/composables/useNavigation";
 import { onKeyStroke } from "@vueuse/core";
 import { useRoute } from "vue-router";
 import Icon from "@/components/Icon";
+import { manyNotesContextMenu } from "@/utils/contextmenus";
 
 export default defineComponent({
   props: {
@@ -89,139 +90,11 @@ export default defineComponent({
 
     const menu: ComputedRef<Array<MenuItem>> = computed(
       (): Array<MenuItem> =>
-        selecting.value
-          ? [
-              { id: Symbol(), title: "Selection", type: "HEADER" },
-              {
-                id: Symbol(),
-                title:
-                  route.name === "Trash" ? "Delete Selection" : "Move to trash",
-                icon: "TrashIcon",
-                action: async () => {
-                  const res = await notestore.deleteNotes(
-                    selectedNotes.value,
-                    route.name === "Trash"
-                  );
-                  if (res) {
-                    selectedNotes.value = [];
-                    selecting.value = false;
-                  }
-                },
-              },
-              {
-                id: Symbol(),
-                title: "Restore Selection",
-                hidden: route.name !== "Trash",
-                action: async () => {
-                  const res = await notestore.restoreNotes(selectedNotes.value);
-
-                  if (res) {
-                    selectedNotes.value = [];
-                    selecting.value = false;
-                  }
-                },
-              },
-
-              {
-                id: Symbol(),
-                title: "Archive Selection",
-                icon: "ArchiveBoxIcon",
-                hidden: ["Trash", "ArchivedNote", "Archive"].includes(
-                  route.name as string
-                ),
-                action: async () => {
-                  const res = await notestore.moveNotesToArchive(
-                    selectedNotes.value
-                  );
-                  if (res) {
-                    selectedNotes.value = [];
-                    selecting.value = false;
-                  }
-                },
-              },
-              {
-                id: Symbol(),
-                title: "Reverse Selection",
-                icon: "ArrowPathIcon",
-                action: () => {
-                  selectedNotes.value = notes.value
-                    .map((note) => note.id)
-                    .filter((nid) => !selectedNotes.value.includes(nid));
-                },
-              },
-              {
-                id: Symbol(),
-                title: "Close Selection",
-                icon: "XMarkIcon",
-                action: () => {
-                  selectedNotes.value = [];
-                  selecting.value = false;
-                },
-              },
-            ]
-          : [
-              {
-                id: Symbol(),
-                title: "Create note",
-                icon: "PlusIcon",
-                keybinding: ["ctrl", "alt", "n"],
-                action: () => (modalstore.modalstates.createNote = true),
-                hidden: !["Note", "Notes"].includes(route.name as string),
-              },
-              {
-                id: Symbol(),
-                title: "Import",
-                icon: "CloudArrowDownIcon",
-                hidden: true,
-              },
-              {
-                id: Symbol(),
-                title: "Create folder",
-                icon: "FolderPlusIcon",
-                disabled: true,
-                hidden: true,
-                subtitle: "Signin to use feature",
-              },
-              {
-                id: Symbol(),
-                title: "Sort by",
-                icon: "AdjustmentsHorizontalIcon",
-                children: [
-                  { id: Symbol(), title: "No sort" },
-                  { id: Symbol(), title: "Title" },
-                  { id: Symbol(), title: "Updated" },
-                  { id: Symbol(), title: "Created" },
-                  { id: Symbol(), type: "SEPARATOR" },
-                  {
-                    id: Symbol(),
-                    title: "Ascending",
-                    type: "CHECKBOX",
-                    value: notestore.settings.sort.ascending,
-                    action: () => {
-                      notestore.settings.sort.ascending =
-                        !notestore.settings.sort.ascending;
-                    },
-                  },
-                ],
-              },
-              { id: Symbol(), type: "SEPARATOR" },
-              {
-                id: Symbol(),
-                title: "Select",
-                icon: "ListBulletIcon",
-                action: () => {
-                  selecting.value = true;
-                },
-              },
-              {
-                id: Symbol(),
-                title: "Select All",
-                action: () => {
-                  selecting.value = true;
-                  selectedNotes.value = notes.value.map((n) => n.id);
-                },
-              },
-            ]
+        manyNotesContextMenu({
+          selecting,
+          notes,
+          selectedNotes,
+        })
     );
 
     onKeyStroke(["Escape"], (e) => {
