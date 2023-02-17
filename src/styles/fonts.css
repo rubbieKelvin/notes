@@ -13,3 +13,7 @@
   font-display: swap;
   src: url(/src/assets/googlesans-bold.woff2) format("woff2");
 }
+
+b{
+  color: rgba(blue, 0.3);
+}

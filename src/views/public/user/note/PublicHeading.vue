@@ -3,14 +3,10 @@
     <div
       class="flex justify-between gap-4 md:gap-10 px-6 py-3 items-center container mx-auto"
     >
-      <div class="h-min">
-        <h1 class="gap-2 text-black flex">
-          <NewspaperIcon class="w-5 h-5" />
-          <span class="select-none">OpenNotes</span>
-        </h1>
-      </div>
+      <logo />
+
       <button class="btn p-1 md:hidden" @click="dialogOpen = true">
-        <Icon name="EllipsisVerticalIcon" class="w-5 h-5" />
+        <Icon name="InformationCircleIcon" class="w-5 h-5" />
       </button>
     </div>
 
@@ -51,6 +47,7 @@ import { defineComponent, ref } from "vue";
 import { NewspaperIcon } from "@heroicons/vue/24/outline";
 import { Note } from "@/types/models";
 import Icon from "@/components/Icon";
+import Logo from "@/components/Logo.vue";
 
 export default defineComponent({
   components: {
@@ -59,6 +56,7 @@ export default defineComponent({
     DialogHeading,
     Icon,
     NoteDetails,
+    Logo,
   },
   props: {
     note: { type: Object as () => Note },

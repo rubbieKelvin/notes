@@ -4,10 +4,11 @@
     :class="[modelValue ? 'h-auto' : 'h-0']"
   >
     <!-- content -->
-    <div class="flex gap-2 p-2">
+    <div class="flex gap-3 px-3 py-2 items-center">
       <Icon v-if="icon" :name="icon" class="w-5 h-5" />
       <div>
-        <p>{{ modelValue }}</p>
+        <p :class="{ 'font-bold': !!subtitle }">{{ modelValue }}</p>
+        <p v-if="subtitle">{{ subtitle }}</p>
       </div>
     </div>
     <!-- progress -->

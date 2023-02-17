@@ -1,86 +1,51 @@
 <template>
-  <div class="h-full flex flex-col">
-    <public-heading :note="note || undefined" />
-    <template v-if="note">
-      <div class="container mx-auto flex px-4 flex-grow">
-        <NoteDetails
-          :note="note"
-          class="w-72 md:inline-block hidden px-4 pt-6"
+  <div class="h-full flex items-center justify-center">
+    <div
+      class="md:p-2 p-5 w-full md:h-min h-full md:w-min md:min-w-[40rem] rounded-md flex flex-col gap-4"
+    >
+      <logo isPublic />
+
+      <div class="flex flex-col gap-3">
+        <TextInput
+          class="min-w-full"
+          placeholder="Search public directory"
+          icon="MagnifyingGlassIcon"
+          :button="{
+            icon: 'ArrowRightIcon',
+            action: () => {},
+          }"
         />
-        <div
-          class="h-full flex flex-col flex-grow md:border-l md:border-l-themed-stroke px-2 md:px-4 pt-6"
-        >
-          <div class="pb-4">
-            <h1 class="text-2xl font-medium">{{ note.title }}</h1>
-          </div>
-          <div class="flex-grow">
-            <EditorContent :editor="editor" />
-          </div>
-        </div>
+        <Banner
+          :useTimer="false"
+          icon="InformationCircleIcon"
+          modelValue="Info"
+          subtitle="Only public notes and users who have public notes are shown"
+          class="text-yellow-600 bg-yellow-600"
+        />
       </div>
-      <div></div>
-    </template>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
-import NoteDetails from "@/components/NoteDetails.vue";
-import { useNotesStore } from "@/stores/notes";
-import { EditorContent, useEditor } from "@tiptap/vue-3";
-import { Note } from "@/types/models";
-import { defineComponent, onMounted, Ref, ref } from "vue";
-import { useRoute } from "vue-router";
-import PublicHeading from "./PublicHeading.vue";
-import { extensions } from "@/composables/useTextEditor";
+import Banner from "@/components/Banner.vue";
+import Logo from "@/components/Logo.vue";
+import TextInput from "@/components/TextInput.vue";
+import { NewspaperIcon } from "@heroicons/vue/24/outline";
+import { defineComponent } from "vue";
 
 export default defineComponent({
-  components: {
-    PublicHeading,
-    NoteDetails,
-    EditorContent,
-  },
-  setup() {
-    const note: Ref<Note | null> = ref(null);
-    const fetchState = ref({
-      fetching: false,
-      noteexists: false,
-      errormessage: "",
-    });
-    const notestore = useNotesStore();
-    const route = useRoute();
-
-    // fetch note
-    const username = route.params?.username as string;
-    const identifier = route.params?.identifier as string;
-
-    if (!(username || identifier)) {
-      fetchState.value.errormessage = "Cant fetch note";
-    }
-
-    const editor = useEditor({
-      editable: false,
-      extensions,
-    });
-
-    onMounted(async () => {
-      fetchState.value.fetching = true;
-      note.value = await notestore.getNoteByRiD(
-        parseInt(identifier),
-        username,
-        true
-      );
-
-      fetchState.value.fetching = false;
-      fetchState.value.noteexists = !!(
-        note.value && Object.keys(note.value).length > 0
-      );
-
-      if (note.value?.content && fetchState.value.noteexists && editor.value) {
-        editor.value.commands.setContent(note.value.content);
-      }
-    });
-
-    return { note, editor };
-  },
+  components: { NewspaperIcon, TextInput, Logo, Banner },
+  setup() {},
 });
 </script>
+
+<style lang="scss" scoped>
+:deep(.textinput--button) {
+  @apply bg-themed-accent-bg text-white rounded-md;
+
+  &:hover {
+    @apply bg-themed-accent-hover-bg;
+  }
+}
+</style>

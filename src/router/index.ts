@@ -105,9 +105,14 @@ export default createRouter({
       ],
     },
     {
+      path: "/public",
+      name: "PublicHome",
+      component: () => import("@/views/public/index.vue"),
+    },
+    {
       path: "/public/:username/note-:identifier",
       name: "PublicNote",
-      component: () => import("@/views/public/index.vue"),
+      component: () => import("@/views/public/user/note/index.vue"),
     },
   ],
 });
