@@ -167,15 +167,6 @@ export const useNotesStore = defineStore("notes", {
         closeNoteIfAffected: !!options.closeNoteIfAffected,
       });
     },
-    async restoreNotes(pks: string[]): Promise<Note[] | null> {
-      return await this._updateManyNotes({
-        objects: pks.map((pk) => ({
-          pk,
-          updatedFields: { is_trashed: false },
-        })),
-        fields: true,
-      });
-    },
     async setNotesPublic(
       pks: string[],
       is_public: boolean

@@ -120,7 +120,10 @@ export default defineComponent({
     );
 
     const restoreNote = () => {
-      notestore.restoreNotes([props.note.id]);
+      notestore.setManyNoteAttrs({
+        pks: [props.note.id],
+        attrs: { is_trashed: false },
+      });
     };
 
     return {

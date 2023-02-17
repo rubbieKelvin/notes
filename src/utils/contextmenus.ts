@@ -137,7 +137,10 @@ export const noteContextMenu = (
       title: "Restore",
       hidden: !note.is_trashed,
       action: async () => {
-        await notestore.restoreNotes([note.id]);
+        await notestore.setManyNoteAttrs({
+          pks: [note.id],
+          attrs: { is_trashed: false },
+        });
       },
     },
   ];
@@ -173,9 +176,10 @@ export const manyNotesContextMenu = (
           title: "Restore Selection",
           hidden: route.name !== "Trash",
           action: async () => {
-            const res = await notestore.restoreNotes(
-              options.selectedNotes.value
-            );
+            const res = await notestore.setManyNoteAttrs({
+              pks: options.selectedNotes.value,
+              attrs: { is_trashed: false },
+            });
 
             if (res) {
               options.selectedNotes.value = [];
