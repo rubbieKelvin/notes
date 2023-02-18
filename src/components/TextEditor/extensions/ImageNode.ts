@@ -13,10 +13,7 @@ export interface StructuredImageData {
 }
 
 export interface ImageExtensionAttributes {
-  title: string;
-  row: boolean;
-  compact: boolean;
-  images: StructuredImageData[] | null;
+  image: StructuredImageData;
 }
 
 export const ImageExtension = Node.create<ImageExtensionOptions>({
@@ -41,16 +38,7 @@ export const ImageExtension = Node.create<ImageExtensionOptions>({
 
   addAttributes(): Record<keyof ImageExtensionAttributes, { default: any }> {
     return {
-      title: {
-        default: "Images",
-      },
-      row: {
-        default: true,
-      },
-      compact: {
-        default: false,
-      },
-      images: {
+      image: {
         default: null,
       },
     };
@@ -65,7 +53,7 @@ export const ImageExtension = Node.create<ImageExtensionOptions>({
       "opennotes-imagenode",
       mergeAttributes({
         ...HTMLAttributes,
-        images: JSON.stringify(HTMLAttributes.images),
+        image: JSON.stringify(HTMLAttributes.image),
       }),
     ];
   },

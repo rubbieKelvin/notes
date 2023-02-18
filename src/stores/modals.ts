@@ -84,9 +84,12 @@ export const useModalStore = defineStore("modal", {
       // we need the id to check if we're trying to close the same modal as the one we opened
       // if it's not the same and we dont check, a dialog might close another dialogs modal
       if (id === this.extensibleDialogSessionID) {
-        this.extensibleDialogData = null;
-        this.extensibleDialogSessionID = null;
+        this.forceCloseExtensibleModal();
       }
+    },
+    forceCloseExtensibleModal() {
+      this.extensibleDialogData = null;
+      this.extensibleDialogSessionID = null;
     },
   },
 });

@@ -1,10 +1,10 @@
 <template>
-  <div class="flex flex-grow h-full" :class="{ 'px-5': isPublicNotePage }">
+  <div class="flex flex-grow h-full w-1" :class="{ 'px-5': isPublicNotePage }">
     <TextEditor
       v-if="note && writableContent"
       v-model="writableContent"
       :note="note"
-      class="flex-grow h-full"
+      class="flex-grow h-full w-full"
       @contextmenu:delete="deleteNote"
       @note:changed="
         (n) => {
