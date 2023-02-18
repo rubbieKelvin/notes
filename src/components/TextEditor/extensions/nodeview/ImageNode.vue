@@ -1,82 +1,37 @@
 <template>
-  <NodeViewWrapper class="max-w-full flex justify-center">
+  <NodeViewWrapper class="flex">
     <div
-      class="flex rounded-md flex-col w-full relative"
-      draggable="true"
-      data-drag-handle
-      :class="[
-        selected ? 'border-2 border-blue-500' : 'border border-themed-stroke',
-        attrs.row
-          ? 'lg:w-[70%] lg:max-w-[70rem]'
-          : 'lg:w-[60%] md:max-w-[60rem]',
-      ]"
+      v-if="attrs.image"
+      class="rounded-lg w-max max-w-full overflow-clip border p-1"
+      :class="[selected ? 'border-themed-accent-bg' : 'border-themed-stroke']"
     >
-      <!-- header -->
-      <div
-        class="flex items-center z-20"
-        :class="[
-          attrs.compact
-            ? 'bg-transparent absolute p-4 left-0 right-0'
-            : 'bg-themed-bg-elevated px-2 py-1',
-        ]"
-      >
-        <div
-          class="py-1 px-2 flex items-center justify-center"
-          :class="{ 'bg-themed-bg rounded-md': attrs.compact }"
-        >
-          <input
-            :disabled="!editor.isEditable"
-            class="text-sm text-themed-text select-none outline-0 focus:outline-none bg-transparent"
-            v-model="title"
-          />
-        </div>
-
-        <span class="flex-grow" />
-        <MenuList :list="menu" alignRight>
-          <template v-slot:trigger="{ open }">
-            <div
-              class="flex items-center justify-center"
-              :class="{ 'bg-themed-bg rounded-md': attrs.compact }"
-            >
-              <button @click="open" class="btn p-1">
-                <Icon name="EllipsisVerticalIcon" class="w-5 h-5" />
-              </button>
-            </div>
-          </template>
-        </MenuList>
-      </div>
-      <!-- images -->
-      <div class="p-2">
-        <div
-          class="flex gap-1 rounded-md overflow-clip"
-          :class="[attrs.row ? 'flex-row' : 'flex-col']"
-        >
-          <SingleImageNode
-            v-for="image in attrs.images"
-            class="max-h-96 flex-grow"
-            :class="[
-              (attrs.images?.length || 1) > 1 ? 'max-h-96' : 'max-h-[50rem]',
-            ]"
-            :key="image.uploadID"
-            :imagedata="image"
-            :row="attrs.row"
-            @update="updateImageCell"
-          />
-        </div>
-      </div>
+      <img
+        v-if="attrs.image.url"
+        :src="attrs.image.url"
+        :alt="attrs.image.alt || attrs.image.uploadID"
+        class="max-h-[30rem] object-cover w-full rounded-lg"
+      />
     </div>
   </NodeViewWrapper>
 </template>
 
 <script lang="ts">
 import { NodeViewWrapper, nodeViewProps } from "@tiptap/vue-3";
-import { defineComponent, computed } from "vue";
-import { ImageExtensionAttributes } from "../ImageNode";
-import { mdiTableColumn, mdiTableRow, mdiViewCompact } from "@mdi/js";
-import { MenuItem } from "@/types";
+import { defineComponent, computed, onMounted } from "vue";
+import { ImageExtensionAttributes, StructuredImageData } from "../ImageNode";
+import { mdiTableColumn, mdiTableRow } from "@mdi/js";
 import Icon from "@/components/Icon";
 import MenuList from "@/components/Popup/MenuList.vue";
 import SingleImageNode from "./SingleImageNode.vue";
+import { usePublicSignalStore } from "@/stores/publicsignals";
+
+const API_URL = import.meta.env.VITE_API_BASE;
+
+const resolveUploadedUrl = (url: string | null | undefined): string | null => {
+  if (!url) return null;
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+  return API_URL + url;
+};
 
 export default defineComponent({
   props: nodeViewProps,
@@ -87,84 +42,47 @@ export default defineComponent({
     SingleImageNode,
   },
   setup(props) {
+    const publicsignal = usePublicSignalStore();
+    const attrs = computed(() => props.node.attrs as ImageExtensionAttributes);
+
     function updateAttrs(update: Partial<ImageExtensionAttributes>) {
       if (!props.editor.isEditable) return;
       props.updateAttributes(update);
     }
 
-    const attrs = computed(() => props.node.attrs as ImageExtensionAttributes);
-    const title = computed({
-      get: () => props.node.attrs.title as string,
-      set: (val: string) => {
-        updateAttrs({ title: val });
-      },
-    });
+    onMounted(() => {
+      const uploadID = attrs.value.image?.uploadID;
 
-    const menu = computed((): MenuItem[] => [
-      {
-        id: Symbol(),
-        type: "HEADER",
-        title: "No edit action",
-        hidden: () => props.editor.isEditable,
-      },
-      {
-        id: Symbol(),
-        mdiIconPath: attrs.value.row ? mdiTableColumn : mdiTableRow,
-        hidden: () =>
-          (attrs.value.images?.length ?? 0) < 2 || !props.editor.isEditable,
-        title: "Switch layout",
-        action: () => updateAttrs({ row: !attrs.value.row }),
-      },
-      {
-        id: Symbol(),
-        mdiIconPath: mdiViewCompact,
-        hidden: () => !props.editor.isEditable,
-        title: attrs.value.compact ? "Normal view" : "Compact view",
-        action: () => updateAttrs({ compact: !attrs.value.compact }),
-      },
-      {
-        id: Symbol(),
-        icon: "TrashIcon",
-        hidden: () => !props.editor.isEditable,
-        title: `Delete ${(attrs.value.images?.length ?? 0) < 2 ? "" : " all"}`,
-        action: () => deleteNode(),
-      },
-    ]);
+      if (!uploadID || !attrs.value.image.url) {
+        const signalID = `imageupload:${uploadID}`;
+        publicsignal.listen(signalID, (val) => {
+          const payload = val as {
+            uploading: boolean;
+            error: boolean;
+            url: string | null;
+          };
+
+          if (payload.url) {
+            updateAttrs({
+              image: {
+                ...attrs.value.image,
+                url: resolveUploadedUrl(payload.url),
+              },
+            });
+          }
+        });
+      }
+    });
 
     function onLoad() {}
     function onLoadError() {}
 
-    function deleteNode() {
-      const { view } = props.editor;
-      const pos = props.getPos();
-
-      const transaction = view.state.tr.deleteRange(pos, pos + 1);
-
-      view.dispatch(transaction);
-    }
-
-    function updateImageCell(payload: { url: string; uploadID: string }) {
-      const images = attrs.value.images;
-      if (!images) return;
-
-      const index = images.findIndex((i) => i.uploadID === payload.uploadID);
-      const data = images[index];
-      data.url = payload.url;
-
-      images[index] = data;
-      updateAttrs({ images });
-    }
-
     return {
-      title,
       attrs,
       onLoad,
       onLoadError,
       mdiTableRow,
       mdiTableColumn,
-      menu,
-      deleteNode,
-      updateImageCell,
     };
   },
 });

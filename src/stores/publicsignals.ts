@@ -28,7 +28,8 @@ export const usePublicSignalStore = defineStore("publicSignal", {
         (val) => {
           if (this.lastEvent && val?.id === eventID)
             func(this.lastEvent?.payload);
-        }
+        },
+        { deep: true }
       );
     },
   },
