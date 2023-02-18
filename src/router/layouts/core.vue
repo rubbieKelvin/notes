@@ -26,8 +26,15 @@
       <Toast />
       <extensible-dialog
         v-if="modalstore.extensibleDialogData"
-        v-model="modalstore.extensibleDialogVisible"
+        :modelValue="modalstore.extensibleDialogVisible"
         :modalData="modalstore.extensibleDialogData"
+        @update:model-value="
+          (visible) => {
+            if (!visible) {
+              modalstore.forceCloseExtensibleModal();
+            }
+          }
+        "
       />
       <NotesDetailsDialog
         v-if="notestore.openedNote"

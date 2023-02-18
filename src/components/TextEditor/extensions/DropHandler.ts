@@ -5,6 +5,7 @@ import { ImageExtensionAttributes } from "./ImageNode";
 import { useUploadStore } from "@/stores/upload";
 import { TaggedFile } from "@/types";
 import { v4 as uuid4 } from "uuid";
+import { createAlertDialog } from "@/modals/alertDialog";
 
 const ALLOWED_FILE_TYPES = ["image/jpeg", "image/png"];
 const MAX_FILE_SIZE = 5_000_000;
@@ -18,6 +19,9 @@ export const DropHandler = Extension.create({
         key: new PluginKey("dropHandler"),
         props: {
           handleDrop(view, event, slice, moved) {
+            // Prevent default behavior (Prevent file from being opened)
+            event.preventDefault();
+
             if (!view.editable) return;
 
             const fileslist: Array<File> = [];
@@ -51,10 +55,14 @@ export const DropHandler = Extension.create({
             }
 
             // count constraints
-            if (fileslist.length < 1 || fileslist.length > 4) return false;
-
-            // Prevent default behavior (Prevent file from being opened)
-            event.preventDefault();
+            if (fileslist.length < 1) {
+              createAlertDialog({
+                title: "Error",
+                type: "error",
+                subtitle: "Could note upload file",
+              });
+              return false;
+            }
 
             const imageNode = view.state.schema.nodes?.imageNode as
               | NodeType
@@ -63,10 +71,10 @@ export const DropHandler = Extension.create({
             if (imageNode) {
               const uploadstore = useUploadStore();
 
-              const taggedimages: TaggedFile[] = fileslist.map((file) => ({
-                id: uuid4(),
-                file,
-              }));
+              // one image only for now
+              const taggedimages: TaggedFile[] = [
+                { id: uuid4(), file: fileslist[0] },
+              ];
 
               uploadstore.uploadImages(taggedimages);
 
@@ -80,7 +88,7 @@ export const DropHandler = Extension.create({
 
               const transaction = view.state.tr;
               transaction.replaceSelectionWith(node);
-              
+
               view.dispatch(transaction);
               return true;
             }
