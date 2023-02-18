@@ -1,4 +1,8 @@
-import { useEditor } from "@tiptap/vue-3";
+import {
+  mergeAttributes,
+  textblockTypeInputRule,
+  useEditor,
+} from "@tiptap/vue-3";
 
 import StaterKit from "@tiptap/starter-kit";
 import { ShallowRef, Ref, shallowRef, ref } from "vue";
@@ -18,6 +22,8 @@ import { Superscript } from "@tiptap/extension-superscript";
 import { Underline } from "@tiptap/extension-underline";
 import { DropHandler } from "@/components/TextEditor/extensions/DropHandler";
 import { ImageExtension } from "@/components/TextEditor/extensions/ImageNode";
+import { Heading } from "@tiptap/extension-heading";
+import { v4 as uuid4 } from "uuid";
 
 export const extensions = [
   TaskList,
@@ -32,10 +38,25 @@ export const extensions = [
     linkOnPaste: true,
     openOnClick: true,
   }),
+  Heading.extend({
+    renderHTML({ node, HTMLAttributes }) {
+      const hasLevel = this.options.levels.includes(node.attrs.level);
+      const level = hasLevel ? node.attrs.level : this.options.levels[0];
+
+      return [
+        `h${level}`,
+        mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
+          id: uuid4(),
+        }),
+        0,
+      ];
+    },
+  }).configure({ levels: [1, 2, 3] }),
   StaterKit.configure({
-    heading: { levels: [1, 2, 3] },
+    // heading: { levels: [1, 2, 3] },
     codeBlock: false,
     dropcursor: { color: "#ff0000" },
+    heading: false,
   }),
   Placeholder.configure({
     emptyEditorClass: "editor-empty",
