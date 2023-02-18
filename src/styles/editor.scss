@@ -1,6 +1,7 @@
 .ProseMirror {
   height: 100%;
   outline: none;
+  @apply text-base text-themed-text;
 
   > * + * {
     margin-top: 0.75em;
@@ -20,9 +21,8 @@
     @apply rounded text-sm;
   }
 
-  h1,
-  h2 {
-    @apply border-b border-b-gray-200;
+  h1 {
+    @apply border-b border-themed-stroke-light;
   }
 
   h1,
@@ -31,16 +31,15 @@
   }
 
   h1 {
-    font-size: x-large;
+    @apply text-4xl font-bold;
   }
 
   h2 {
-    font-size: larger;
+    @apply text-3xl font-medium;
   }
 
   h3 {
-    font-size: medium;
-    @apply font-bold;
+    @apply text-2xl;
   }
 
   blockquote {
