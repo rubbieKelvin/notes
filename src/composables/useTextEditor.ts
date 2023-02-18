@@ -46,7 +46,7 @@ export const extensions = [
       return [
         `h${level}`,
         mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
-          id: uuid4(),
+          id: uuid4().substring(0, 8),
         }),
         0,
       ];
