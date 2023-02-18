@@ -6,7 +6,7 @@
     class="flex gap-2 hover:bg-themed-hover-bg select-none px-3 py-2 rounded-md"
   >
     <Icon v-if="item.icon" :name="item.icon" class="w-5 h-5 text-black" />
-    <span class="capitalize hidden md:flex">{{ item.title }}</span>
+    <span class="capitalize hidden lg:flex">{{ item.title }}</span>
   </router-link>
 </template>
 

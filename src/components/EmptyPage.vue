@@ -12,7 +12,7 @@
     <button
       v-if="authstore.isAuthenticated"
       class="btn p-1 flex items-center justify-center gap-2"
-      @click="() => (modalstore.modalstates.createNote = true)"
+      @click="openNotemodal"
     >
       <span> Create note </span>
       <KeyboardShortcut :sequence="['ctrl', 'alt', 'n']" />
@@ -28,18 +28,21 @@
 </template>
 
 <script lang="ts">
+import { createNewNoteModal } from "@/modals/newNoteModal";
 import { useAuthStore } from "@/stores/auth";
-import { useModalStore } from "@/stores/modals";
 import { defineComponent } from "vue";
+import { useRouter } from "vue-router";
 import KeyboardShortcut from "./KeyboardShortcut.vue";
 
 export default defineComponent({
   components: { KeyboardShortcut },
   setup() {
-    const modalstore = useModalStore();
+    const router = useRouter();
     const authstore = useAuthStore();
 
-    return { modalstore, authstore };
+    const openNotemodal = () => createNewNoteModal(router);
+
+    return { authstore, openNotemodal };
   },
 });
 </script>

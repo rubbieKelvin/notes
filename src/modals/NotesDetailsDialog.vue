@@ -32,7 +32,7 @@ export default defineComponent({
   props: {
     modelValue: { type: Boolean },
   },
-  emits: ["update:modelValue"],
+  emits: ["update:model-value"],
   setup(props, { emit }) {
     const { editableNote } = useTextEditor();
 
@@ -41,7 +41,7 @@ export default defineComponent({
         return props.modelValue;
       },
       set(val) {
-        emit("update:modelValue", val);
+        emit("update:model-value", val);
       },
     });
 

@@ -29,7 +29,7 @@ export default defineComponent({
     closeOnClickOutside: Boolean,
     modelValue: Boolean,
   },
-  emits: ["update:modelValue"],
+  emits: ["update:model-value"],
   setup(props, { emit }) {
     const body = ref(null);
 
@@ -38,7 +38,7 @@ export default defineComponent({
         return props.modelValue;
       },
       set(val) {
-        emit("update:modelValue", val);
+        emit("update:model-value", val);
       },
     });
 

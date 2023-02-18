@@ -1,4 +1,5 @@
 import { noteRoute } from "@/composables/useNavigation";
+import { createNewNoteModal } from "@/modals/newNoteModal";
 import { useModalStore } from "@/stores/modals";
 import { useNotesStore } from "@/stores/notes";
 import { MenuItem } from "@/types";
@@ -156,8 +157,8 @@ export const manyNotesContextMenu = (
   options: ManyNotesContextMenuOptions
 ): MenuItem[] => {
   const route = useRoute();
+  const router = useRouter();
   const notestore = useNotesStore();
-  const modalstore = useModalStore();
 
   return options.selecting.value
     ? [
@@ -258,7 +259,7 @@ export const manyNotesContextMenu = (
           title: "Create note",
           icon: "PlusIcon",
           keybinding: ["ctrl", "alt", "n"],
-          action: () => (modalstore.modalstates.createNote = true),
+          action: () => createNewNoteModal(router),
           hidden: !["Note", "Notes"].includes(route.name as string),
         },
         {

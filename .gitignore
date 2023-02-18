@@ -29,7 +29,7 @@ venv
 db.sqlite3
 
 # Explicitly ignored files
-*.gitignore
+*.gitignore.*
 
 # Folders
 .bucket

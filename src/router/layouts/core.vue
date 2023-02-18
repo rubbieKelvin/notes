@@ -24,7 +24,11 @@
 
       <!-- ... -->
       <Toast />
-      <NewNoteDialog v-model="modalstore.modalstates.createNote" />
+      <extensible-dialog
+        v-if="modalstore.extensibleDialogData"
+        v-model="modalstore.extensibleDialogVisible"
+        :modalData="modalstore.extensibleDialogData"
+      />
       <NotesDetailsDialog
         v-if="notestore.openedNote"
         v-model="modalstore.modalstates.noteDetails"
@@ -40,7 +44,6 @@ import MainNav from "@/components/layout/SideMenu/index.vue";
 import ApplicationMenu from "@/components/layout/ApplicationMenu/index.vue";
 import TextEditor from "@/components/TextEditor/index.vue";
 import Toast from "@/components/Toast.vue";
-import NewNoteDialog from "@/modals/NewNoteDialog.vue";
 import KeyboardShortcut from "@/components/KeyboardShortcut.vue";
 import AuthWrapper from "@/wrappers/AuthWrapper.vue";
 import { useAuthStore } from "@/stores/auth";
@@ -48,8 +51,10 @@ import { useNotesStore } from "@/stores/notes";
 import { useModalStore } from "@/stores/modals";
 import { onKeyStroke } from "@vueuse/core";
 import useUtils from "@/composables/useUtils";
-import { useUploadStore } from "@/stores/upload";
 import NotesDetailsDialog from "@/modals/NotesDetailsDialog.vue";
+import ExtensibleDialog from "@/components/ExtensibleDialog/index.vue";
+import { createNewNoteModal } from "@/modals/newNoteModal";
+import { useRouter } from "vue-router";
 
 export default defineComponent({
   components: {
@@ -58,23 +63,23 @@ export default defineComponent({
     ApplicationMenu,
     TextEditor,
     Toast,
-    NewNoteDialog,
     KeyboardShortcut,
     AuthWrapper,
     NotesDetailsDialog,
+    ExtensibleDialog,
   },
   setup() {
     const utils = useUtils();
     const authstore = useAuthStore();
     const notestore = useNotesStore();
     const modalstore = useModalStore();
-    const uploads = useUploadStore();
+    const router = useRouter();
 
     onKeyStroke(["Control", "Alt", "n"], (e) => {
       // create new note
       if (e.ctrlKey && e.altKey && e.key === "n") {
         e.preventDefault();
-        modalstore.modalstates.createNote = true;
+        createNewNoteModal(router);
       }
     });
 
