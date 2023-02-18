@@ -1,4 +1,5 @@
 import { IconName } from "@/components/Icon/types";
+import { promiseTimeout } from "@vueuse/core";
 import { defineStore } from "pinia";
 
 export interface ButtonData {
@@ -42,6 +43,7 @@ export interface ExtensibleDialog {
 }
 
 export interface State {
+  extensibleDialogSessionID: Symbol | null;
   extensibleDialogData: ExtensibleDialog | null;
   modalstates: {
     createNote: boolean;
@@ -52,6 +54,7 @@ export interface State {
 export const useModalStore = defineStore("modal", {
   state: (): State => {
     return {
+      extensibleDialogSessionID: null,
       extensibleDialogData: null,
       modalstates: {
         createNote: false,
@@ -62,6 +65,25 @@ export const useModalStore = defineStore("modal", {
   getters: {
     extensibleDialogVisible(): boolean {
       return !!this.extensibleDialogData;
+    },
+  },
+  actions: {
+    async openExtensibleModal(id: Symbol, data: ExtensibleDialog) {
+      this.extensibleDialogData = null;
+      this.extensibleDialogSessionID = null;
+      await promiseTimeout(50);
+
+      this.extensibleDialogSessionID = id;
+      this.extensibleDialogData = data;
+    },
+
+    closeExtensibleModal(id: Symbol) {
+      // we need the id to check if we're trying to close the same modal as the one we opened
+      // if it's not the same and we dont check, a dialog might close another dialogs modal
+      if (id === this.extensibleDialogSessionID) {
+        this.extensibleDialogData = null;
+        this.extensibleDialogSessionID = null;
+      }
     },
   },
 });
