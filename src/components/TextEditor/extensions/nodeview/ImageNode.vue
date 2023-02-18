@@ -11,19 +11,32 @@
         :alt="attrs.image.alt || attrs.image.uploadID"
         class="max-h-[30rem] object-cover w-full rounded-lg"
       />
+      <div v-else-if="uploading" class="flex gap-4 p-2">
+        <loading />
+        <span class="text-sm uppercase text-themed-text-subtle"
+          >Uploading image...</span
+        >
+      </div>
+      <div v-else class="p-2">
+        <Icon name="ExclamationTriangleIcon" class="w-6 h-6 text-red-600" />
+        <span class="text-sm uppercase text-themed-text-subtle"
+          >Error gettting image</span
+        >
+      </div>
     </div>
   </NodeViewWrapper>
 </template>
 
 <script lang="ts">
 import { NodeViewWrapper, nodeViewProps } from "@tiptap/vue-3";
-import { defineComponent, computed, onMounted } from "vue";
+import { defineComponent, computed, onMounted, ref } from "vue";
 import { ImageExtensionAttributes, StructuredImageData } from "../ImageNode";
 import { mdiTableColumn, mdiTableRow } from "@mdi/js";
 import Icon from "@/components/Icon";
 import MenuList from "@/components/Popup/MenuList.vue";
 import SingleImageNode from "./SingleImageNode.vue";
 import { usePublicSignalStore } from "@/stores/publicsignals";
+import Loading from "@/components/Loading.vue";
 
 const API_URL = import.meta.env.VITE_API_BASE;
 
@@ -40,9 +53,12 @@ export default defineComponent({
     Icon,
     MenuList,
     SingleImageNode,
+    Loading,
   },
   setup(props) {
     const publicsignal = usePublicSignalStore();
+    const uploading = ref(true);
+    const error = ref(false);
     const attrs = computed(() => props.node.attrs as ImageExtensionAttributes);
 
     function updateAttrs(update: Partial<ImageExtensionAttributes>) {
@@ -62,6 +78,9 @@ export default defineComponent({
             url: string | null;
           };
 
+          uploading.value = payload.uploading;
+          error.value = payload.error;
+
           if (payload.url) {
             updateAttrs({
               image: {
@@ -71,6 +90,9 @@ export default defineComponent({
             });
           }
         });
+      } else {
+        uploading.value = false;
+        error.value = false;
       }
     });
 
@@ -78,6 +100,8 @@ export default defineComponent({
     function onLoadError() {}
 
     return {
+      uploading,
+      error,
       attrs,
       onLoad,
       onLoadError,
