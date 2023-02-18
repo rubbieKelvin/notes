@@ -10,6 +10,7 @@
       <Icon v-if="icon" :name="icon" class="w-6 h-6" />
       <input
         class="py-1.5"
+        :ref="focused ? 'focusedInputRef' : undefined"
         :autocomplete="autocomplete"
         :disabled="disabled || button?.loading"
         :type="inputType"
@@ -35,9 +36,10 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watch } from "vue";
+import { defineComponent, onMounted, Ref, ref, watch } from "vue";
 import Icon from "@/components/Icon";
 import { IconName } from "./Icon/types";
+import { useFocus } from "@vueuse/core";
 
 export default defineComponent({
   components: { Icon },
@@ -47,6 +49,7 @@ export default defineComponent({
     errorMessage: String,
     icon: String as () => IconName,
     modelValue: String,
+    focused: Boolean,
     disabled: { type: Boolean, default: false },
     placeholder: { type: String, default: "Enter value..." },
     inputType: { type: String as () => "text" | "password", default: "text" },
@@ -62,6 +65,7 @@ export default defineComponent({
   emits: ["update:model-value"],
   setup(props, { emit }) {
     const text = ref(props.modelValue || "");
+    const focusedInputRef: Ref<HTMLInputElement | null> = ref(null);
 
     watch(
       () => props.modelValue,
@@ -74,7 +78,11 @@ export default defineComponent({
       emit("update:model-value", text.value);
     });
 
-    return { text };
+    onMounted(() => {
+      useFocus(focusedInputRef, { initialValue: true });
+    });
+
+    return { text, focusedInputRef };
   },
 });
 </script>

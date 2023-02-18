@@ -6,9 +6,7 @@
     :close-on-click-outside="modalData.closeOnClickOutside"
     :escape="modalData.escape"
   >
-    <div
-      class="ed drop-shadow p-6 rounded-lg max-w-[420px] bg-themed-bg flex flex-col gap-4"
-    >
+    <div class="ed drop-shadow">
       <img
         v-if="modalData.coverImage"
         :src="modalData.coverImage"
@@ -108,6 +106,17 @@ export default defineComponent({
 }
 
 .ed {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  @apply rounded-lg bg-themed-bg flex flex-col gap-4 p-6 pb-14;
+
+  @screen md {
+    position: relative;
+    @apply min-w-[400px] max-w-[500px] pb-6;
+  }
+
   :deep(.ed-button) {
     display: flex;
     align-items: center;

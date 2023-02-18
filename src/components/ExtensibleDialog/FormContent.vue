@@ -8,6 +8,7 @@
         :icon="item.textinput.icon"
         :placeholder="item.textinput.placeholder"
         :button="item.textinput.button"
+        :focused="item.textinput.focus"
       />
     </template>
   </div>

@@ -56,6 +56,8 @@ import useUtils from "@/composables/useUtils";
 import { useUploadStore } from "@/stores/upload";
 import NotesDetailsDialog from "@/modals/NotesDetailsDialog.vue";
 import ExtensibleDialog from "@/components/ExtensibleDialog/index.vue";
+import { createNewNoteModal } from "@/modals/newNoteModal";
+import { useRouter } from "vue-router";
 
 export default defineComponent({
   components: {
@@ -76,12 +78,14 @@ export default defineComponent({
     const notestore = useNotesStore();
     const modalstore = useModalStore();
     const uploads = useUploadStore();
+    const router = useRouter();
 
     onKeyStroke(["Control", "Alt", "n"], (e) => {
       // create new note
       if (e.ctrlKey && e.altKey && e.key === "n") {
         e.preventDefault();
-        modalstore.modalstates.createNote = true;
+        // modalstore.modalstates.createNote = true;
+        createNewNoteModal(router);
       }
     });
 

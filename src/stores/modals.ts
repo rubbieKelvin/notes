@@ -17,6 +17,7 @@ export interface FormContentItem {
   textinput?: {
     icon?: IconName;
     placeholder?: string;
+    focus?: boolean;
     button?: {
       text?: string;
       icon?: IconName;
@@ -37,7 +38,7 @@ export interface ExtensibleDialog {
   coverImage?: string;
   formContent?: FormContentItem[];
   buttons?: {
-    useRowLoyout: boolean;
+    useRowLoyout?: boolean;
     items: ButtonData[];
   };
 }

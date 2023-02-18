@@ -1,7 +1,5 @@
 <template>
-  <div
-    class=" md:min-w-[16rem] md:max-w-[16rem] md:border-r md:border-t-0 border-r-0 md:border-r-stroke border-t border-t-stroke py-2 md:p-3 h-min md:h-auto"
-  >
+  <div class="side-menu">
     <template v-for="item in navItems" :key="item.id">
       <NavItem v-if="!item.hidden" :item="item" />
     </template>
@@ -63,3 +61,23 @@ export default defineComponent({
   components: { NavItem },
 });
 </script>
+
+<style lang="scss" scoped>
+.side-menu {
+  @apply border-r-0 border-t;
+  @apply border-t-themed-stroke py-2 h-min;
+}
+
+@screen md {
+  .side-menu {
+    @apply border-r border-t-0 border-r-themed-stroke;
+    @apply p-3 h-auto gap-6 flex-col;
+  }
+}
+
+@screen lg {
+  .side-menu {
+    @apply min-w-[16rem] max-w-[16rem] gap-2;
+  }
+}
+</style>
