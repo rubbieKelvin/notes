@@ -29,7 +29,7 @@ export default defineComponent({
     subtitle: String,
     useTimer: { type: Boolean, default: true },
   },
-  emits: ["update:modelValue"],
+  emits: ["update:model-value"],
   setup(props, { emit }) {
     const count = ref(0);
     let timer: null | number = null;
@@ -41,7 +41,7 @@ export default defineComponent({
         timer = setInterval(() => {
           count.value += 1;
           if (count.value == 100) {
-            emit("update:modelValue", "");
+            emit("update:model-value", "");
             clearInterval(timer as number);
           }
         }, 50);

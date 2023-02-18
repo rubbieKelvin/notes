@@ -24,6 +24,11 @@
 
       <!-- ... -->
       <Toast />
+      <extensible-dialog
+        v-if="modalstore.extensibleDialogData"
+        v-model="modalstore.extensibleDialogVisible"
+        :modalData="modalstore.extensibleDialogData"
+      />
       <NewNoteDialog v-model="modalstore.modalstates.createNote" />
       <NotesDetailsDialog
         v-if="notestore.openedNote"
@@ -50,6 +55,7 @@ import { onKeyStroke } from "@vueuse/core";
 import useUtils from "@/composables/useUtils";
 import { useUploadStore } from "@/stores/upload";
 import NotesDetailsDialog from "@/modals/NotesDetailsDialog.vue";
+import ExtensibleDialog from "@/components/ExtensibleDialog/index.vue";
 
 export default defineComponent({
   components: {
@@ -62,6 +68,7 @@ export default defineComponent({
     KeyboardShortcut,
     AuthWrapper,
     NotesDetailsDialog,
+    ExtensibleDialog,
   },
   setup() {
     const utils = useUtils();

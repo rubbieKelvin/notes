@@ -188,7 +188,7 @@ export default defineComponent({
       required: true,
     },
   },
-  emits: ["update:modelValue"],
+  emits: ["update:model-value"],
   components: { Popup, Icon, KeyboardShortcut, MdiIcon },
   setup(props, { emit }) {
     const visible = ref(false);
@@ -230,7 +230,7 @@ export default defineComponent({
         navigation.value.resolveError = false;
         navigation.value.resolving = false;
       }
-      emit("update:modelValue", val);
+      emit("update:model-value", val);
     });
 
     watch(

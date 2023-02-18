@@ -23,6 +23,7 @@ module.exports = {
         "themed-hover-text": "var(--themed-hover-text)",
         "themed-hover-text-subtle": "var(--themed-hover-text-subtle)",
         "themed-accent-bg": "var(--themed-accent-bg)",
+        "themed-accent-text": "var(--themed-accent-text)",
         "themed-accent-hover-bg": "var(--themed-accent-hover-bg)",
         "themed-accent-active-bg": "var(--themed-accent-active-bg)",
         "themed-accent-hover-text": "var(--themed-accent-hover-text)",

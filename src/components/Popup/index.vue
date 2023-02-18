@@ -32,7 +32,7 @@ export default defineComponent({
     yOffset: Number,
     modelValue: Boolean,
   },
-  emits: ["update:modelValue"],
+  emits: ["update:model-value"],
   setup(props, { emit }) {
     let _visible = ref(false);
     const popup = ref(null);
@@ -50,7 +50,7 @@ export default defineComponent({
       },
       set(value: boolean) {
         _visible.value = value;
-        emit("update:modelValue", value);
+        emit("update:model-value", value);
       },
     });
 

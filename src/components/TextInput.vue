@@ -5,9 +5,9 @@
       <p v-if="errorMessage" class="text-sm text-red-500">{{ errorMessage }}</p>
     </div>
     <div
-      class="flex gap-2 border-2 md:p-2 px-3 py-2 rounded-md focus-within:border-accent border-stroke items-center"
+      class="flex gap-3 border-2 px-3 py-2 rounded-md focus-within:border-accent border-stroke items-center"
     >
-      <Icon v-if="icon" :name="icon" class="w-5 h-5" />
+      <Icon v-if="icon" :name="icon" class="w-6 h-6" />
       <input
         class="py-1.5"
         :autocomplete="autocomplete"
@@ -19,7 +19,7 @@
       <button
         class="textinput--button p-2"
         v-if="button?.action"
-        @click="button?.action"
+        @click="() => button?.action(modelValue || '')"
       >
         <Icon
           v-if="button.icon"
@@ -55,11 +55,11 @@ export default defineComponent({
         text?: string;
         icon?: IconName;
         loading?: boolean;
-        action: () => any;
+        action: (text: string) => any;
       },
     },
   },
-  emits: ["update:modelValue"],
+  emits: ["update:model-value"],
   setup(props, { emit }) {
     const text = ref(props.modelValue || "");
 
@@ -71,7 +71,7 @@ export default defineComponent({
     );
 
     watch(text, () => {
-      emit("update:modelValue", text.value);
+      emit("update:model-value", text.value);
     });
 
     return { text };
