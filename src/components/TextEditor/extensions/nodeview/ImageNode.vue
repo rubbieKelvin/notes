@@ -30,11 +30,10 @@
 <script lang="ts">
 import { NodeViewWrapper, nodeViewProps } from "@tiptap/vue-3";
 import { defineComponent, computed, onMounted, ref } from "vue";
-import { ImageExtensionAttributes, StructuredImageData } from "../ImageNode";
+import { ImageExtensionAttributes } from "../ImageNode";
 import { mdiTableColumn, mdiTableRow } from "@mdi/js";
 import Icon from "@/components/Icon";
 import MenuList from "@/components/Popup/MenuList.vue";
-import SingleImageNode from "./SingleImageNode.vue";
 import { usePublicSignalStore } from "@/stores/publicsignals";
 import Loading from "@/components/Loading.vue";
 
@@ -52,7 +51,6 @@ export default defineComponent({
     NodeViewWrapper,
     Icon,
     MenuList,
-    SingleImageNode,
     Loading,
   },
   setup(props) {
