@@ -25,6 +25,7 @@ import { defineComponent, ref } from "vue";
 import Icon from "@/components/Icon";
 import { ButtonData } from "@/stores/modals";
 import Loading from "../Loading.vue";
+import { usePublicSignalStore } from "@/stores/publicsignals";
 
 export default defineComponent({
   components: { Icon, Loading },
@@ -33,6 +34,7 @@ export default defineComponent({
     formValues: { type: Object, required: true },
   },
   setup(props) {
+    const publicsignal = usePublicSignalStore();
     const fn = props.button.action;
     const isAsync = fn.constructor.name === "AsyncFunction";
 
@@ -51,9 +53,22 @@ export default defineComponent({
       }
 
       loading.value = false;
+
       if (props.button.finally && !error.value)
         props.button.finally({ ...props.formValues });
     };
+
+    // listen for signals fired to this button
+    publicsignal.listen(props.button.id, (payload) => {
+      const variable = payload.variable as string;
+      const value = payload.value as boolean;
+
+      if (variable === "loading") {
+        loading.value = value;
+      } else if (variable === "error") {
+        error.value = value;
+      }
+    });
 
     return {
       isAsync,

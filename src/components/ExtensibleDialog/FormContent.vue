@@ -9,6 +9,7 @@
         :placeholder="item.textinput.placeholder"
         :button="item.textinput.button"
         :focused="item.textinput.focus"
+        @return="item.textinput?.keydownReturn"
       />
     </template>
   </div>

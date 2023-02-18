@@ -15,6 +15,7 @@
         :disabled="disabled || button?.loading"
         :type="inputType"
         :placeholder="placeholder"
+        @keydown.enter="() => $emit('return', modelValue)"
         v-model="text"
       />
       <button
@@ -62,7 +63,7 @@ export default defineComponent({
       },
     },
   },
-  emits: ["update:model-value"],
+  emits: ["update:model-value", "return"],
   setup(props, { emit }) {
     const text = ref(props.modelValue || "");
     const focusedInputRef: Ref<HTMLInputElement | null> = ref(null);

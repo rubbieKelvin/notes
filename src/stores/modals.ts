@@ -3,11 +3,12 @@ import { promiseTimeout } from "@vueuse/core";
 import { defineStore } from "pinia";
 
 export interface ButtonData {
+  id: string;
   text: string;
   isPrimary?: boolean;
   icon?: IconName;
-  action: (ctx: Record<string, any>) => any;
-  finally?: (ctx: Record<string, any>) => any;
+  action: (ctx: any) => any;
+  finally?: (ctx: any) => any;
 }
 
 export interface FormContentItem {
@@ -18,6 +19,7 @@ export interface FormContentItem {
     icon?: IconName;
     placeholder?: string;
     focus?: boolean;
+    keydownReturn?: (text: string) => any;
     button?: {
       text?: string;
       icon?: IconName;
