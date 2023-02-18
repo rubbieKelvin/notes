@@ -168,12 +168,14 @@ export const useNotesStore = defineStore("notes", {
       });
     },
     async searchNotes(query: string): Promise<Note[]> {
+      const authstore = useAuthStore();
       const notes = await this.notemodel.findMany({
         where: {
           _or: [
             { title: { _icontains: query } },
             { content: { _icontains: query } },
           ],
+          author__id: { _eq: authstore.user?.id },
         },
         fields: true,
         limit: 100,

@@ -93,7 +93,7 @@ export default defineComponent({
     const notestore = useNotesStore();
 
     const shouldDirectlyOpenNote = computed(() =>
-      ["Search", "Trash"].includes(route.name as string)
+      ["Trash"].includes(route.name as string)
     );
 
     const handleClick = () => {
