@@ -117,9 +117,12 @@
     </div> -->
 
     <!-- input -->
-    <div v-if="editor" class="texteditor-input custom-scrollbar">
+    <div
+      v-if="editor"
+      class="texteditor-input custom-scrollbar flex justify-center"
+    >
       <floating-menu :editor="editor" />
-      <editor-content :editor="editor" />
+      <editor-content :editor="editor" class="max-w-[50rem] lg:max-w-[55rem]" />
     </div>
   </div>
 </template>

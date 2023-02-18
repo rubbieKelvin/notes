@@ -2,7 +2,7 @@
   <NodeViewWrapper class="flex justify-center">
     <div
       v-if="attrs.image"
-      class="rounded-lg w-max max-w-[70%] overflow-clip border p-1"
+      class="rounded-lg w-max overflow-clip border p-1"
       :class="[selected ? 'border-themed-accent-bg' : 'border-themed-stroke']"
     >
       <img
