@@ -122,7 +122,10 @@
       class="texteditor-input custom-scrollbar flex justify-center"
     >
       <floating-menu :editor="editor" />
-      <editor-content :editor="editor" class="max-w-[50rem] lg:max-w-[55rem]" />
+      <editor-content
+        :editor="editor"
+        class="w-full max-w-[50rem] lg:max-w-[55rem]"
+      />
     </div>
   </div>
 </template>
