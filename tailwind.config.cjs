@@ -15,6 +15,7 @@ module.exports = {
         "themed-bg": "var(--themed-bg)",
         "themed-bg-elevated": "var(--themed-bg-elevated)",
         "themed-text": "var(--themed-text)",
+        "themed-text-tinted": "var(--themed-text-tinted)",
         "themed-text-subtle": "var(--themed-text-subtle)",
         "themed-stroke": "var(--themed-stroke)",
         "themed-stroke-light": "var(--themed-stroke-light)",

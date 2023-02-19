@@ -1,5 +1,6 @@
 <template>
-  <div class="side-menu">
+  <div class="side-menu text-themed-text">
+    <h2 class="font-medium text-themed-text-tinted">Quick links</h2>
     <template v-for="item in navItems" :key="item.id">
       <NavItem v-if="!item.hidden" :item="item" />
     </template>
