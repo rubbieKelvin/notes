@@ -1,6 +1,6 @@
 <template>
-  <div class="h-11 border-themed-stroke flex items-center px-6 md:px-2">
-    <h2 class="flex-grow">{{ title }}</h2>
+  <div class="py-4 border-themed-stroke flex items-center px-6 md:px-2">
+    <h2 class="flex-grow text-2xl font-medium">{{ title }}</h2>
     <slot>
       <MenuList :list="menu" alignRight>
         <template v-slot:trigger="{ open }">

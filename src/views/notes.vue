@@ -1,6 +1,28 @@
 <template>
   <div class="flex flex-col h-full">
-    <PageHeader :title="noteTitle" :menu="menu" />
+    <PageHeader :title="noteTitle">
+      <MenuList :list="menu" alignRight>
+        <template v-slot:trigger="{ open }">
+          <div
+            class="flex items-center rounded-lg justify-center overflow-clip"
+          >
+            <button
+              @click="openNewNoteDialog"
+              class="flex gap-2 p-2 items-center justify-center bg-themed-accent-bg hover:bg-themed-accent-hover-bg active:bg-themed-accent-active-bg text-themed-accent-text"
+            >
+              <Icon name="PlusIcon" class="w-5 h-5" />
+              <span class="uppercase text-sm font-medium">Add note</span>
+            </button>
+            <button
+              @click="open"
+              class="p-2 bg-themed-bg-elevated hover:bg-themed-hover-bg"
+            >
+              <Icon class="w-5 h-5" name="ChevronDownIcon" />
+            </button>
+          </div>
+        </template>
+      </MenuList>
+    </PageHeader>
     <div class="h-0 flex-grow overflow-y-auto">
       <div
         v-if="notestore.notes === null"
@@ -43,12 +65,13 @@ import NotesItem from "@/components/NotesItem.vue";
 import Loading from "@/components/Loading.vue";
 import { useNotesStore } from "@/stores/notes";
 import { useAuthStore } from "@/stores/auth";
-import { useModalStore } from "@/stores/modals";
 import { NotePages } from "@/composables/useNavigation";
 import { onKeyStroke } from "@vueuse/core";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import Icon from "@/components/Icon";
 import { manyNotesContextMenu } from "@/utils/contextmenus";
+import MenuList from "@/components/Popup/MenuList.vue";
+import { createNewNoteModal } from "@/modals/newNoteModal";
 
 export default defineComponent({
   props: {
@@ -57,13 +80,13 @@ export default defineComponent({
       default: "Note",
     },
   },
-  components: { PageHeader, NotesItem, Loading, Icon },
+  components: { PageHeader, NotesItem, Loading, Icon, MenuList },
   setup(props) {
     const route = useRoute();
+    const router = useRouter();
     const selecting = ref(false);
     const notestore = useNotesStore();
     const authstore = useAuthStore();
-    const modalstore = useModalStore();
     const selectedNotes: Ref<string[]> = ref([]);
 
     const notes = computed(() => {
@@ -112,6 +135,10 @@ export default defineComponent({
       }
     );
 
+    function openNewNoteDialog() {
+      createNewNoteModal(router);
+    }
+
     return {
       menu,
       noteTitle,
@@ -120,6 +147,7 @@ export default defineComponent({
       notes,
       selecting,
       selectedNotes,
+      openNewNoteDialog,
     };
   },
 });

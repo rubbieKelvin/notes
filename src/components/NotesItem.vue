@@ -23,7 +23,7 @@
         <div class="w-full flex gap-2 items-center">
           <div class="flex-grow">
             <div class="">
-              <p class="capitalize">
+              <p class="text-lg">
                 {{ note.title }}
               </p>
             </div>

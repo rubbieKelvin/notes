@@ -1,5 +1,5 @@
 <template>
-  <div class="side-menu text-themed-text">
+  <div class="side-menu">
     <h2 class="hidden md:flex font-medium text-themed-text-tinted px-2">
       Quick links
     </h2>
@@ -32,7 +32,6 @@ const navItems: Array<MenuItem> = [
     icon: "TagIcon",
     title: "tags",
     link: { name: "Tags" },
-    hidden: true,
   },
   {
     id: Symbol(),
@@ -82,7 +81,7 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .side-menu {
-  @apply bg-themed-bg border-r-0 border-t;
+  @apply border-r-0 border-t;
   @apply border-t-themed-stroke py-2 h-min;
 }
 
