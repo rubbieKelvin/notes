@@ -8,7 +8,7 @@
       <slot />
     </div>
     <UiDialog dim glasseffect v-model="modalOpen">
-      <div class="p-2 border-stroke border bg-white rounded-md min-w-[400px]">
+      <div class="p-2 border-themed-stroke border bg-white rounded-md min-w-[400px]">
         <template v-if="authenticating">
           <div
             v-if="authenticationStatus.maxRetriesReached"

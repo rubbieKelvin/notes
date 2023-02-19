@@ -1,0 +1,23 @@
+{
+  "name": "ocean-breeze",
+  "theme": {
+    "colors": {
+      "themed-bg": "#F7FAFC",
+      "themed-bg-elevated": "#EDF2F7",
+      "themed-text": "#2D3748",
+      "themed-text-subtle": "#A0AEC0",
+      "themed-stroke": "#CBD5E0",
+      "themed-stroke-light": "#E2E8F0",
+      "themed-hover-bg": "#E2E8F0",
+      "themed-active-bg": "#CBD5E0",
+      "themed-hover-text": "#2D3748",
+      "themed-hover-text-subtle": "#A0AEC0",
+      "themed-accent-bg": "#4A5568",
+      "themed-accent-text": "#FFFFFF",
+      "themed-accent-hover-bg": "#2D3748",
+      "themed-accent-active-bg": "#1A202C",
+      "themed-accent-hover-text": "#FFFFFF",
+      "themed-accent-hover-text-subtle": "#A0AEC0"
+    }
+  }
+}

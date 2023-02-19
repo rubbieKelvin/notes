@@ -9,20 +9,20 @@
       <slot name="trigger" :open="open" />
     </template>
     <div
-      class="min-w-[220px] w-max bg-white pt-1 rounded-md border border-stroke transition-all duration-150"
+      class="min-w-[220px] w-max bg-themed-bg pt-1 rounded-md border border-themed-stroke text-themed-text transition-all duration-150"
     >
       <!-- heading -->
       <div
         v-if="!!navigation.history.slice(-1)[0]"
-        class="border-b border-stroke flex items-center py-1 px-2 gap-1"
+        class="border-b border-themed-stroke flex items-center py-1 px-2 gap-1"
       >
         <button
           @click="navigation.history.pop()"
-          class="hover:border-stroke border border-transparent rounded-md hover:bg-themed-hover-bg"
+          class="hover:border-themed-stroke border border-transparent rounded-md hover:bg-themed-hover-bg"
         >
           <Icon name="ChevronLeftIcon" class="w-5 h-5" />
         </button>
-        <p class="font-medium text-sm text-gray-600 select-none">
+        <p class="font-medium text-sm text-themed-text-subtle select-none">
           {{ navigation.history.slice(-1)[0].title }}
         </p>
       </div>
@@ -36,7 +36,7 @@
         <p class="uppercase text-sm font-medium">Couldn't get items</p>
         <button
           @click="reloadMenuItems"
-          class="border border-stroke w-full py-1 rounded-md hover:bg-themed-hover-bg"
+          class="border border-themed-stroke w-full py-1 rounded-md hover:bg-themed-hover-bg"
         >
           refresh
         </button>
@@ -86,7 +86,8 @@
               @click="!item.disabled && itemClicked(item)"
               class="px-3 md:px-2 py-3 md:py-1 transition-colors flex gap-1 items-center relative select-none"
               :class="{
-                'hover:text-black hover:bg-themed-hover-bg': !item.disabled,
+                'hover:text-themed-hover-text hover:bg-themed-hover-bg':
+                  !item.disabled,
                 'text-gray-400': !!item.disabled,
               }"
               :disabled="!!item.disabled"
@@ -120,7 +121,7 @@
               <!-- badge -->
               <div
                 v-if="item.badgeText"
-                class="text-xs font-medium border bg-white border-stroke py-0.5 px-1.5 rounded-full"
+                class="text-xs font-medium border bg-white border-themed-stroke py-0.5 px-1.5 rounded-full"
               >
                 {{ item.badgeText }}
               </div>

@@ -6,7 +6,7 @@
     :close-on-click-outside="modalData.closeOnClickOutside"
     :escape="modalData.escape"
   >
-    <div class="ed drop-shadow">
+    <div class="ed drop-shadow text-themed-text">
       <img
         v-if="modalData.coverImage"
         :src="modalData.coverImage"

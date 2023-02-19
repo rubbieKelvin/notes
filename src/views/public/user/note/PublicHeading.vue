@@ -19,7 +19,7 @@
       closeOnClickOutside
     >
       <div
-        class="bg-themed-bg border border-stroke py-2 rounded-md w-screen h-screen md:h-auto md:w-auto md:min-w-[400px] flex gap-3 flex-col"
+        class="bg-themed-bg border border-themed-stroke py-2 rounded-md w-screen h-screen md:h-auto md:w-auto md:min-w-[400px] flex gap-3 flex-col"
       >
         <DialogHeading
           :title="note.title"

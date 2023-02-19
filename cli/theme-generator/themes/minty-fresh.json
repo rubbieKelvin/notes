@@ -1,0 +1,23 @@
+{
+  "name": "minty-fresh",
+  "theme": {
+    "colors": {
+      "themed-bg": "#F4FBF4",
+      "themed-bg-elevated": "#E6F5E6",
+      "themed-text": "#2D2D2D",
+      "themed-text-subtle": "#6B6B6B",
+      "themed-stroke": "#6B6B6B",
+      "themed-stroke-light": "#E6F5E6",
+      "themed-hover-bg": "#D8EFD8",
+      "themed-active-bg": "#C9E8C9",
+      "themed-hover-text": "#2D2D2D",
+      "themed-hover-text-subtle": "#6B6B6B",
+      "themed-accent-bg": "#50C878",
+      "themed-accent-text": "#F4FBF4",
+      "themed-accent-hover-bg": "#43B06B",
+      "themed-accent-active-bg": "#379C5B",
+      "themed-accent-hover-text": "#F4FBF4",
+      "themed-accent-hover-text-subtle": "#D6E7D6"
+    }
+  }
+}

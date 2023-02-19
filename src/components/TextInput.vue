@@ -5,11 +5,11 @@
       <p v-if="errorMessage" class="text-sm text-red-500">{{ errorMessage }}</p>
     </div>
     <div
-      class="flex gap-3 border-2 px-3 py-2 rounded-md focus-within:border-accent border-stroke items-center"
+      class="flex gap-3 border-2 px-3 py-2 rounded-md focus-within:border-accent border-themed-stroke items-center"
     >
       <Icon v-if="icon" :name="icon" class="w-6 h-6" />
       <input
-        class="py-1.5"
+        class="py-1.5 bg-transparent"
         :ref="focused ? 'focusedInputRef' : undefined"
         :autocomplete="autocomplete"
         :disabled="disabled || button?.loading"

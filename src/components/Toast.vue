@@ -4,7 +4,7 @@
       <div
         v-for="toast in toasts"
         :key="toast.id"
-        class="text-white overflow-clip rounded-md border border-stroke"
+        class="text-white overflow-clip rounded-md border border-themed-stroke"
         :class="toast.colorClasses?.bg || 'bg-black'"
       >
         <!-- content -->

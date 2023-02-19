@@ -1,6 +1,8 @@
 <template>
-  <div>
-    <div class="border border-stroke flex items-center gap-2 px-3 rounded-md">
+  <div class="text-themed-text">
+    <div
+      class="border border-themed-stroke flex items-center gap-2 px-3 rounded-md"
+    >
       <MagnifyingGlassIcon class="w-5 h-5" />
       <input
         ref="input"

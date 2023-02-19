@@ -90,8 +90,9 @@
   }
 
   pre {
-    background: #f8f9fa; /* light gray background */
-    color: #343a40; /* dark gray text color */
+    @apply border border-themed-stroke;
+    @apply bg-themed-bg; /* light gray background */
+    @apply text-themed-text-subtle; /* dark gray text color */
     font-family: "JetBrainsMono", monospace;
     padding: 1rem; /* increase padding for readability */
     border-radius: 8px; /* increase border radius for a softer look */
@@ -106,7 +107,7 @@
 
     /* Add hover effect to highlight line */
     code:hover {
-      background-color: #f1f1f1;
+      @apply bg-themed-bg-elevated;
     }
 
     /* Add color for different code elements */

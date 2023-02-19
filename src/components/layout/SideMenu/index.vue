@@ -3,11 +3,22 @@
     <template v-for="item in navItems" :key="item.id">
       <NavItem v-if="!item.hidden" :item="item" />
     </template>
+    <div class="flex-grow hidden md:flex flex-col justify-end">
+      <button
+        class="btn flex items-center justify-center p-2 gap-2 text-themed-text"
+        @click="themestore.toggletheme"
+      >
+        <MoonIcon class="w-5 h-5" />
+        <span>Theme: {{ themestore.current || "light" }}</span>
+      </button>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
+import { useThemeStore } from "@/stores/theme";
 import { MenuItem } from "@/types";
+import { MoonIcon } from "@heroicons/vue/24/outline";
 import { defineComponent } from "vue";
 import NavItem from "./NavItem.vue";
 
@@ -57,14 +68,17 @@ export default defineComponent({
   data: () => ({
     navItems,
   }),
-  setup() {},
-  components: { NavItem },
+  setup() {
+    const themestore = useThemeStore();
+    return { themestore };
+  },
+  components: { NavItem, MoonIcon },
 });
 </script>
 
 <style lang="scss" scoped>
 .side-menu {
-  @apply border-r-0 border-t;
+  @apply bg-themed-bg border-r-0 border-t;
   @apply border-t-themed-stroke py-2 h-min;
 }
 

@@ -38,4 +38,99 @@
 	--themed-accent-hover-text-subtle: #BDBDBD;
 }
 
+.notes-app-theme.solarized-yellow {
+	--themed-bg: #F6E8D4;
+	--themed-bg-elevated: #E4CEB8;
+	--themed-text: #2D2D2D;
+	--themed-text-subtle: #6B6B6B;
+	--themed-stroke: #6B6B6B;
+	--themed-stroke-light: #E4CEB8;
+	--themed-hover-bg: #F1E1C0;
+	--themed-active-bg: #E9D3AC;
+	--themed-hover-text: #2D2D2D;
+	--themed-hover-text-subtle: #6B6B6B;
+	--themed-accent-bg: #D6B656;
+	--themed-accent-text: #2D2D2D;
+	--themed-accent-hover-bg: #C5A848;
+	--themed-accent-active-bg: #B8983B;
+	--themed-accent-hover-text: #2D2D2D;
+	--themed-accent-hover-text-subtle: #6B6B6B;
+}
+
+.notes-app-theme.ocean-breeze {
+	--themed-bg: #F7FAFC;
+	--themed-bg-elevated: #EDF2F7;
+	--themed-text: #2D3748;
+	--themed-text-subtle: #A0AEC0;
+	--themed-stroke: #CBD5E0;
+	--themed-stroke-light: #E2E8F0;
+	--themed-hover-bg: #E2E8F0;
+	--themed-active-bg: #CBD5E0;
+	--themed-hover-text: #2D3748;
+	--themed-hover-text-subtle: #A0AEC0;
+	--themed-accent-bg: #4A5568;
+	--themed-accent-text: #FFFFFF;
+	--themed-accent-hover-bg: #2D3748;
+	--themed-accent-active-bg: #1A202C;
+	--themed-accent-hover-text: #FFFFFF;
+	--themed-accent-hover-text-subtle: #A0AEC0;
+}
+
+.notes-app-theme.minty-fresh {
+	--themed-bg: #F4FBF4;
+	--themed-bg-elevated: #E6F5E6;
+	--themed-text: #2D2D2D;
+	--themed-text-subtle: #6B6B6B;
+	--themed-stroke: #6B6B6B;
+	--themed-stroke-light: #E6F5E6;
+	--themed-hover-bg: #D8EFD8;
+	--themed-active-bg: #C9E8C9;
+	--themed-hover-text: #2D2D2D;
+	--themed-hover-text-subtle: #6B6B6B;
+	--themed-accent-bg: #50C878;
+	--themed-accent-text: #F4FBF4;
+	--themed-accent-hover-bg: #43B06B;
+	--themed-accent-active-bg: #379C5B;
+	--themed-accent-hover-text: #F4FBF4;
+	--themed-accent-hover-text-subtle: #D6E7D6;
+}
+
+.notes-app-theme.midnight-blue {
+	--themed-bg: #0F0F1C;
+	--themed-bg-elevated: #16162D;
+	--themed-text: #D9D9D9;
+	--themed-text-subtle: #A6A6A6;
+	--themed-stroke: #A6A6A6;
+	--themed-stroke-light: #16162D;
+	--themed-hover-bg: #1F1F3B;
+	--themed-active-bg: #2D2D58;
+	--themed-hover-text: #D9D9D9;
+	--themed-hover-text-subtle: #A6A6A6;
+	--themed-accent-bg: #E32636;
+	--themed-accent-text: #D9D9D9;
+	--themed-accent-hover-bg: #B31B29;
+	--themed-accent-active-bg: #931520;
+	--themed-accent-hover-text: #D9D9D9;
+	--themed-accent-hover-text-subtle: #A6A6A6;
+}
+
+.notes-app-theme.funky {
+	--themed-bg: #1A1A1A;
+	--themed-bg-elevated: #2E2E2E;
+	--themed-text: #FFFFFF;
+	--themed-text-subtle: #A0A0A0;
+	--themed-stroke: #444444;
+	--themed-stroke-light: #5C5C5C;
+	--themed-hover-bg: #FF5A5F;
+	--themed-active-bg: #FF8A8F;
+	--themed-hover-text: #FFFFFF;
+	--themed-hover-text-subtle: #A0A0A0;
+	--themed-accent-bg: #FFB71B;
+	--themed-accent-text: #1A1A1A;
+	--themed-accent-hover-bg: #FFC92E;
+	--themed-accent-active-bg: #FFD747;
+	--themed-accent-hover-text: #1A1A1A;
+	--themed-accent-hover-text-subtle: #5C5C5C;
+}
+
 
