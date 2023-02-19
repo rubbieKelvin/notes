@@ -1,5 +1,5 @@
 <template>
-  <div class="md:pb-2 md:pt-0 py-3 md:px-3 px-4 border-b border-themed-stroke flex">
+  <div class="md:pb-2 text-themed-text md:pt-0 py-3 md:px-3 px-4 border-b border-themed-stroke flex">
     <p class="flex-grow font-medium text-2xl md:text-xl">{{ title }}</p>
     <button
       v-for="button in buttons"
