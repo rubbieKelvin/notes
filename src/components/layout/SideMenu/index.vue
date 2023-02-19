@@ -44,18 +44,21 @@ const navItems: Array<MenuItem> = [
     icon: "ArchiveBoxIcon",
     title: "archived",
     link: { name: "Archive" },
+    hidden: true,
   },
   {
     id: Symbol(),
     icon: "StarIcon",
     title: "starred",
     link: { name: "Starred" },
+    hidden: true,
   },
   {
     id: Symbol(),
     icon: "GlobeEuropeAfricaIcon",
     title: "public",
     link: { name: "Public" },
+    hidden: true,
   },
   {
     id: Symbol(),
