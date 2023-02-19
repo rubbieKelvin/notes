@@ -1,6 +1,8 @@
 <template>
   <div class="side-menu text-themed-text">
-    <h2 class="font-medium text-themed-text-tinted">Quick links</h2>
+    <h2 class="hidden md:flex font-medium text-themed-text-tinted px-2">
+      Quick links
+    </h2>
     <template v-for="item in navItems" :key="item.id">
       <NavItem v-if="!item.hidden" :item="item" />
     </template>
@@ -44,14 +46,12 @@ const navItems: Array<MenuItem> = [
     icon: "ArchiveBoxIcon",
     title: "archived",
     link: { name: "Archive" },
-    hidden: true,
   },
   {
     id: Symbol(),
     icon: "StarIcon",
     title: "starred",
     link: { name: "Starred" },
-    hidden: true,
   },
   {
     id: Symbol(),
