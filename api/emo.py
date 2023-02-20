@@ -9,6 +9,7 @@ from django.db.models import Q
 from api.models.notes import Note
 from api.models.users import User
 from api.models.sharing import SharedNote
+from api.models.tags import TagMembership, Tag
 
 
 def _noteUpdateCheck(request: Request, partial: PartialUpdateType) -> bool:
@@ -18,6 +19,8 @@ def _noteUpdateCheck(request: Request, partial: PartialUpdateType) -> bool:
         return False
     return True
 
+
+ExposedModel.RELATION_RECURSIVE_DEPTH = 0  # type: ignore
 
 NOTES_EMO = (
     ExposedModel(
@@ -47,6 +50,7 @@ NOTES_EMO = (
                     "is_archived",
                     "is_trashed",
                     "is_public",
+                    "tag_attachments",
                 ],
                 "row": (Q(author__id=id) | Q(is_public=True)) & Q(is_deleted=False),
             },
@@ -80,6 +84,7 @@ NOTES_EMO = (
                     "last_updated",
                     "is_archived",
                     "is_public",
+                    "tag_attachments",
                 ],
                 "row": Q(is_public=True, is_deleted=False),
             }
@@ -102,7 +107,7 @@ USERS_EMO = (
                     "first_name",
                     "last_name",
                     "date_created",
-                    "notes",
+                    "tags",
                 ],
                 "row": Q(is_active=True),
             }
@@ -145,4 +150,43 @@ SHARED_NOTES_EMO = ExposedModel(model=SharedNote, operations=[]).addPermission(
     ),
 )
 
-exposedmodels = [NOTES_EMO, USERS_EMO, SHARED_NOTES_EMO, SHARED_NOTES_EMO]
+TAGS_EMO = ExposedModel(
+    model=Tag,
+    operations=[
+        ModelOperations.SELECT,
+        ModelOperations.SELECT_MANY,
+    ],
+).addPermission(
+    [CoreUserRoles.ADMIN, CoreUserRoles.USER],
+    lambda id: ExposedModel.createRolePermission(
+        select={
+            "column": ["title", "description", "author", "color"],
+            "row": Q(is_deleted=False, author__id=id),
+        }
+    ),
+)
+
+TAG_M_EMO = ExposedModel(
+    model=TagMembership,
+    operations=[ModelOperations.SELECT, ModelOperations.SELECT_MANY],
+).addPermission(
+    [CoreUserRoles.USER, CoreUserRoles.ADMIN],
+    lambda id: ExposedModel.createRolePermission(
+        select={
+            "column": ["tag", "note", "id"],
+            "row": Q(
+                tag__is_deleted=False,
+            )
+            & (Q(note__is_public=True) | Q(note__author__id=id)),
+        }
+    ),
+)
+
+exposedmodels = [
+    NOTES_EMO,
+    USERS_EMO,
+    SHARED_NOTES_EMO,
+    SHARED_NOTES_EMO,
+    TAGS_EMO,
+    TAG_M_EMO,
+]
