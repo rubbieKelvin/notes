@@ -2,16 +2,11 @@ import { Note, NoteInsert, NoteUpdate, Tag } from "@/types/models";
 import { defineStore } from "pinia";
 import useSharedUQL from "@/composables/uql";
 import { useAuthStore } from "./auth";
-import { MenuItem } from "@/types";
-import { useRouter } from "vue-router";
-import { noteRoute } from "@/composables/useNavigation";
 import { Pk } from "@/composables/uql/types";
-import { useModalStore } from "./modals";
 
 interface State {
   notes: Note[] | null;
   openedNote: Note | null;
-  tags: Tag[];
   settings: {
     autosave: boolean;
     sort: {
@@ -35,7 +30,6 @@ export const useNotesStore = defineStore("notes", {
   state: (): State => ({
     notes: null,
     openedNote: null,
-    tags: [],
     settings: {
       autosave: true,
       sort: {

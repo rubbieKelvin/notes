@@ -160,7 +160,7 @@ TAGS_EMO = ExposedModel(
     [CoreUserRoles.ADMIN, CoreUserRoles.USER],
     lambda id: ExposedModel.createRolePermission(
         select={
-            "column": ["title", "description", "author", "color"],
+            "column": ["id", "title", "description", "author", "color"],
             "row": Q(is_deleted=False, author__id=id),
         }
     ),

@@ -5,14 +5,14 @@ from django.db import models
 class Tag(models.Model):
     id = models.UUIDField(default=uuid4, primary_key=True, editable=False)
     title = models.CharField(max_length=30, null=False)
-    description = models.CharField(max_length=100, default=None)
+    description = models.CharField(max_length=100, default=None, null=True, blank=True)
     author = models.ForeignKey(
         "api.User", on_delete=models.CASCADE, related_name="tags"
     )
     date_created = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
     is_deleted = models.BooleanField(default=False)
-    color = models.CharField(max_length=7, default=None)
+    color = models.CharField(max_length=7, default=None, null=True, blank=True)
 
     class Meta:
         constraints = [
@@ -22,6 +22,9 @@ class Tag(models.Model):
                 name="uniqe_tag_name_per_user",
             )
         ]
+        
+    def __str__(self) -> str:
+        return self.title
 
 
 class TagMembership(models.Model):

@@ -28,7 +28,7 @@
               </p>
             </div>
             <p
-              class="text-xs group-hover:text-themed-hover-text-subtle text-themed-text-subtle"
+              class="text-xs group-hover:text-themed-hover-text-subtle text-themed-text-subtle uppercase"
             >
               <UseTimeAgo
                 v-slot="{ timeAgo }"

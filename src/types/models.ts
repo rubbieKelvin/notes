@@ -11,10 +11,19 @@ export interface User {
   last_login: DateTime | null;
   first_name: string | null;
   last_name: string | null;
-  notes: Note[];
+  tags: Tag[];
 }
 
-export interface Tag {}
+export interface Tag {
+  id: UUID;
+  title: string;
+  description: string | null;
+  author: {
+    id: UUID;
+    username: string;
+  };
+  color: string | null;
+}
 
 export interface Note {
   id: UUID;
