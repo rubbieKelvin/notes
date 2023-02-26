@@ -3,7 +3,7 @@
     <span
       v-for="key in sequence"
       :key="key"
-      class="text-gray-500 bg-gray-100 border-stroke capitalize text-xs border rounded px-0.5"
+      class=" text-themed-text-subtle bg-themed-bg-elevated border-themed-stroke capitalize text-xs border rounded p-0.5"
     >
       {{ key }}
     </span>

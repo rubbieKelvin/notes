@@ -9,7 +9,7 @@ export class MaxRetriesReached extends Error {
   }
 }
 
-export const useUQL = (url: string, models: string[]) => {
+export const useUQL = (url: string, models: string[] | null) => {
   const __cache: Record<string, object> = {};
 
   const call = async (
@@ -90,7 +90,7 @@ export const useUQL = (url: string, models: string[]) => {
     name: string,
     meta?: types.InputMeta
   ): types.UQLModelManager<Model, ModelInsert, ModelUpdate> => {
-    if (!models.includes(name))
+    if (models && !models.includes(name))
       throw new Error(`Model "${name}" isnt registered`);
 
     const intent = `models.${name}`;
@@ -242,4 +242,4 @@ export const useUQL = (url: string, models: string[]) => {
 };
 
 const URL = import.meta.env.VITE_UQL_BASE || "http://127.0.0.1:8000/uql/";
-export default createSharedComposable(() => useUQL(URL, ["api.note"]));
+export default createSharedComposable(() => useUQL(URL, null));

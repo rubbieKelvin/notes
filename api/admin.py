@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 # Register your models here.
-from .models import Note, User, Upload, SharedNote
+from .models import *
 
 # admin.site.register([Note, User, Upload, SharedNote])
 @admin.register(Note)
@@ -80,3 +80,38 @@ class SharedNoteAdmin(admin.ModelAdmin):
     ]
 
     list_filter = [*list_display]
+
+
+@admin.register(Tag)
+class TagAdmin(admin.ModelAdmin):
+    ordering = ["title"]
+
+    search_fields = ["title", "description", "color"]
+
+    list_display = ["title", "color", "author", "is_deleted"]
+
+    list_filter = ["author"]
+
+
+@admin.register(TagMembership)
+class TagMemAdmin(admin.ModelAdmin):
+    ordering = ["tag__title"]
+
+    search_fields = ["tag__title", "note__title"]
+
+    list_display = ["tag", "note", "is_deleted"]
+
+
+@admin.register(Feature)
+class FeatureAdmin(admin.ModelAdmin):
+    ordering = ["key"]
+
+    search_fields = ["key"]
+
+    list_display = [
+        "key",
+        "allow_anon",
+        "is_active",
+        "date_created",
+        "date_updated",
+    ]

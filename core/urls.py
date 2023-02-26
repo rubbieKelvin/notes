@@ -21,6 +21,7 @@ from api.functions import authentication
 from api.functions import uploads
 from api.functions import sharing
 from api.constants import getUserRole
+from api.functions import features
 
 from api.emo import exposedmodels
 from core.settings import DEBUG, DevelopmentMode
@@ -42,6 +43,8 @@ urlpatterns = [
                 uploads.uploadImage,
                 # ...
                 sharing.shareNote,
+                # ...
+                features.hasFeature,
             ],
             raiseExceptions=DEBUG and DevelopmentMode.DEV,
             userRoleFactory=getUserRole,

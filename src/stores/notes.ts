@@ -2,16 +2,12 @@ import { Note, NoteInsert, NoteUpdate, Tag } from "@/types/models";
 import { defineStore } from "pinia";
 import useSharedUQL from "@/composables/uql";
 import { useAuthStore } from "./auth";
-import { MenuItem } from "@/types";
-import { useRouter } from "vue-router";
-import { noteRoute } from "@/composables/useNavigation";
 import { Pk } from "@/composables/uql/types";
-import { useModalStore } from "./modals";
+import { NOTE_FIELDS } from "@/composables/uql/calls/notes";
 
 interface State {
   notes: Note[] | null;
   openedNote: Note | null;
-  tags: Tag[];
   settings: {
     autosave: boolean;
     sort: {
@@ -35,7 +31,6 @@ export const useNotesStore = defineStore("notes", {
   state: (): State => ({
     notes: null,
     openedNote: null,
-    tags: [],
     settings: {
       autosave: true,
       sort: {
@@ -124,7 +119,7 @@ export const useNotesStore = defineStore("notes", {
       }
     },
     async createNote(object: NoteInsert) {
-      const note = await this.notemodel.insert({ object, fields: true });
+      const note = await this.notemodel.insert({ object, fields: NOTE_FIELDS });
       if (note) {
         if (this.notes !== null) this.notes.push(note);
         else this.notes = [note];
@@ -163,7 +158,7 @@ export const useNotesStore = defineStore("notes", {
           pk,
           updatedFields: options.attrs,
         })),
-        fields: true,
+        fields: NOTE_FIELDS,
         closeNoteIfAffected: !!options.closeNoteIfAffected,
       });
     },
@@ -177,7 +172,7 @@ export const useNotesStore = defineStore("notes", {
           ],
           author__id: { _eq: authstore.user?.id },
         },
-        fields: true,
+        fields: NOTE_FIELDS,
         limit: 100,
       });
 
@@ -198,7 +193,7 @@ export const useNotesStore = defineStore("notes", {
                   ? { author: { username: { _eq: username } } }
                   : {}),
               },
-              fields: true,
+              fields: NOTE_FIELDS,
               limit: 1,
             })
           )?.slice(0, 1)[0] ?? null;
@@ -213,7 +208,7 @@ export const useNotesStore = defineStore("notes", {
       const updatedNote = await this.notemodel.update({
         updatedFields: updates,
         pk: note.id,
-        fields: true,
+        fields: NOTE_FIELDS,
       });
       if (updatedNote && this.notes) {
         const index = this.notes.findIndex((n) => n.id === note.id);
@@ -234,7 +229,7 @@ export const useNotesStore = defineStore("notes", {
         const notes = await this.notemodel.findMany({
           // adding author id to query so we dont get other peoples public note in this call
           where: { author: { id: { _eq: authstore.user?.id } } },
-          fields: true,
+          fields: NOTE_FIELDS,
         });
 
         this.notes = notes;

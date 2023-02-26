@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-grow h-full w-1" :class="{ 'px-5': isPublicNotePage }">
+  <div class="flex bg-themed-bg text-themed-text flex-grow h-full w-1" :class="{ 'px-5': isPublicNotePage }">
     <TextEditor
       v-if="note && writableContent"
       v-model="writableContent"

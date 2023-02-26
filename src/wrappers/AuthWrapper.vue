@@ -8,7 +8,9 @@
       <slot />
     </div>
     <UiDialog dim glasseffect v-model="modalOpen">
-      <div class="p-2 border-stroke border bg-white rounded-md min-w-[400px]">
+      <div
+        class="p-2 border-themed-stroke border bg-white rounded-md min-w-[400px]"
+      >
         <template v-if="authenticating">
           <div
             v-if="authenticationStatus.maxRetriesReached"
@@ -174,6 +176,7 @@ import { MaxRetriesReached } from "@/composables/uql";
 import { validatePassword, validateUsername } from "@/utils/validators";
 import { useRoute } from "vue-router";
 import useUtils from "@/composables/useUtils";
+import { useTagStore } from "@/stores/tag";
 
 export default defineComponent({
   components: {
@@ -187,6 +190,7 @@ export default defineComponent({
     const route = useRoute();
     const authstore = useAuthStore();
     const notestore = useNotesStore();
+    const tagstore = useTagStore();
 
     const authenticating = ref(true);
     const authenticationStatus = ref({
@@ -255,6 +259,7 @@ export default defineComponent({
       if (authstore.isAuthenticated) {
         console.log(`Logged in as ${authstore.user?.username}`);
         await notestore.fetchNotes();
+        await tagstore.loadTags()
       }
     };
 

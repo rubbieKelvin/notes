@@ -1,9 +1,9 @@
 <template>
   <div
-    class="flex gap-4 md:gap-10 px-6 py-3 border-b border-stroke items-center"
+    class="flex gap-4 md:gap-10 px-6 py-3 border-b border-themed-stroke items-center bg-themed-bg"
   >
     <div class="h-min">
-      <h1 class="gap-2 text-black flex">
+      <h1 class="gap-2 text-themed-text flex">
         <NewspaperIcon class="w-5 h-5" :class="{ 'mobile-hide': isNotePage }" />
         <button
           @click="goBack"

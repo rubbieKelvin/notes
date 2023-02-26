@@ -4,12 +4,8 @@
       <AppHeader />
 
       <div class="flex-grow flex">
-        <MainNav
-          v-if="!isPublicNotePage"
-          class="h-full hidden md:flex flex-col"
-        />
+        <MainNav class="h-full hidden md:flex flex-col bg-themed-bg text-themed-text" />
         <ApplicationMenu
-          v-if="!isPublicNotePage"
           class="h-full md:flex-auto flex-grow"
           :class="{ 'mobile-hide': isNotePage }"
         />
@@ -18,8 +14,7 @@
       </div>
 
       <MainNav
-        v-if="!isPublicNotePage"
-        class="h-full flex px-6 sm:px-0 md:hidden justify-between sm:justify-center gap-0 sm:gap-20"
+        class="h-full bg-themed-accent-bg text-themed-accent-text flex px-6 sm:px-0 md:hidden justify-between sm:justify-center gap-0 sm:gap-20"
       />
 
       <!-- ... -->

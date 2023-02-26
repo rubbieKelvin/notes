@@ -106,15 +106,26 @@
     </div>
 
     <!-- tags -->
-    <!-- <div class="texteditor-tags">
+    <div v-if="features.features[FEATURES.TAGS]" class="texteditor-tags">
+      <div
+        v-for="tagm in editableNote.tag_attachments"
+        :key="tagm.id"
+        class="border border-themed-stroke rounded-md"
+      >
+        <span class="px-1 text-sm">{{ tagm.tag.title }}</span>
+        <button class="px-1 btn border-0 h-full rounded-none border-l">
+          <Icon name="XMarkIcon" class="w-3 h-3" />
+        </button>
+      </div>
       <button
+        @click="tagSelectOpen = true"
         class="btn flex items-center justify-center text-sm py-0.5 px-1 group"
         title="add tags"
       >
-        <Icon name="PlusIcon" class="h-5 w-5" />
-        <span class="text-sm">Tags</span>
+        <Icon name="PlusIcon" class="h-3 w-3" />
+        <span class="text-xs uppercase ml-1">Tags</span>
       </button>
-    </div> -->
+    </div>
 
     <!-- input -->
     <div
@@ -127,6 +138,8 @@
         class="w-full max-w-[50rem] lg:max-w-[55rem]"
       />
     </div>
+
+    <SelectionDialog v-model="tagSelectOpen" />
   </div>
 </template>
 
@@ -145,6 +158,8 @@ import { useAuthStore } from "@/stores/auth";
 import { noteContextMenu } from "@/utils/contextmenus";
 import useTextEditor from "@/composables/useTextEditor";
 import FloatingMenu from "./FloatingMenu.vue";
+import SelectionDialog from "../SelectionDialog.vue";
+import { FEATURES, useFeatures } from "@/stores/features";
 
 type SaveStatus = "saving" | "error" | null;
 
@@ -156,6 +171,7 @@ export default defineComponent({
     UseTimeAgo,
     MenuList,
     FloatingMenu,
+    SelectionDialog,
   },
   props: {
     modelValue: Object as () => JSONContent,
@@ -163,11 +179,17 @@ export default defineComponent({
   },
   emits: ["note:changed", "contextmenu:delete"],
   setup(props, { emit }) {
+    const tagSelectOpen = ref(false);
     // maps a notes id to it's status
     const savingStatuses: Ref<Record<string, SaveStatus>> = ref({});
 
     const notestore = useNotesStore();
     const authstore = useAuthStore();
+    const features = useFeatures();
+
+    // check features
+    features.hasFeature(FEATURES.TAGS);
+
     const { editor, configureEditor, contentUpdated, editableNote } =
       useTextEditor();
 
@@ -264,6 +286,8 @@ export default defineComponent({
     configureEditor();
 
     return {
+      features,
+      FEATURES,
       saveStatus,
       contentUpdated,
       editableNote,
@@ -273,6 +297,7 @@ export default defineComponent({
       menu,
       authstore,
       notestore,
+      tagSelectOpen,
     };
   },
 });
