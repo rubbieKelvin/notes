@@ -3,6 +3,7 @@ import sharedUQL from "../index";
 import { UQLFunctionCallInput } from "../types";
 
 export type UqlIntents =
+  | "functions.hasFeature"
   | "models.api.note.findmany"
   | "models.api.note.update"
   | "models.api.note.find"
@@ -10,6 +11,8 @@ export type UqlIntents =
   | "models.api.tag.insert"
   | "models.api.tag.update"
   | "models.api.tag.findmany";
+
+export type StaticUQLBody = UQLFunctionCallInput<UqlIntents>;
 
 const uql = sharedUQL();
 

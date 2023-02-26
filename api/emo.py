@@ -10,6 +10,7 @@ from api.models.notes import Note
 from api.models.users import User
 from api.models.sharing import SharedNote
 from api.models.tags import TagMembership, Tag
+from api.models.features import Feature
 
 
 def _noteUpdateCheck(request: Request, partial: PartialUpdateType) -> bool:
@@ -130,6 +131,7 @@ USERS_EMO = (
         ),
     )
 )
+
 
 SHARED_NOTES_EMO = ExposedModel(model=SharedNote, operations=[]).addPermission(
     [CoreUserRoles.ADMIN, CoreUserRoles.USER],

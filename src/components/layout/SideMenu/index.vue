@@ -12,68 +12,80 @@
         @click="themestore.toggletheme"
       >
         <MoonIcon class="w-5 h-5" />
-        <span class="hidden lg:inline">Theme: {{ themestore.current || "light" }}</span>
+        <span class="hidden lg:inline"
+          >Theme: {{ themestore.current || "light" }}</span
+        >
       </button>
     </div>
   </div>
 </template>
 
 <script lang="ts">
+import { FEATURES, useFeatures } from "@/stores/features";
 import { useThemeStore } from "@/stores/theme";
 import { MenuItem } from "@/types";
 import { MoonIcon } from "@heroicons/vue/24/outline";
-import { defineComponent } from "vue";
+import { computed, defineComponent, onMounted } from "vue";
 import NavItem from "./NavItem.vue";
 
-const navItems: Array<MenuItem> = [
-  { id: Symbol(), icon: "FolderIcon", title: "notes", link: { name: "Notes" } },
-  {
-    id: Symbol(),
-    icon: "TagIcon",
-    title: "tags",
-    link: { name: "Tags" },
-  },
-  {
-    id: Symbol(),
-    icon: "UsersIcon",
-    title: "shared notes",
-    link: { name: "Shared" },
-    hidden: true,
-  },
-  {
-    id: Symbol(),
-    icon: "ArchiveBoxIcon",
-    title: "archived",
-    link: { name: "Archive" },
-  },
-  {
-    id: Symbol(),
-    icon: "StarIcon",
-    title: "starred",
-    link: { name: "Starred" },
-  },
-  {
-    id: Symbol(),
-    icon: "GlobeEuropeAfricaIcon",
-    title: "public",
-    link: { name: "Public" },
-    hidden: true,
-  },
-  {
-    id: Symbol(),
-    icon: "TrashIcon",
-    title: "trash",
-    link: { name: "Trash" },
-  },
-];
-
 export default defineComponent({
-  data: () => ({
-    navItems,
-  }),
   setup() {
     const themestore = useThemeStore();
-    return { themestore };
+    const featurestore = useFeatures();
+
+    const navItems = computed((): MenuItem[] => [
+      {
+        id: Symbol(),
+        icon: "FolderIcon",
+        title: "notes",
+        link: { name: "Notes" },
+      },
+      {
+        id: Symbol(),
+        icon: "TagIcon",
+        title: "tags",
+        link: { name: "Tags" },
+        hidden: !featurestore.features[FEATURES.TAGS],
+      },
+      {
+        id: Symbol(),
+        icon: "UsersIcon",
+        title: "shared notes",
+        link: { name: "Shared" },
+        hidden: true,
+      },
+      {
+        id: Symbol(),
+        icon: "ArchiveBoxIcon",
+        title: "archived",
+        link: { name: "Archive" },
+      },
+      {
+        id: Symbol(),
+        icon: "StarIcon",
+        title: "starred",
+        link: { name: "Starred" },
+      },
+      {
+        id: Symbol(),
+        icon: "GlobeEuropeAfricaIcon",
+        title: "public",
+        link: { name: "Public" },
+        hidden: true,
+      },
+      {
+        id: Symbol(),
+        icon: "TrashIcon",
+        title: "trash",
+        link: { name: "Trash" },
+      },
+    ]);
+
+    onMounted(async () => {
+      await featurestore.hasFeature(FEATURES.TAGS);
+    });
+
+    return { themestore, navItems };
   },
   components: { NavItem, MoonIcon },
 });

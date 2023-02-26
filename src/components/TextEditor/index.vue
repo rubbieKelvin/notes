@@ -106,7 +106,7 @@
     </div>
 
     <!-- tags -->
-    <div class="texteditor-tags">
+    <div v-if="features.features[FEATURES.TAGS]" class="texteditor-tags">
       <div
         v-for="tagm in editableNote.tag_attachments"
         :key="tagm.id"
@@ -159,6 +159,7 @@ import { noteContextMenu } from "@/utils/contextmenus";
 import useTextEditor from "@/composables/useTextEditor";
 import FloatingMenu from "./FloatingMenu.vue";
 import SelectionDialog from "../SelectionDialog.vue";
+import { FEATURES, useFeatures } from "@/stores/features";
 
 type SaveStatus = "saving" | "error" | null;
 
@@ -184,6 +185,11 @@ export default defineComponent({
 
     const notestore = useNotesStore();
     const authstore = useAuthStore();
+    const features = useFeatures();
+
+    // check features
+    features.hasFeature(FEATURES.TAGS);
+
     const { editor, configureEditor, contentUpdated, editableNote } =
       useTextEditor();
 
@@ -280,6 +286,8 @@ export default defineComponent({
     configureEditor();
 
     return {
+      features,
+      FEATURES,
       saveStatus,
       contentUpdated,
       editableNote,
