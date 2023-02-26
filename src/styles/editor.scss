@@ -13,7 +13,7 @@
   }
 
   strong{
-    color:#343434;
+    @apply text-themed-text;
   }
 
   p > code,
