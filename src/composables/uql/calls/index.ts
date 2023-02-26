@@ -3,10 +3,13 @@ import sharedUQL from "../index";
 import { UQLFunctionCallInput } from "../types";
 
 export type UqlIntents =
-  | "models.api.tag.findmany"
-  | "models.api.tag.insert"
+  | "models.api.note.findmany"
+  | "models.api.note.update"
+  | "models.api.note.find"
   | "models.api.tag.find"
-  | "models.api.tag.update";
+  | "models.api.tag.insert"
+  | "models.api.tag.update"
+  | "models.api.tag.findmany";
 
 const uql = sharedUQL();
 

@@ -52,6 +52,10 @@ export interface Note {
   is_archived: boolean;
   is_public: boolean;
   is_trashed: boolean;
+  tag_attachments: {
+    id: UUID;
+    tag: Tag;
+  }[];
 }
 
 export interface NoteInsert {
