@@ -2,6 +2,7 @@
   <div class="flex flex-col h-full">
     <PageHeader title="Tags">
       <button
+        @click="() => createNewTagModal()"
         class="flex items-center justify-center p-2 bg-themed-accent-bg rounded-lg gap-2 hover:bg-themed-accent-hover-bg active:bg-themed-accent-active-bg text-themed-accent-text font-medium uppercase text-sm"
       >
         <Icon name="PlusIcon" class="w-5 h-5" />
@@ -21,7 +22,7 @@
           <Icon
             name="TagIcon"
             class="w-6 h-6"
-            :style="{ color: tag.color ?? 'initial' }"
+            :class="[tag.color ?? 'tagbadge--white']"
           />
           <div class="flex flex-col flex-grow">
             <span class="text-lg">{{ tag.title }}</span>
@@ -31,6 +32,10 @@
               >{{ tag.description }}</span
             >
           </div>
+
+          <UseTimeAgo :time="new Date(tag.date_created)" v-slot="{ timeAgo }">
+            <span>{{ timeAgo }}</span>
+          </UseTimeAgo>
         </div>
       </router-link>
     </div>
@@ -41,15 +46,17 @@
 import Icon from "@/components/Icon";
 import PageHeader from "@/components/layout/ApplicationMenu/PageHeader.vue";
 import { tagRoute } from "@/composables/useNavigation";
+import { createNewTagModal } from "@/modals/newtagmodal";
 import { useTagStore } from "@/stores/tag";
+import { UseTimeAgo } from "@vueuse/components";
 import { defineComponent } from "vue";
 
 export default defineComponent({
-  components: { PageHeader, Icon },
+  components: { PageHeader, Icon, UseTimeAgo },
   setup() {
     const tagstore = useTagStore();
 
-    return { tagstore, tagRoute };
+    return { tagstore, tagRoute, createNewTagModal };
   },
 });
 </script>

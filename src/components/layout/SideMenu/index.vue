@@ -1,6 +1,6 @@
 <template>
   <div class="side-menu">
-    <h2 class="hidden md:flex font-medium text-themed-text-tinted px-2">
+    <h2 class="hidden lg:flex font-medium text-themed-text-tinted px-2">
       Quick links
     </h2>
     <template v-for="item in navItems" :key="item.id">
@@ -8,11 +8,11 @@
     </template>
     <div class="flex-grow hidden md:flex flex-col justify-end">
       <button
-        class="btn flex items-center justify-center p-2 gap-2 text-themed-text"
+        class="btn flex items-center justify-center p-2 gap-2 text-themed-text w-min lg:w-auto"
         @click="themestore.toggletheme"
       >
         <MoonIcon class="w-5 h-5" />
-        <span>Theme: {{ themestore.current || "light" }}</span>
+        <span class="hidden lg:inline">Theme: {{ themestore.current || "light" }}</span>
       </button>
     </div>
   </div>

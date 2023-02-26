@@ -2,7 +2,7 @@
   <NodeViewWrapper class="relative">
     <select
       v-model="selectedLanguage"
-      class="p-1 absolute top-[0.5rem] right-[0.5rem] rounded-md w-max text-gray-400 appearance-none text-end bg-transparent"
+      class="p-1 absolute select-none top-[0.5rem] right-[0.5rem] rounded-md w-max text-gray-400 appearance-none text-end bg-transparent"
       data-test
       :class="{
         'events-none': !editor.isEditable,

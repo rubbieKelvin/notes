@@ -23,6 +23,21 @@ export interface Tag {
     username: string;
   };
   color: string | null;
+  date_created: DateTime;
+  note_attachments: {
+    note: Note;
+  }[];
+}
+
+export interface TagInsert {
+  title: string;
+  author: string;
+}
+
+export interface TagUpdate {
+  title: string;
+  description: string;
+  is_deleted: boolean;
 }
 
 export interface Note {

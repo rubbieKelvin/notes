@@ -13,3 +13,9 @@
     display: none !important;
   }
 }
+
+.tagbadge- {
+  &-white {
+    @apply text-themed-text;
+  }
+}

@@ -11,12 +11,12 @@ export type InputMeta = {
   };
 };
 
-export type UQLFunctionCallInput = {
-  functionName: string;
+export interface UQLFunctionCallInput<T = string> {
+  functionName: T;
   fields?: UQLFieldType;
   args?: Record<string, any> | null;
   meta?: InputMeta;
-};
+}
 
 export type UQLError = {
   message: string;

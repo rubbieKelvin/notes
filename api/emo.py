@@ -20,6 +20,10 @@ def _noteUpdateCheck(request: Request, partial: PartialUpdateType) -> bool:
     return True
 
 
+def userIsAuthor(request: Request, id, obj) -> bool:
+    return obj.get("author") == str(id)
+
+
 ExposedModel.RELATION_RECURSIVE_DEPTH = 0  # type: ignore
 
 NOTES_EMO = (
@@ -54,7 +58,10 @@ NOTES_EMO = (
                 ],
                 "row": (Q(author__id=id) | Q(is_public=True)) & Q(is_deleted=False),
             },
-            insert={"column": ["title", "content", "author", "is_public"]},
+            insert={
+                "column": ["title", "content", "author", "is_public"],
+                "check": lambda request, obj: userIsAuthor(request, id, obj),
+            },
             update={
                 "column": [
                     "title",
@@ -155,14 +162,32 @@ TAGS_EMO = ExposedModel(
     operations=[
         ModelOperations.SELECT,
         ModelOperations.SELECT_MANY,
+        ModelOperations.INSERT,
+        ModelOperations.UPDATE,
     ],
 ).addPermission(
     [CoreUserRoles.ADMIN, CoreUserRoles.USER],
     lambda id: ExposedModel.createRolePermission(
         select={
-            "column": ["id", "title", "description", "author", "color"],
+            "column": [
+                "id",
+                "title",
+                "description",
+                "author",
+                "color",
+                "date_created",
+                "note_attachments",
+            ],
             "row": Q(is_deleted=False, author__id=id),
-        }
+        },
+        insert={
+            "column": ["title", "author"],
+            "check": lambda request, obj: userIsAuthor(request, id, obj),
+        },
+        update={
+            "column": ["title", "description", "is_deleted"],
+            "row": Q(is_deleted=False, author__id=id),
+        },
     ),
 )
 
