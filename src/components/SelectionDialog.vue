@@ -74,7 +74,9 @@
                     <div>
                       <p>{{ item.title }}</p>
                       <p class="text-sm text-themed-text-subtle">
-                        {{ item.subtitle }}
+                        <UseTimeAgo v-slot="{timeAgo}" :time="new Date(item.subtitle)">
+                          {{ timeAgo }}
+                        </UseTimeAgo>
                       </p>
                     </div>
                   </div>
@@ -116,6 +118,7 @@ import EmptystateSearchIcon from "@/assets/emptystates/searchs.vue";
 import { SearchedItem } from "@/types";
 import Loading from "./Loading.vue";
 import Icon from "./Icon";
+import { UseTimeAgo } from "@vueuse/components";
 
 export default defineComponent({
   components: {
@@ -124,7 +127,8 @@ export default defineComponent({
     EmptystateSearchIcon,
     Loading,
     Icon,
-    ChevronRightIcon
+    ChevronRightIcon,
+    UseTimeAgo
 },
   props: {
     resourceType: { type: String, default: "items" },
@@ -135,6 +139,7 @@ export default defineComponent({
       >,
       required: true,
     },
+
   },
   emits: ["update:model-value", "searchmodalclose"],
   setup(props, { emit }) {

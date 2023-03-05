@@ -75,7 +75,7 @@ export interface TaggedFile {
 
 export interface SearchedItem {
   title: string;
-  subtitle?: string;
+  subtitle: string; //changed type from string|undefined to string
   icon?: IconName;
   group?: string;
   image?: string;
