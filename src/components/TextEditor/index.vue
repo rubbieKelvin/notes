@@ -139,7 +139,7 @@
       />
     </div>
 
-    <SelectionDialog v-model="tagSelectOpen" />
+    <!-- <SelectionDialog v-model="tagSelectOpen" /> -->
   </div>
 </template>
 

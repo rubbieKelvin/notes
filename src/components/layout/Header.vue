@@ -15,7 +15,7 @@
         <span class="select-none hidden md:inline">OpenNotes</span>
       </h1>
     </div>
-    <div class="flex-grow">
+    <div class="flex-grow flex items-center justify-center">
       <SearchBar v-if="!isPublicNotePage" />
     </div>
     <div>

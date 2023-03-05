@@ -8,7 +8,11 @@
       'no-glass-effect': !glasseffect || !visible,
     }"
   >
-    <div v-if="visible" class="w-full h-full flex items-center justify-center">
+    <div
+      v-if="visible"
+      class="w-full h-full flex justify-center"
+      :class="[verticalCenter ? 'items-center' : '', ...extraContainerClasses]"
+    >
       <div ref="body" class="pointer-events-auto">
         <slot />
       </div>
@@ -28,6 +32,8 @@ export default defineComponent({
     glasseffect: Boolean,
     closeOnClickOutside: Boolean,
     modelValue: Boolean,
+    verticalCenter: { type: Boolean, default: true },
+    extraContainerClasses: { type: Array as () => string[], default: () => [] },
   },
   emits: ["update:model-value"],
   setup(props, { emit }) {
