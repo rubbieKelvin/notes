@@ -10,7 +10,7 @@
     <div
       class="bg-themed-bg border border-themed-stroke rounded-lg w-screen h-screen lg:h-auto lg:w-auto lg:min-w-[50rem] flex gap-3 flex-col"
     >
-      <div class="w-full h-full flex flex-col gap-4">
+      <div class="w-full h-full flex flex-col gap-2">
         <!-- top -->
         <div
           class="flex gap-4 items-center px-4 border-b border-b-themed-stroke"
@@ -34,7 +34,7 @@
 
         <!-- results -->
         <div class="">
-          <div class="h-full max-h-full overflow-scroll">
+          <div class="h-full max-h-[30rem] overflow-scroll">
             <div
               v-if="loading"
               class="flex items-center flex-col gap-4 justify-center h-full"
@@ -46,10 +46,10 @@
                 <div
                   v-for="group in groupedList"
                   :key="group.key"
-                  class="flex flex-col mb-4"
+                  class="flex flex-col mb-4 relative"
                 >
                   <p
-                    class="px-4 text-themed-text-subtle font-medium uppercase mb-2"
+                    class="px-4 text-themed-text-subtle font-medium uppercase pb-2 sticky -top-1 bg-themed-bg"
                   >
                     {{ group.key }}
                   </p>
