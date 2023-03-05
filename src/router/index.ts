@@ -95,14 +95,6 @@ export default createRouter({
           },
         },
         {
-          path: "/search",
-          name: "Search",
-          components: {
-            default: () => import("@/views/search.vue"),
-            extended: () => import("@/views/editor.vue"),
-          },
-        },
-        {
           path: "/tags",
           name: "Tags",
           components: {

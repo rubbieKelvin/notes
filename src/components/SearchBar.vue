@@ -62,11 +62,11 @@ export default defineComponent({
       if (!query) return [];
 
       const matchedByTitle = notestore.basicNotes.filter((note) =>
-        note.title.includes(query)
+        note.title.toLowerCase().includes(query.toLowerCase())
       );
 
       const matchedByContent = notestore.basicNotes.filter((note) =>
-        JSON.stringify(note.content).includes(query)
+        JSON.stringify(note.content).toLowerCase().includes(query.toLowerCase())
       );
 
       return [
