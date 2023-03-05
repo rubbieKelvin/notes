@@ -4,6 +4,7 @@ import useSharedUQL from "@/composables/uql";
 import { useAuthStore } from "./auth";
 import { Pk } from "@/composables/uql/types";
 import { NOTE_FIELDS } from "@/composables/uql/calls/notes";
+import { noteSorting } from "@/utils/sorting";
 
 interface State {
   notes: Note[] | null;
@@ -50,29 +51,35 @@ export const useNotesStore = defineStore("notes", {
     },
     basicNotes: (state): Note[] => {
       if (state.notes === null) return [];
-      return state.notes.filter(
-        (note) => !note.is_archived && !note.is_trashed
-      );
+      return state.notes
+        .filter((note) => !note.is_archived && !note.is_trashed)
+        .sort(noteSorting.UPDATED);
     },
-    publicNotes(state): Note[] {
-      return this.basicNotes.filter((note) => note.is_public);
-    },
-    sharedNotes: (): Note[] => {
-      return [];
-    },
+    // publicNotes(state): Note[] {
+    //   return this.basicNotes.filter((note) => note.is_public);
+    // },
+    // sharedNotes: (): Note[] => {
+    //   return [];
+    // },
     archivedNotes: (state): Note[] => {
       if (state.notes === null) return [];
-      return state.notes.filter((note) => note.is_archived && !note.is_trashed);
+      return state.notes
+        .filter((note) => note.is_archived && !note.is_trashed)
+        .sort(noteSorting.UPDATED);
     },
     starredNotes: (state): Note[] => {
       if (state.notes === null) return [];
-      return state.notes.filter(
-        (note) => note.is_starred && !note.is_archived && !note.is_trashed
-      );
+      return state.notes
+        .filter(
+          (note) => note.is_starred && !note.is_archived && !note.is_trashed
+        )
+        .sort(noteSorting.UPDATED);
     },
     trashedNotes: (state): Note[] => {
       if (state.notes === null) return [];
-      return state.notes.filter((note) => note.is_trashed);
+      return state.notes
+        .filter((note) => note.is_trashed)
+        .sort(noteSorting.UPDATED);
     },
   },
   actions: {

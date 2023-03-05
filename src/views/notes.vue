@@ -98,11 +98,15 @@ export default defineComponent({
         return notestore.archivedNotes;
       } else if (props.section === "Trash") {
         return notestore.trashedNotes;
-      } else if (props.section === "PublicNote") {
-        return notestore.publicNotes;
       }
       return [];
     });
+
+    watch(
+      () => notestore.notes,
+      () => notes.effect.run(),
+      { deep: true }
+    );
 
     const noteTitle = computed(() => {
       if (props.section.endsWith("Note") && props.section !== "Note") {
