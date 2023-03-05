@@ -1,7 +1,7 @@
 <template>
   <div class="py-4 border-themed-stroke flex items-center px-6 md:px-2 gap-2">
     <Icon v-if="icon" :name="icon" class="h-6 w-6" />
-    <h2 class="flex-grow text-2xl font-medium">{{ title }}</h2>
+    <h2 class="flex-grow text-xl font-medium">{{ title }}</h2>
     <slot>
       <MenuList :list="menu" alignRight>
         <template v-slot:trigger="{ open }">

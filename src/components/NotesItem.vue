@@ -23,12 +23,12 @@
         <div class="w-full flex gap-2 items-center">
           <div class="flex-grow">
             <div class="">
-              <p class="text-lg">
+              <p class="">
                 {{ note.title }}
               </p>
             </div>
             <p
-              class="text-xs group-hover:text-themed-hover-text-subtle text-themed-text-subtle uppercase"
+              class="text-xs group-hover:text-themed-hover-text-subtle text-themed-text-subtle"
             >
               <UseTimeAgo
                 v-slot="{ timeAgo }"

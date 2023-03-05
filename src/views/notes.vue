@@ -11,7 +11,7 @@
               class="flex gap-2 p-2 items-center justify-center bg-themed-accent-bg hover:bg-themed-accent-hover-bg active:bg-themed-accent-active-bg text-themed-accent-text"
             >
               <Icon name="PlusIcon" class="w-5 h-5" />
-              <span class="uppercase text-sm font-medium">Add note</span>
+              <span class="text-sm font-medium">Add note</span>
             </button>
             <button
               @click="open"
