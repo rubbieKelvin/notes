@@ -30,6 +30,12 @@
           >
             Clear
           </button>
+          <button
+            v-else
+            @click="$emit('searchmodalclose')"
+          >
+          <ChevronRightIcon class="w-6 h-6 text-themed-accent-bg"/>
+          </button>
         </div>
 
         <!-- results -->
@@ -83,7 +89,7 @@
                   Couldnt find {{ resourceType }}
                 </p>
                 <p v-if="searchText">
-                  "{{ searchText }}" didnt yeild any results
+                  "{{ searchText }}" didn't yield any results
                 </p>
                 <p v-else>Enter search query</p>
                 <!-- <button
@@ -104,7 +110,7 @@
 <script lang="ts">
 import { computed, defineComponent, PropType, ref, Ref, watch } from "vue";
 import UiDialog from "@/components/Dialog/index.vue";
-import { MagnifyingGlassIcon } from "@heroicons/vue/24/outline";
+import { MagnifyingGlassIcon, ChevronRightIcon } from "@heroicons/vue/24/outline";
 import { promiseTimeout, useFocus } from "@vueuse/core";
 import EmptystateSearchIcon from "@/assets/emptystates/searchs.vue";
 import { SearchedItem } from "@/types";
@@ -118,7 +124,8 @@ export default defineComponent({
     EmptystateSearchIcon,
     Loading,
     Icon,
-  },
+    ChevronRightIcon
+},
   props: {
     resourceType: { type: String, default: "items" },
     modelValue: { type: Boolean },
@@ -129,7 +136,7 @@ export default defineComponent({
       required: true,
     },
   },
-  emits: ["update:model-value"],
+  emits: ["update:model-value", "searchmodalclose"],
   setup(props, { emit }) {
     const searchInputEl: Ref<HTMLInputElement | null> = ref(null);
     const searchText = ref("");
@@ -189,6 +196,7 @@ export default defineComponent({
       searchText.value = "";
       focused.value = true;
     }
+
 
     return {
       visible,

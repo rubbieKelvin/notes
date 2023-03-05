@@ -19,6 +19,7 @@
     <SelectionDialog
       v-model="searchmodalopen"
       :perform-search="performSearch"
+      @searchmodalclose="closeModal"
     />
   </div>
 </template>
@@ -95,7 +96,10 @@ export default defineComponent({
       ];
     }
 
-    return { search, searchText, input, searchmodalopen, performSearch };
+    function closeModal(){
+      searchmodalopen.value = false
+    }
+    return { search, searchText, input, searchmodalopen, performSearch, closeModal };
   },
 });
 </script>
