@@ -34,7 +34,7 @@
 
         <!-- results -->
         <div class="">
-          <div class="h-full max-h-[30rem] overflow-scroll">
+          <div class="h-full max-h-full lg:max-h-[30rem] overflow-scroll">
             <div
               v-if="loading"
               class="flex items-center flex-col gap-4 justify-center h-full"
