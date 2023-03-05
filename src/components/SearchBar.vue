@@ -1,18 +1,25 @@
 <template>
-  <div class="text-themed-text">
+  <div class="text-themed-text min-w-full md:min-w-[60rem]">
     <div
       class="border border-themed-stroke bg-themed-bg-elevated flex items-center gap-2 px-3 rounded-md"
     >
       <MagnifyingGlassIcon class="w-5 h-5" />
-      <input
-        ref="input"
-        type="text"
-        class="w-full py-2 outline-none bg-transparent"
-        placeholder="Search tags, notes, folders, friends..."
-        v-model="searchText"
-        @keypress.enter="search"
-      />
+
+      <p
+        class="py-2 text-themed-text-subtle select-none w-full"
+        @click="searchmodalopen = true"
+      >
+        <span class="hidden sm:inline-block">
+          Search tags, notes, folders, friends...
+        </span>
+        <span class="sm:hidden"> Search... </span>
+      </p>
     </div>
+
+    <SelectionDialog
+      v-model="searchmodalopen"
+      :perform-search="performSearch"
+    />
   </div>
 </template>
 
@@ -21,13 +28,19 @@ import { defineComponent, Ref, ref } from "vue";
 import { MagnifyingGlassIcon } from "@heroicons/vue/24/outline";
 import { useRouter } from "vue-router";
 import { onStartTyping } from "@vueuse/core";
+import SelectionDialog from "./SelectionDialog.vue";
+import { SearchedItem } from "@/types";
+import { useNotesStore } from "@/stores/notes";
+import { noteRoute } from "@/composables/useNavigation";
 
 export default defineComponent({
-  components: { MagnifyingGlassIcon },
+  components: { MagnifyingGlassIcon, SelectionDialog },
   setup() {
     const searchText = ref("");
     const input: Ref<HTMLInputElement | null> = ref(null);
     const router = useRouter();
+    const searchmodalopen = ref(false);
+    const notestore = useNotesStore();
 
     const search = () => {
       if (!searchText.value) return;
@@ -42,10 +55,47 @@ export default defineComponent({
     };
 
     onStartTyping(() => {
-      if (input.value) input.value.focus();
+      searchmodalopen.value = true;
     });
 
-    return { search, searchText, input };
+    async function performSearch(query?: string): Promise<SearchedItem[]> {
+      if (!query) return [];
+
+      const matchedByTitle = notestore.basicNotes.filter((note) =>
+        note.title.includes(query)
+      );
+
+      const matchedByContent = notestore.basicNotes.filter((note) =>
+        JSON.stringify(note.content).includes(query)
+      );
+
+      return [
+        ...matchedByTitle.map(
+          (note): SearchedItem => ({
+            title: note.title,
+            subtitle: note.last_updated,
+            group: "title",
+            icon: "TagIcon",
+            action: () => {
+              router.push(noteRoute(note));
+            },
+          })
+        ),
+        ...matchedByContent.map(
+          (note): SearchedItem => ({
+            title: note.title,
+            subtitle: note.last_updated,
+            group: "content",
+            icon: "NewspaperIcon",
+            action: () => {
+              router.push(noteRoute(note));
+            },
+          })
+        ),
+      ];
+    }
+
+    return { search, searchText, input, searchmodalopen, performSearch };
   },
 });
 </script>

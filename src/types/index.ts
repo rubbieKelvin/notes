@@ -72,3 +72,12 @@ export interface TaggedFile {
   id: string;
   file: File;
 }
+
+export interface SearchedItem {
+  title: string;
+  subtitle?: string;
+  icon?: IconName;
+  group?: string;
+  image?: string;
+  action: () => any;
+}
