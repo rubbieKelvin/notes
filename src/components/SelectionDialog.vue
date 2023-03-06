@@ -5,10 +5,15 @@
     escape
     closeOnClickOutside
     :verticalCenter="false"
-    :extraContainerClasses="['lg:mt-[10%]', 'xl:mt-[10%]']"
+    :extraContainerClasses="[
+      'lg:mt-[10%]',
+      'xl:mt-[10%]',
+      'h-max',
+      ' lg:max-h-[50%]',
+    ]"
   >
     <div
-      class="bg-themed-bg border border-themed-stroke lg:rounded-lg w-screen h-screen lg:h-auto lg:w-auto lg:min-w-[50rem] flex gap-3 flex-col lg:max-h-[50%]"
+      class="bg-themed-bg border border-themed-stroke lg:rounded-lg w-screen h-screen lg:h-auto lg:w-auto lg:min-w-[50rem] flex gap-3 flex-col"
     >
       <div class="w-full h-full flex flex-col gap-2">
         <!-- top -->
@@ -30,7 +35,11 @@
           >
             Clear
           </button>
-          <button v-else @click="$emit('searchmodalclose')" class="btn p-1 lg:hidden">
+          <button
+            v-else
+            @click="$emit('searchmodalclose')"
+            class="btn p-1 lg:hidden"
+          >
             <XMarkIcon class="w-6 h-6" />
           </button>
         </div>
@@ -70,7 +79,10 @@
                     <Icon v-if="item.icon" :name="item.icon" class="w-5 h-5" />
                     <div>
                       <p>{{ item.title }}</p>
-                      <p class="text-sm text-themed-text-subtle" v-if="item.subtitle">
+                      <p
+                        class="text-sm text-themed-text-subtle"
+                        v-if="item.subtitle"
+                      >
                         {{ item.subtitle }}
                       </p>
                     </div>
