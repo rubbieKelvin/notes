@@ -8,109 +8,101 @@
     :extraContainerClasses="[
       'lg:mt-[10%]',
       'xl:mt-[10%]',
-      'h-max',
-      ' lg:max-h-[50%]',
+      'h-full',
+      'lg:max-h-[50vh]',
     ]"
   >
     <div
-      class="bg-themed-bg border border-themed-stroke lg:rounded-lg w-screen h-screen lg:h-auto lg:w-auto lg:min-w-[50rem] flex gap-3 flex-col"
+      class="bg-themed-bg border border-themed-stroke lg:rounded-lg w-screen lg:w-auto lg:min-w-[50rem] flex gap-3 flex-col h-full lg:h-auto lg:max-h-full"
     >
-      <div class="w-full h-full flex flex-col gap-2">
-        <!-- top -->
-        <div
-          class="flex gap-4 items-center px-4 border-b border-b-themed-stroke"
+      <!-- top -->
+      <div
+        class="flex gap-4 items-center px-4 border-b border-b-themed-stroke mb-2 h-[4rem]"
+      >
+        <MagnifyingGlassIcon class="w-6 h-6 text-themed-accent-bg" />
+        <input
+          ref="searchInputEl"
+          type="text"
+          v-model="searchText"
+          class="outline-none bg-transparent flex-grow focus:outline-none py-4 text-lg"
+          :placeholder="`Search ${resourceType}...`"
+        />
+        <button
+          v-if="searchText.length > 0"
+          class="font-medium"
+          @click="clearText"
         >
-          <MagnifyingGlassIcon class="w-6 h-6 text-themed-accent-bg" />
-          <input
-            ref="searchInputEl"
-            type="text"
-            v-model="searchText"
-            class="outline-none bg-transparent flex-grow focus:outline-none py-4 text-lg"
-            :placeholder="`Search ${resourceType}...`"
-          />
-          <button
-            v-if="searchText.length > 0"
-            class="font-medium"
-            @click="clearText"
-          >
-            Clear
-          </button>
-          <button
-            v-else
-            @click="$emit('searchmodalclose')"
-            class="btn p-1 lg:hidden"
-          >
-            <XMarkIcon class="w-6 h-6" />
-          </button>
-        </div>
+          Clear
+        </button>
+        <button
+          v-else
+          @click="$emit('searchmodalclose')"
+          class="btn p-1 lg:hidden"
+        >
+          <XMarkIcon class="w-6 h-6" />
+        </button>
+      </div>
 
-        <!-- results -->
-        <div class="">
-          <div class="h-full max-h-full overflow-y-auto custom-scrollbar">
+      <!-- results -->
+      <div class="overflow-y-auto custom-scrollbar max-h-[calc(100%-5rem)]">
+        <div
+          v-if="loading"
+          class="flex items-center flex-col gap-4 justify-center h-full"
+        >
+          <loading class="text-themed-accent-bg" />
+        </div>
+        <template v-else>
+          <template v-if="groupedList.length > 0">
             <div
-              v-if="loading"
-              class="flex items-center flex-col gap-4 justify-center h-full"
+              v-for="group in groupedList"
+              :key="group.key"
+              class="flex flex-col mb-4 relative"
             >
-              <loading class="text-themed-accent-bg" />
-            </div>
-            <template v-else>
-              <template v-if="groupedList.length > 0">
-                <div
-                  v-for="group in groupedList"
-                  :key="group.key"
-                  class="flex flex-col mb-4 relative"
-                >
-                  <p
-                    class="px-4 text-themed-text-subtle font-medium uppercase pb-2 sticky -top-1 bg-themed-bg"
-                  >
-                    {{ group.key }}
-                  </p>
-                  <div
-                    v-for="(item, index) in group.items"
-                    :key="index"
-                    class="flex px-4 gap-2 py-2 select-none hover:bg-themed-hover-bg hover:text-themed-hover-text items-center active:bg-themed-active-bg"
-                    @click="
-                      () => {
-                        item.action();
-                        visible = false;
-                      }
-                    "
-                  >
-                    <Icon v-if="item.icon" :name="item.icon" class="w-5 h-5" />
-                    <div>
-                      <p>{{ item.title }}</p>
-                      <p
-                        class="text-sm text-themed-text-subtle"
-                        v-if="item.subtitle"
-                      >
-                        {{ item.subtitle }}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </template>
-              <div
-                v-else
-                class="flex items-center flex-col gap-4 justify-center h-full py-12"
+              <p
+                class="px-4 text-themed-text-subtle font-medium uppercase pb-2 sticky -top-1 bg-themed-bg"
               >
-                <EmptystateSearchIcon />
-                <p class="font-bold text-2xl">
-                  Couldnt find {{ resourceType }}
-                </p>
-                <p v-if="searchText">
-                  "{{ searchText }}" didn't yield any results
-                </p>
-                <p v-else>Enter search query</p>
-                <!-- <button
+                {{ group.key }}
+              </p>
+              <div
+                v-for="(item, index) in group.items"
+                :key="index"
+                class="flex px-4 gap-2 py-2 select-none hover:bg-themed-hover-bg hover:text-themed-hover-text items-center active:bg-themed-active-bg"
+                @click="
+                  () => {
+                    item.action();
+                    visible = false;
+                  }
+                "
+              >
+                <Icon v-if="item.icon" :name="item.icon" class="w-5 h-5" />
+                <div>
+                  <p>{{ item.title }}</p>
+                  <p
+                    class="text-sm text-themed-text-subtle"
+                    v-if="item.subtitle"
+                  >
+                    {{ item.subtitle }}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </template>
+          <div
+            v-else
+            class="flex items-center flex-col gap-4 justify-center h-full py-12"
+          >
+            <EmptystateSearchIcon />
+            <p class="font-bold text-2xl">Couldnt find {{ resourceType }}</p>
+            <p v-if="searchText">"{{ searchText }}" didn't yield any results</p>
+            <p v-else>Enter search query</p>
+            <!-- <button
                   v-if="searchText"
                   class="bg-themed-accent-bg rounded-md px-4 py-2 hover:bg-themed-accent-hover-bg active:bg-themed-accent-active-bg text-themed-accent-text"
                 >
                   Create "{{ searchText }}"
                 </button> -->
-              </div>
-            </template>
           </div>
-        </div>
+        </template>
       </div>
     </div>
   </UiDialog>
@@ -196,7 +188,7 @@ export default defineComponent({
         // search
         loading.value = true;
 
-        const items = await props.performSearch(text ?? undefined);
+        const items = await props.performSearch(text ? text.trim() : undefined);
         searchItems.value = items ?? [];
         loading.value = false;
       },
