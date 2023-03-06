@@ -9,21 +9,22 @@
 
   a {
     @apply text-blue-500 underline cursor-default;
-  
   }
 
-  strong{
+  strong {
     @apply text-themed-text;
+  }
+
+  p > code {
+    @apply text-sm;
   }
 
   p > code,
   h1 > code,
   h2 > code,
   h3 > code {
-    background-color: #ffe99f;
-    color: #a06f13;
     padding: 2px 2px;
-    @apply rounded text-sm;
+    @apply rounded-lg bg-themed-bg-elevated border border-themed-stroke-light;
   }
 
   h1 {
@@ -48,16 +49,19 @@
   }
 
   blockquote {
-    border-left: 3px solid #efcb10;
-    background-color: #fff9ea;
-    color: #000000;
-    @apply rounded-sm;
+    @apply rounded-md border border-themed-stroke-light;
+    @apply bg-themed-bg-elevated border-l-4 border-l-themed-accent-bg;
     @apply py-2 px-3;
+  }
+
+  ul,
+  ol {
+    @apply border border-themed-stroke rounded-lg px-2;
   }
 
   ul {
     list-style-type: circle;
-    padding-left: 2em;
+    padding-left: 1.5em;
 
     > li > ul {
       list-style-type: square;
@@ -77,6 +81,7 @@
         > input[type="checkbox"] {
           height: 17px;
           width: 17px;
+          @apply accent-themed-accent-bg text-themed-accent-text;
         }
       }
     }
@@ -92,7 +97,11 @@
   }
 
   li {
-    @apply mb-0.5;
+    @apply mb-0.5 pt-2 pb-2;
+
+    &:not(:last-child) {
+      @apply border-b-themed-stroke border-b;
+    }
   }
 
   pre {
