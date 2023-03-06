@@ -33,6 +33,7 @@ import SelectionDialog from "./SelectionDialog.vue";
 import { SearchedItem } from "@/types";
 import { useNotesStore } from "@/stores/notes";
 import { noteRoute } from "@/composables/useNavigation";
+import { noteSorting } from "@/utils/sorting";
 
 export default defineComponent({
   components: { MagnifyingGlassIcon, SelectionDialog },
@@ -60,7 +61,22 @@ export default defineComponent({
     });
 
     async function performSearch(query?: string): Promise<SearchedItem[]> {
-      if (!query) return [];
+      if (!query)
+        return (notestore.notes ?? [])
+          .filter((note) => !note.is_trashed)
+          .sort(noteSorting.UPDATED)
+          .splice(0, 6)
+          .map(
+            (note): SearchedItem => ({
+              title: note.title,
+              subtitle: useTimeAgo(new Date(note.last_updated)).value,
+              group: "recent",
+              icon: "ClockIcon",
+              action: () => {
+                router.push(noteRoute(note));
+              },
+            })
+          );
 
       const matchedByTitle = notestore.basicNotes.filter((note) =>
         note.title.toLowerCase().includes(query.toLowerCase())
