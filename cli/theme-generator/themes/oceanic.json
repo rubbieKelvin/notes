@@ -1,0 +1,24 @@
+{
+  "name": "oceanic",
+  "theme": {
+    "colors": {
+      "themed-bg": "#F5F8FA",
+      "themed-bg-elevated": "#EBF2F7",
+      "themed-text": "#2B2D42",
+      "themed-text-tinted": "#6B7280",
+      "themed-text-subtle": "#4B5563",
+      "themed-stroke": "#CBD5E0",
+      "themed-stroke-light": "#EDF2F7",
+      "themed-hover-bg": "#E5F0FB",
+      "themed-active-bg": "#DCE9F9",
+      "themed-hover-text": "#2B2D42",
+      "themed-hover-text-subtle": "#6B7280",
+      "themed-accent-bg": "#22A6FF",
+      "themed-accent-text": "#FFFFFF",
+      "themed-accent-hover-bg": "#1C8BDD",
+      "themed-accent-active-bg": "#1671B4",
+      "themed-accent-hover-text": "#FFFFFF",
+      "themed-accent-hover-text-subtle": "#B0C4DE"
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "name": "black",
+  "theme": {
+    "colors": {
+      "themed-bg": "#000000",
+      "themed-bg-elevated": "#1C1C1C",
+      "themed-text": "#CCCCCC",
+      "themed-text-tinted": "#AAAAAA",
+      "themed-text-subtle": "#888888",
+      "themed-stroke": "#333333",
+      "themed-stroke-light": "#555555",
+      "themed-hover-bg": "#1E1E1E",
+      "themed-active-bg": "#242424",
+      "themed-hover-text": "#FFFFFF",
+      "themed-hover-text-subtle": "#AAAAAA",
+      "themed-accent-bg": "#1E90FF",
+      "themed-accent-text": "#FFFFFF",
+      "themed-accent-hover-bg": "#007FFF",
+      "themed-accent-active-bg": "#0062CC",
+      "themed-accent-hover-text": "#FFFFFF",
+      "themed-accent-hover-text-subtle": "#AAAAAA"
+    }
+  }
+}

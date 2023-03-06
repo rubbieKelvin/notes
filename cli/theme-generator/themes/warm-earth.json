@@ -1,0 +1,24 @@
+{
+  "name": "warm-earth",
+  "theme": {
+    "colors": {
+      "themed-bg": "#F5F2E9",
+      "themed-bg-elevated": "#E9E4DC",
+      "themed-text": "#494949",
+      "themed-text-tinted": "#959595",
+      "themed-text-subtle": "#737373",
+      "themed-stroke": "#D8D8D8",
+      "themed-stroke-light": "#F1F1F1",
+      "themed-hover-bg": "#EFE8D8",
+      "themed-active-bg": "#DFD2BB",
+      "themed-hover-text": "#494949",
+      "themed-hover-text-subtle": "#959595",
+      "themed-accent-bg": "#CC7A00",
+      "themed-accent-text": "#FFFFFF",
+      "themed-accent-hover-bg": "#B36100",
+      "themed-accent-active-bg": "#924D00",
+      "themed-accent-hover-text": "#FFFFFF",
+      "themed-accent-hover-text-subtle": "#B0C4DE"
+    }
+  }
+}

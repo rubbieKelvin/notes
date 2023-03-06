@@ -1,22 +1,22 @@
 {
-  "name": "midnight-blue",
+  "name": "dark-forest",
   "theme": {
     "colors": {
-      "themed-bg": "#1C2331",
-      "themed-bg-elevated": "#212D3B",
+      "themed-bg": "#1C1C1C",
+      "themed-bg-elevated": "#212121",
       "themed-text": "#FFFFFF",
       "themed-text-tinted": "#B0B0B0",
       "themed-text-subtle": "#888888",
-      "themed-stroke": "#2F394C",
-      "themed-stroke-light": "#3E4E6A",
-      "themed-hover-bg": "#2D3A4E",
-      "themed-active-bg": "#3B4B6A",
+      "themed-stroke": "#3C3C3C",
+      "themed-stroke-light": "#4F4F4F",
+      "themed-hover-bg": "#2D2D2D",
+      "themed-active-bg": "#3F3F3F",
       "themed-hover-text": "#FFFFFF",
       "themed-hover-text-subtle": "#B0B0B0",
-      "themed-accent-bg": "#00BFFF",
+      "themed-accent-bg": "#28A745",
       "themed-accent-text": "#FFFFFF",
-      "themed-accent-hover-bg": "#009CFF",
-      "themed-accent-active-bg": "#0084E6",
+      "themed-accent-hover-bg": "#218838",
+      "themed-accent-active-bg": "#1E7E34",
       "themed-accent-hover-text": "#FFFFFF",
       "themed-accent-hover-text-subtle": "#B0C4DE"
     }

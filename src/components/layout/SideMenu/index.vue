@@ -8,30 +8,39 @@
     </template>
     <div class="flex-grow hidden md:flex flex-col justify-end">
       <button
-        class="btn flex items-center justify-center p-2 gap-2 text-themed-text w-min lg:w-auto"
-        @click="themestore.toggletheme"
+        class="flex items-center p-2 gap-2 text-themed-text w-min lg:w-auto hover:bg-themed-hover-bg hover:text-themed-hover-text rounded-md"
+        @click="themeSelectionOpen = true"
       >
         <MoonIcon class="w-5 h-5" />
-        <span class="hidden lg:inline"
-          >Theme: {{ themestore.current || "light" }}</span
-        >
+        <span class="hidden lg:inline capitalize">
+          {{ (themestore.current || "light").replaceAll("-", " ") }}
+        </span>
       </button>
     </div>
+
+    <selection-dialog
+      v-model="themeSelectionOpen"
+      resource-type="Themes"
+      :perform-search="searchThemes"
+    />
   </div>
 </template>
 
 <script lang="ts">
+import SelectionDialog from "@/components/SelectionDialog.vue";
 import { FEATURES, useFeatures } from "@/stores/features";
 import { useThemeStore } from "@/stores/theme";
-import { MenuItem } from "@/types";
+import { MenuItem, SearchedItem } from "@/types";
 import { MoonIcon } from "@heroicons/vue/24/outline";
-import { computed, defineComponent, onMounted } from "vue";
+import { computed, defineComponent, onMounted, ref } from "vue";
 import NavItem from "./NavItem.vue";
 
 export default defineComponent({
+  components: { NavItem, MoonIcon, SelectionDialog },
   setup() {
     const themestore = useThemeStore();
     const featurestore = useFeatures();
+    const themeSelectionOpen = ref(false);
 
     const navItems = computed((): MenuItem[] => [
       {
@@ -85,9 +94,44 @@ export default defineComponent({
       await featurestore.hasFeature(FEATURES.TAGS);
     });
 
-    return { themestore, navItems };
+    function transformThemeName(name: string) {
+      const res = (name || "Default").replaceAll("-", " ").split("");
+      res[0] = res[0].toUpperCase();
+      return res.join("");
+    }
+
+    async function searchThemes(query?: string): Promise<SearchedItem[]> {
+      if (!query)
+        return themestore.availableThemes.map(
+          (theme): SearchedItem => ({
+            title: transformThemeName(theme.className),
+            group: theme.group,
+            icon: "PaintBrushIcon",
+            action: () => {
+              themestore.setTheme(theme.className);
+            },
+          })
+        );
+
+      const fquery = query.toLowerCase();
+      return themestore.availableThemes
+        .filter((theme) =>
+          transformThemeName(theme.className).toLowerCase().includes(fquery)
+        )
+        .map(
+          (theme): SearchedItem => ({
+            title: transformThemeName(theme.className),
+            group: theme.group,
+            icon: "PaintBrushIcon",
+            action: () => {
+              themestore.setTheme(theme.className);
+            },
+          })
+        );
+    }
+
+    return { themestore, navItems, themeSelectionOpen, searchThemes };
   },
-  components: { NavItem, MoonIcon },
 });
 </script>
 

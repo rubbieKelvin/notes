@@ -1,0 +1,24 @@
+{
+  "name": "monokai-2",
+  "theme": {
+    "colors": {
+      "themed-bg": "#272822",
+      "themed-bg-elevated": "#3E3D32",
+      "themed-text": "#F8F8F2",
+      "themed-text-tinted": "#B0B0B0",
+      "themed-text-subtle": "#888888",
+      "themed-stroke": "#49483E",
+      "themed-stroke-light": "#75715E",
+      "themed-hover-bg": "#49483E",
+      "themed-active-bg": "#75715E",
+      "themed-hover-text": "#F8F8F2",
+      "themed-hover-text-subtle": "#B0B0B0",
+      "themed-accent-bg": "#FD971F",
+      "themed-accent-text": "#272822",
+      "themed-accent-hover-bg": "#E69F00",
+      "themed-accent-active-bg": "#D35400",
+      "themed-accent-hover-text": "#272822",
+      "themed-accent-hover-text-subtle": "#B0C4DE"
+    }
+  }
+}

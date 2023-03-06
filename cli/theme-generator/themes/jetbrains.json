@@ -1,0 +1,24 @@
+{
+  "name": "jetbrains",
+  "theme": {
+    "colors": {
+      "themed-bg": "#2B2C36",
+      "themed-bg-elevated": "#373943",
+      "themed-text": "#FFFFFF",
+      "themed-text-tinted": "#A2A2A2",
+      "themed-text-subtle": "#747474",
+      "themed-stroke": "#494B5C",
+      "themed-stroke-light": "#5E5F6D",
+      "themed-hover-bg": "#3D3E49",
+      "themed-active-bg": "#474852",
+      "themed-hover-text": "#FFFFFF",
+      "themed-hover-text-subtle": "#A2A2A2",
+      "themed-accent-bg": "#F0624B",
+      "themed-accent-text": "#FFFFFF",
+      "themed-accent-hover-bg": "#E74C3C",
+      "themed-accent-active-bg": "#D84333",
+      "themed-accent-hover-text": "#FFFFFF",
+      "themed-accent-hover-text-subtle": "#A2A2A2"
+    }
+  }
+}

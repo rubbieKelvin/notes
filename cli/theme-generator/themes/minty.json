@@ -1,0 +1,25 @@
+{
+    "name": "minty",
+    "theme": {
+      "colors": {
+        "themed-bg": "#F3F9F1",
+        "themed-bg-elevated": "#E8F3E2",
+        "themed-text": "#3E3E3E",
+        "themed-text-tinted": "#7C7C7C",
+        "themed-text-subtle": "#5F5F5F",
+        "themed-stroke": "#D8E6D9",
+        "themed-stroke-light": "#EDF8ED",
+        "themed-hover-bg": "#E1F8E0",
+        "themed-active-bg": "#D5F5D2",
+        "themed-hover-text": "#3E3E3E",
+        "themed-hover-text-subtle": "#7C7C7C",
+        "themed-accent-bg": "#4CC36F",
+        "themed-accent-text": "#FFFFFF",
+        "themed-accent-hover-bg": "#39A55B",
+        "themed-accent-active-bg": "#2F8749",
+        "themed-accent-hover-text": "#FFFFFF",
+        "themed-accent-hover-text-subtle": "#B0C4DE"
+      }
+    }
+  }
+  

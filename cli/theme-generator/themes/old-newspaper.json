@@ -1,0 +1,24 @@
+{
+  "name": "old-newspaper",
+  "theme": {
+    "colors": {
+      "themed-bg": "#F5F5F5",
+      "themed-bg-elevated": "#E8E8E8",
+      "themed-text": "#3E3E3E",
+      "themed-text-tinted": "#7C7C7C",
+      "themed-text-subtle": "#5F5F5F",
+      "themed-stroke": "#D8D8D8",
+      "themed-stroke-light": "#F0F0F0",
+      "themed-hover-bg": "#F0F0F0",
+      "themed-active-bg": "#E0E0E0",
+      "themed-hover-text": "#3E3E3E",
+      "themed-hover-text-subtle": "#7C7C7C",
+      "themed-accent-bg": "#800000",
+      "themed-accent-text": "#FFFFFF",
+      "themed-accent-hover-bg": "#660000",
+      "themed-accent-active-bg": "#4C0000",
+      "themed-accent-hover-text": "#FFFFFF",
+      "themed-accent-hover-text-subtle": "#B0C4DE"
+    }
+  }
+}
