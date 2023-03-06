@@ -30,7 +30,7 @@
           >
             Clear
           </button>
-          <button v-else @click="$emit('searchmodalclose')">
+          <button v-else @click="$emit('searchmodalclose')" class="btn p-1 lg:hidden">
             <XMarkIcon class="w-6 h-6" />
           </button>
         </div>
