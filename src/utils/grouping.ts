@@ -18,9 +18,11 @@ export const linearGrouping = <T>(
 
   const res: GroupMember<T>[] = [];
 
-  Object.entries(groups).forEach(([key, value]) => {
+  Object.keys(groups).forEach((key) => {
     res.push({ type: "heading", title: key });
-    res.push(...value.map((item): GroupMember<T> => ({ type: "item", item })));
+    res.push(
+      ...groups[key].map((item): GroupMember<T> => ({ type: "item", item }))
+    );
   });
 
   return res;
