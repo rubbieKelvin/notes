@@ -13,7 +13,7 @@
     ]"
   >
     <div
-      class="bg-themed-bg border border-themed-stroke lg:rounded-lg w-screen lg:w-auto lg:min-w-[50rem] flex gap-3 flex-col h-full lg:h-auto lg:max-h-full"
+      class="bg-themed-bg text-themed-text border border-themed-stroke lg:rounded-lg w-screen lg:w-auto lg:min-w-[50rem] flex gap-3 flex-col h-full lg:h-auto lg:max-h-full"
     >
       <!-- top -->
       <div

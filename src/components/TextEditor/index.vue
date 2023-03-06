@@ -47,7 +47,12 @@
               name="ExclamationTriangleIcon"
               class="text-red-500 w-4 h-4"
             />
-            <svg v-else class="overflow-visible" width="12" height="12">
+            <svg
+              v-else
+              class="overflow-visible text-themed-accent-bg"
+              width="12"
+              height="12"
+            >
               <circle
                 cx="6"
                 cy="6"
@@ -59,7 +64,7 @@
             <span
               class="text-xs font-bold md:inline hidden"
               :class="[
-                saveStatus === 'error' ? 'text-red-500' : 'text-gray-600',
+                saveStatus === 'error' ? 'text-red-500' : 'text-themed-text',
               ]"
               >{{
                 { saving: "Saving", error: "Save error", null: "Changes made" }[
