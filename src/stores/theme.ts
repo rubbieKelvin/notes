@@ -13,7 +13,8 @@ export type ThemeClass =
   | "monokai-2"
   | "dark-funky"
   | "jetbrains"
-  | "black";
+  | "black"
+  | "solarized-yellow";
 
 interface State {
   availableThemes: {
@@ -33,6 +34,7 @@ export const useThemeStore = defineStore("themestore", {
       { className: "pastel", group: "Light" },
       { className: "old-newspaper", group: "Light" },
       { className: "warm-earth", group: "Light" },
+      { className: "solarized-yellow", group: "Light" },
       { className: "dark-forest", group: "Dark" },
       { className: "midnight-blue", group: "Dark" },
       { className: "monokai-2", group: "Dark" },
