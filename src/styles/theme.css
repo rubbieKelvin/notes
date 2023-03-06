@@ -80,26 +80,6 @@
 	--themed-accent-hover-text-subtle: #B0C4DE;
 }
 
-.notes-app-theme.pastel {
-	--themed-bg: #FDF5F6;
-	--themed-bg-elevated: #FBE4E6;
-	--themed-text: #2E2D2C;
-	--themed-text-tinted: #8E8D8A;
-	--themed-text-subtle: #635F5C;
-	--themed-stroke: #E1D9D9;
-	--themed-stroke-light: #F9F4F4;
-	--themed-hover-bg: #FCECEC;
-	--themed-active-bg: #F9D4D4;
-	--themed-hover-text: #2E2D2C;
-	--themed-hover-text-subtle: #8E8D8A;
-	--themed-accent-bg: #7F68B6;
-	--themed-accent-text: #FFFFFF;
-	--themed-accent-hover-bg: #69569A;
-	--themed-accent-active-bg: #55447E;
-	--themed-accent-hover-text: #FFFFFF;
-	--themed-accent-hover-text-subtle: #B0C4DE;
-}
-
 .notes-app-theme.old-newspaper {
 	--themed-bg: #F5F5F5;
 	--themed-bg-elevated: #E8E8E8;
@@ -258,6 +238,46 @@
 	--themed-accent-active-bg: #0062CC;
 	--themed-accent-hover-text: #FFFFFF;
 	--themed-accent-hover-text-subtle: #AAAAAA;
+}
+
+.notes-app-theme.pastel {
+	--themed-bg: #FDF5F6;
+	--themed-bg-elevated: #FBE4E6;
+	--themed-text: #2E2D2C;
+	--themed-text-tinted: #8E8D8A;
+	--themed-text-subtle: #635F5C;
+	--themed-stroke: #E1D9D9;
+	--themed-stroke-light: #F9F4F4;
+	--themed-hover-bg: #FCECEC;
+	--themed-active-bg: #F9D4D4;
+	--themed-hover-text: #2E2D2C;
+	--themed-hover-text-subtle: #8E8D8A;
+	--themed-accent-bg: #7F68B6;
+	--themed-accent-text: #FFFFFF;
+	--themed-accent-hover-bg: #69569A;
+	--themed-accent-active-bg: #55447E;
+	--themed-accent-hover-text: #FFFFFF;
+	--themed-accent-hover-text-subtle: #B0C4DE;
+}
+
+.notes-app-theme.solarized-yellow {
+	--themed-bg: #F6E8D4;
+	--themed-bg-elevated: #E4CEB8;
+	--themed-text: #2D2D2D;
+	--themed-text-tinted: #6c5637;
+	--themed-text-subtle: #6B6B6B;
+	--themed-stroke: #6B6B6B;
+	--themed-stroke-light: #E4CEB8;
+	--themed-hover-bg: #F1E1C0;
+	--themed-active-bg: #E9D3AC;
+	--themed-hover-text: #2D2D2D;
+	--themed-hover-text-subtle: #6B6B6B;
+	--themed-accent-bg: #D6B656;
+	--themed-accent-text: #2D2D2D;
+	--themed-accent-hover-bg: #C5A848;
+	--themed-accent-active-bg: #B8983B;
+	--themed-accent-hover-text: #2D2D2D;
+	--themed-accent-hover-text-subtle: #6B6B6B;
 }
 
 
