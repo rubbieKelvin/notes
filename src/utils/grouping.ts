@@ -28,4 +28,52 @@ export const linearGrouping = <T>(
   return res;
 };
 
-export const filePathTree = () => {};
+interface TreeItem<T> {
+  fullPath: string;
+  title: string;
+  type: "folder" | "item";
+  item?: T;
+  items?: TreeItem<T>[];
+}
+
+export const filePathTree = <T>(
+  items: T[],
+  pathKey: (item: T) => string,
+  path: string = ""
+) => {
+  const res: TreeItem<T>[] = [];
+  const children = items.filter((i) => pathKey(i).startsWith(path));
+
+  children.forEach((node) => {
+    const nodepath = pathKey(node).slice(path.length);
+    const fullPath = pathKey(node);
+
+    // if the node path is an item, create item node
+    if (nodepath.split("/").filter(Boolean).length === 1)
+      res.push({
+        fullPath,
+        title: pathKey(node).split("/").slice(-1)[0],
+        type: "item",
+        item: node,
+      });
+    else {
+      const title = nodepath.split("/").filter(Boolean)[0];
+      const fullPath = `${path}${title}/`;
+
+      if (
+        !res.find(
+          (node) => node.fullPath === fullPath && node.type === "folder"
+        )
+      ) {
+        res.push({
+          fullPath,
+          title,
+          type: "folder",
+          items: filePathTree<T>(items, pathKey, fullPath),
+        });
+      }
+    }
+  });
+
+  return res;
+};
