@@ -23,7 +23,7 @@
         </template>
       </MenuList>
     </PageHeader>
-    <div class="h-0 flex-grow overflow-y-auto">
+    <div class="h-0 flex-grow overflow-y-auto custom-scrollbar">
       <div
         v-if="notestore.notes === null"
         class="flex justify-center pt-6 gap-3"

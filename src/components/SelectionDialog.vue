@@ -5,10 +5,15 @@
     escape
     closeOnClickOutside
     :verticalCenter="false"
-    :extraContainerClasses="['lg:mt-[14%]']"
+    :extraContainerClasses="[
+      'lg:mt-[10%]',
+      'xl:mt-[10%]',
+      'h-max',
+      ' lg:max-h-[50%]',
+    ]"
   >
     <div
-      class="bg-themed-bg border border-themed-stroke rounded-lg w-screen h-screen lg:h-auto lg:w-auto lg:min-w-[50rem] flex gap-3 flex-col"
+      class="bg-themed-bg border border-themed-stroke lg:rounded-lg w-screen h-screen lg:h-auto lg:w-auto lg:min-w-[50rem] flex gap-3 flex-col"
     >
       <div class="w-full h-full flex flex-col gap-2">
         <!-- top -->
@@ -30,11 +35,18 @@
           >
             Clear
           </button>
+          <button
+            v-else
+            @click="$emit('searchmodalclose')"
+            class="btn p-1 lg:hidden"
+          >
+            <XMarkIcon class="w-6 h-6" />
+          </button>
         </div>
 
         <!-- results -->
         <div class="">
-          <div class="h-full max-h-full lg:max-h-[30rem] overflow-scroll">
+          <div class="h-full max-h-full overflow-y-auto custom-scrollbar">
             <div
               v-if="loading"
               class="flex items-center flex-col gap-4 justify-center h-full"
@@ -67,7 +79,10 @@
                     <Icon v-if="item.icon" :name="item.icon" class="w-5 h-5" />
                     <div>
                       <p>{{ item.title }}</p>
-                      <p class="text-sm text-themed-text-subtle">
+                      <p
+                        class="text-sm text-themed-text-subtle"
+                        v-if="item.subtitle"
+                      >
                         {{ item.subtitle }}
                       </p>
                     </div>
@@ -83,7 +98,7 @@
                   Couldnt find {{ resourceType }}
                 </p>
                 <p v-if="searchText">
-                  "{{ searchText }}" didnt yeild any results
+                  "{{ searchText }}" didn't yield any results
                 </p>
                 <p v-else>Enter search query</p>
                 <!-- <button
@@ -104,12 +119,13 @@
 <script lang="ts">
 import { computed, defineComponent, PropType, ref, Ref, watch } from "vue";
 import UiDialog from "@/components/Dialog/index.vue";
-import { MagnifyingGlassIcon } from "@heroicons/vue/24/outline";
+import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/vue/24/outline";
 import { promiseTimeout, useFocus } from "@vueuse/core";
 import EmptystateSearchIcon from "@/assets/emptystates/searchs.vue";
 import { SearchedItem } from "@/types";
 import Loading from "./Loading.vue";
 import Icon from "./Icon";
+import { UseTimeAgo } from "@vueuse/components";
 
 export default defineComponent({
   components: {
@@ -118,6 +134,8 @@ export default defineComponent({
     EmptystateSearchIcon,
     Loading,
     Icon,
+    XMarkIcon,
+    UseTimeAgo,
   },
   props: {
     resourceType: { type: String, default: "items" },
@@ -129,7 +147,7 @@ export default defineComponent({
       required: true,
     },
   },
-  emits: ["update:model-value"],
+  emits: ["update:model-value", "searchmodalclose"],
   setup(props, { emit }) {
     const searchInputEl: Ref<HTMLInputElement | null> = ref(null);
     const searchText = ref("");
