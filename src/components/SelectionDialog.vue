@@ -52,41 +52,46 @@
           <loading class="text-themed-accent-bg" />
         </div>
         <template v-else>
-          <template v-if="groupedList.length > 0">
-            <div
-              v-for="group in groupedList"
-              :key="group.key"
-              class="flex flex-col mb-4 relative"
-            >
-              <p
-                class="px-4 text-themed-text-subtle font-medium uppercase pb-2 sticky -top-1 bg-themed-bg"
-              >
-                {{ group.key }}
-              </p>
-              <div
-                v-for="(item, index) in group.items"
-                :key="index"
-                class="flex px-4 gap-2 py-2 select-none hover:bg-themed-hover-bg hover:text-themed-hover-text items-center active:bg-themed-active-bg text-themed-text"
-                @click="
-                  () => {
-                    item.action();
-                    visible = false;
-                  }
-                "
-              >
-                <Icon v-if="item.icon" :name="item.icon" class="w-5 h-5" />
-                <div>
-                  <p>{{ item.title }}</p>
-                  <p
-                    class="text-sm text-themed-text-subtle"
-                    v-if="item.subtitle"
-                  >
-                    {{ item.subtitle }}
-                  </p>
+          <div v-if="groupedList.length > 0" class="flex flex-col relative">
+            <template v-for="(group, index) in groupedList" :key="index">
+              <template v-if="group.type === 'heading'">
+                <p
+                  v-if="group.title"
+                  class="px-4 text-themed-text-subtle font-medium uppercase pb-2 sticky -top-1 bg-themed-bg mb-1 mt-2"
+                >
+                  {{ group.title }}
+                </p>
+              </template>
+              <template v-else-if="group.type === 'item'">
+                <div
+                  v-if="group.item"
+                  :key="index"
+                  class="flex px-4 gap-2 py-2 select-none hover:bg-themed-hover-bg hover:text-themed-hover-text items-center active:bg-themed-active-bg text-themed-text mb-1"
+                  @click="
+                    () => {
+                      group.item?.action();
+                      visible = false;
+                    }
+                  "
+                >
+                  <Icon
+                    v-if="group.item?.icon"
+                    :name="group.item?.icon"
+                    class="w-5 h-5"
+                  />
+                  <div>
+                    <p>{{ group.item?.title }}</p>
+                    <p
+                      class="text-sm text-themed-text-subtle"
+                      v-if="group.item?.subtitle"
+                    >
+                      {{ group.item?.subtitle }}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </div>
-          </template>
+              </template>
+            </template>
+          </div>
           <div
             v-else
             class="flex items-center flex-col gap-4 justify-center h-full py-12"
@@ -126,6 +131,7 @@ import { SearchedItem } from "@/types";
 import Loading from "./Loading.vue";
 import Icon from "./Icon";
 import { UseTimeAgo } from "@vueuse/components";
+import { linearGrouping } from "@/utils/grouping";
 
 export default defineComponent({
   components: {
@@ -156,17 +162,9 @@ export default defineComponent({
 
     const { focused } = useFocus(searchInputEl, { initialValue: true });
 
-    const groupedList = computed(() => {
-      const groups: Record<string, SearchedItem[]> = {};
-
-      searchItems.value.forEach((item) => {
-        const key = item.group ?? "";
-        if (groups[key]) groups[key].push(item);
-        else groups[key] = [item];
-      });
-
-      return Object.keys(groups).map((key) => ({ key, items: groups[key] }));
-    });
+    const groupedList = computed(() =>
+      linearGrouping<SearchedItem>(searchItems.value, (item) => item.group)
+    );
 
     const visible: WritableComputedRef<boolean> = computed({
       get() {
@@ -190,7 +188,6 @@ export default defineComponent({
       () => [searchText.value, visible.value],
       async () => {
         if (!visible.value) return;
-        console.log("searchin");
         const text = searchText.value;
 
         // lets not search until he stops typing
@@ -202,7 +199,6 @@ export default defineComponent({
 
         const items = await props.performSearch(text ? text.trim() : undefined);
         searchItems.value = items ?? [];
-        console.log(groupedList.value);
         loading.value = false;
       },
       { immediate: true }
