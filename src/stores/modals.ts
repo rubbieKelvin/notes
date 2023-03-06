@@ -51,6 +51,7 @@ export interface State {
   modalstates: {
     createNote: boolean;
     noteDetails: boolean;
+    themeSelectionOpen: boolean;
   };
 }
 
@@ -62,6 +63,7 @@ export const useModalStore = defineStore("modal", {
       modalstates: {
         createNote: false,
         noteDetails: false,
+        themeSelectionOpen: false
       },
     };
   },
