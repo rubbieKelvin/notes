@@ -66,8 +66,11 @@ export default defineComponent({
         note.title.toLowerCase().includes(query.toLowerCase())
       );
 
-      const matchedByContent = notestore.basicNotes.filter((note) =>
-        JSON.stringify(note.content).toLowerCase().includes(query.toLowerCase())
+      const matchedByContent = notestore.basicNotes.filter(
+        (note) =>
+          JSON.stringify(note.content)
+            .toLowerCase()
+            .includes(query.toLowerCase()) && !matchedByTitle.includes(note)
       );
 
       return [
@@ -96,10 +99,17 @@ export default defineComponent({
       ];
     }
 
-    function closeModal(){
-      searchmodalopen.value = false
+    function closeModal() {
+      searchmodalopen.value = false;
     }
-    return { search, searchText, input, searchmodalopen, performSearch, closeModal };
+    return {
+      search,
+      searchText,
+      input,
+      searchmodalopen,
+      performSearch,
+      closeModal,
+    };
   },
 });
 </script>
