@@ -28,7 +28,7 @@
 import { defineComponent, Ref, ref } from "vue";
 import { MagnifyingGlassIcon } from "@heroicons/vue/24/outline";
 import { useRouter } from "vue-router";
-import { onStartTyping } from "@vueuse/core";
+import { onStartTyping, useTimeAgo } from "@vueuse/core";
 import SelectionDialog from "./SelectionDialog.vue";
 import { SearchedItem } from "@/types";
 import { useNotesStore } from "@/stores/notes";
@@ -77,7 +77,7 @@ export default defineComponent({
         ...matchedByTitle.map(
           (note): SearchedItem => ({
             title: note.title,
-            subtitle: note.last_updated,
+            subtitle: useTimeAgo(new Date(note.last_updated)).value,
             group: "title",
             icon: "TagIcon",
             action: () => {
@@ -88,7 +88,7 @@ export default defineComponent({
         ...matchedByContent.map(
           (note): SearchedItem => ({
             title: note.title,
-            subtitle: note.last_updated,
+            subtitle: useTimeAgo(new Date(note.last_updated)).value,
             group: "content",
             icon: "NewspaperIcon",
             action: () => {
