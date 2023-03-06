@@ -66,7 +66,7 @@
               <div
                 v-for="(item, index) in group.items"
                 :key="index"
-                class="flex px-4 gap-2 py-2 select-none hover:bg-themed-hover-bg hover:text-themed-hover-text items-center active:bg-themed-active-bg"
+                class="flex px-4 gap-2 py-2 select-none hover:bg-themed-hover-bg hover:text-themed-hover-text items-center active:bg-themed-active-bg text-themed-text"
                 @click="
                   () => {
                     item.action();
