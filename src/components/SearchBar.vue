@@ -14,6 +14,8 @@
         </span>
         <span class="sm:hidden"> Search... </span>
       </p>
+
+      <keyboard-shortcut :sequence="['s']" />
     </div>
 
     <SelectionDialog
@@ -28,15 +30,16 @@
 import { defineComponent, Ref, ref } from "vue";
 import { MagnifyingGlassIcon } from "@heroicons/vue/24/outline";
 import { useRouter } from "vue-router";
-import { onStartTyping, useTimeAgo } from "@vueuse/core";
+import { onStartTyping, promiseTimeout, useTimeAgo } from "@vueuse/core";
 import SelectionDialog from "./SelectionDialog.vue";
 import { SearchedItem } from "@/types";
 import { useNotesStore } from "@/stores/notes";
 import { noteRoute } from "@/composables/useNavigation";
 import { noteSorting } from "@/utils/sorting";
+import KeyboardShortcut from "./KeyboardShortcut.vue";
 
 export default defineComponent({
-  components: { MagnifyingGlassIcon, SelectionDialog },
+  components: { MagnifyingGlassIcon, SelectionDialog, KeyboardShortcut },
   setup() {
     const searchText = ref("");
     const input: Ref<HTMLInputElement | null> = ref(null);
@@ -56,8 +59,11 @@ export default defineComponent({
       });
     };
 
-    onStartTyping(() => {
-      searchmodalopen.value = true;
+    onStartTyping(async (event) => {
+      if (event.key.toLowerCase() === "s") {
+        await promiseTimeout(100);
+        searchmodalopen.value = true;
+      }
     });
 
     async function performSearch(query?: string): Promise<SearchedItem[]> {
