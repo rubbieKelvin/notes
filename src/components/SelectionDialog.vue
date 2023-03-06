@@ -46,7 +46,7 @@
 
         <!-- results -->
         <div class="">
-          <div class="h-full max-h-full overflow-scroll">
+          <div class="h-full max-h-full overflow-y-auto custom-scrollbar">
             <div
               v-if="loading"
               class="flex items-center flex-col gap-4 justify-center h-full"
