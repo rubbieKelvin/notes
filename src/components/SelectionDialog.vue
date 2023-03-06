@@ -109,7 +109,15 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, PropType, ref, Ref, watch } from "vue";
+import {
+  computed,
+  defineComponent,
+  PropType,
+  ref,
+  Ref,
+  watch,
+  WritableComputedRef,
+} from "vue";
 import UiDialog from "@/components/Dialog/index.vue";
 import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/vue/24/outline";
 import { promiseTimeout, useFocus } from "@vueuse/core";
@@ -160,7 +168,7 @@ export default defineComponent({
       return Object.keys(groups).map((key) => ({ key, items: groups[key] }));
     });
 
-    const visible = computed({
+    const visible: WritableComputedRef<boolean> = computed({
       get() {
         return props.modelValue;
       },
@@ -179,17 +187,22 @@ export default defineComponent({
     );
 
     watch(
-      searchText,
-      async (text) => {
-        // // lets not search until he stops typing
-        // await promiseTimeout(200);
-        // if (text !== searchText.value) return;
+      () => [searchText.value, visible.value],
+      async () => {
+        if (!visible.value) return;
+        console.log("searchin");
+        const text = searchText.value;
+
+        // lets not search until he stops typing
+        await promiseTimeout(200);
+        if (text !== searchText.value) return;
 
         // search
         loading.value = true;
 
         const items = await props.performSearch(text ? text.trim() : undefined);
         searchItems.value = items ?? [];
+        console.log(groupedList.value);
         loading.value = false;
       },
       { immediate: true }
