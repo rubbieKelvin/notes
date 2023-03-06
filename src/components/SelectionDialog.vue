@@ -181,9 +181,9 @@ export default defineComponent({
     watch(
       searchText,
       async (text) => {
-        // lets not search until he stops typing
-        await promiseTimeout(200);
-        if (text !== searchText.value) return;
+        // // lets not search until he stops typing
+        // await promiseTimeout(200);
+        // if (text !== searchText.value) return;
 
         // search
         loading.value = true;
