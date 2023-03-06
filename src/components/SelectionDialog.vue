@@ -5,10 +5,10 @@
     escape
     closeOnClickOutside
     :verticalCenter="false"
-    :extraContainerClasses="['lg:mt-[14%]']"
+    :extraContainerClasses="['lg:mt-[10%]', 'xl:mt-[10%]']"
   >
     <div
-      class="bg-themed-bg border border-themed-stroke rounded-lg w-screen h-screen lg:h-auto lg:w-auto lg:min-w-[50rem] flex gap-3 flex-col"
+      class="bg-themed-bg border border-themed-stroke lg:rounded-lg w-screen h-screen lg:h-auto lg:w-auto lg:min-w-[50rem] flex gap-3 flex-col lg:max-h-[50%]"
     >
       <div class="w-full h-full flex flex-col gap-2">
         <!-- top -->
@@ -30,17 +30,14 @@
           >
             Clear
           </button>
-          <button
-            v-else
-            @click="$emit('searchmodalclose')"
-          >
-          <ChevronRightIcon class="w-6 h-6 text-themed-accent-bg"/>
+          <button v-else @click="$emit('searchmodalclose')">
+            <XMarkIcon class="w-6 h-6" />
           </button>
         </div>
 
         <!-- results -->
         <div class="">
-          <div class="h-full max-h-full lg:max-h-[30rem] overflow-scroll">
+          <div class="h-full max-h-full overflow-scroll">
             <div
               v-if="loading"
               class="flex items-center flex-col gap-4 justify-center h-full"
@@ -74,7 +71,10 @@
                     <div>
                       <p>{{ item.title }}</p>
                       <p class="text-sm text-themed-text-subtle">
-                        <UseTimeAgo v-slot="{timeAgo}" :time="new Date(item.subtitle)">
+                        <UseTimeAgo
+                          v-slot="{ timeAgo }"
+                          :time="new Date(item.subtitle)"
+                        >
                           {{ timeAgo }}
                         </UseTimeAgo>
                       </p>
@@ -112,7 +112,7 @@
 <script lang="ts">
 import { computed, defineComponent, PropType, ref, Ref, watch } from "vue";
 import UiDialog from "@/components/Dialog/index.vue";
-import { MagnifyingGlassIcon, ChevronRightIcon } from "@heroicons/vue/24/outline";
+import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/vue/24/outline";
 import { promiseTimeout, useFocus } from "@vueuse/core";
 import EmptystateSearchIcon from "@/assets/emptystates/searchs.vue";
 import { SearchedItem } from "@/types";
@@ -127,9 +127,9 @@ export default defineComponent({
     EmptystateSearchIcon,
     Loading,
     Icon,
-    ChevronRightIcon,
-    UseTimeAgo
-},
+    XMarkIcon,
+    UseTimeAgo,
+  },
   props: {
     resourceType: { type: String, default: "items" },
     modelValue: { type: Boolean },
@@ -139,7 +139,6 @@ export default defineComponent({
       >,
       required: true,
     },
-
   },
   emits: ["update:model-value", "searchmodalclose"],
   setup(props, { emit }) {
@@ -201,7 +200,6 @@ export default defineComponent({
       searchText.value = "";
       focused.value = true;
     }
-
 
     return {
       visible,
