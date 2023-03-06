@@ -30,11 +30,7 @@
           >
             Clear
           </button>
-          <button
-            v-else
-            @click="$emit('searchmodalclose')"
-            class="btn p-1 lg:hidden"
-          >
+          <button v-else @click="$emit('searchmodalclose')" class="btn p-1 lg:hidden">
             <XMarkIcon class="w-6 h-6" />
           </button>
         </div>
@@ -74,10 +70,7 @@
                     <Icon v-if="item.icon" :name="item.icon" class="w-5 h-5" />
                     <div>
                       <p>{{ item.title }}</p>
-                      <p
-                        class="text-sm text-themed-text-subtle"
-                        v-if="item.subtitle"
-                      >
+                      <p class="text-sm text-themed-text-subtle" v-if="item.subtitle">
                         {{ item.subtitle }}
                       </p>
                     </div>
