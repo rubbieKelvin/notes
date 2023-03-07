@@ -57,14 +57,27 @@
   ul,
   ol {
     @apply border border-themed-stroke rounded-lg px-2;
+
+    ul,
+    ol {
+      @apply border-0;
+    }
   }
 
   ul {
-    list-style-type: circle;
+    list-style-type: none;
     padding-left: 1.5em;
 
     > li > ul {
-      list-style-type: square;
+      list-style-type: circle;
+
+      > li > ul {
+        list-style-type: square;
+
+        > li > ul {
+          list-style-type: lower-roman;
+        }
+      }
     }
   }
 
@@ -74,6 +87,7 @@
 
     li {
       @apply flex gap-3 items-center mb-1;
+
       > label {
         display: flex;
         align-items: center;
@@ -82,6 +96,12 @@
           height: 17px;
           width: 17px;
           @apply accent-themed-accent-bg text-themed-accent-text;
+        }
+      }
+
+      &[data-checked="true"]{
+        p {
+          text-decoration: line-through;
         }
       }
     }
@@ -93,6 +113,10 @@
 
     > li > ol {
       list-style-type: lower-roman;
+
+      > li > ol {
+        list-style-type: lower-alpha;
+      }
     }
   }
 
