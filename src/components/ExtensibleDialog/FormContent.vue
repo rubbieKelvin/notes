@@ -6,9 +6,19 @@
         v-model="modelValue[item.id]"
         :key="item.id"
         :icon="item.textinput.icon"
+        :label="item.textinput.label"
+        :errorMessage="textinput_errormessage"
         :placeholder="item.textinput.placeholder"
         :button="item.textinput.button"
         :focused="item.textinput.focus"
+        @textinput="
+          (text) => {
+            if (item.textinput?.validateInput) {
+              textinput_errormessage =
+                item.textinput.validateInput(text).message;
+            }
+          }
+        "
         @return="item.textinput?.keydownReturn"
       />
     </template>
@@ -17,7 +27,7 @@
 
 <script lang="ts">
 import { FormContentItem } from "@/stores/modals";
-import { defineComponent } from "vue";
+import { defineComponent, ref } from "vue";
 import TextInput from "../TextInput.vue";
 
 export default defineComponent({
@@ -27,7 +37,10 @@ export default defineComponent({
   },
   components: { TextInput },
   emits: ["update:model-value"],
-  setup(props) {},
+  setup() {
+    const textinput_errormessage = ref("");
+    return { textinput_errormessage };
+  },
 });
 </script>
 

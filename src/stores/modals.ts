@@ -16,9 +16,11 @@ export interface FormContentItem {
   type: "textinput";
   defaultValue?: any;
   textinput?: {
+    label?: string;
     icon?: IconName;
     placeholder?: string;
     focus?: boolean;
+    validateInput?: (text: string) => { valid: boolean; message: string };
     keydownReturn?: (text: string) => any;
     button?: {
       text?: string;
@@ -63,7 +65,7 @@ export const useModalStore = defineStore("modal", {
       modalstates: {
         createNote: false,
         noteDetails: false,
-        themeSelectionOpen: false
+        themeSelectionOpen: false,
       },
     };
   },

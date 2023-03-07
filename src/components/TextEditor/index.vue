@@ -7,7 +7,7 @@
           <input
             type="text"
             placeholder="Untitled"
-            v-model="title"
+            v-model="computedTitle"
             class="outline-0 w-full text-lg focus:outline-none bg-transparent"
             maxlength="60"
             @keypress.enter="() => updateNote(['title'])"
@@ -199,14 +199,13 @@ export default defineComponent({
     const { editor, configureEditor, contentUpdated, editableNote } =
       useTextEditor();
 
-    const title = computed({
-      get(): string {
-        return nodeItemName(editableNote.value.title);
+    const title = ref("");
+    const computedTitle = computed({
+      get() {
+        return title.value.split("/").slice(-1)[0];
       },
-      set(text: string) {
-        editableNote.value.title = `${nodeItemPath(
-          editableNote.value.title
-        )}/${text}`;
+      set(t: string) {
+        title.value = `${nodeItemPath(title.value)}/${t.replaceAll("/", "")}`;
       },
     });
 
@@ -232,6 +231,7 @@ export default defineComponent({
       (currentPropNote: Note, oldPropNote: Note) => {
         if (editor.value) {
           editableNote.value = { ...currentPropNote };
+          title.value = editableNote.value.title;
 
           // edit the content of the editor if the notes are not the same
           const isTheSameNote = oldPropNote.id === currentPropNote.id;
@@ -286,8 +286,10 @@ export default defineComponent({
 
     const updateNote = async (updated_fields: Array<keyof NoteUpdate>) => {
       if (updated_fields.includes("title")) {
-        let title = editableNote.value.title.trim().slice(0, 60) || "Untitled";
-        editableNote.value.title = title;
+        let t = title.value.trim().slice(0, 60);
+        if (t.startsWith("/")) t = t.slice(1) || "Untitled";
+        if (t.endsWith("/")) t = `${t}Untitled`;
+        editableNote.value.title = t;
       }
 
       const note = await notestore.updateNote(
@@ -300,6 +302,7 @@ export default defineComponent({
     };
 
     editableNote.value = props.note;
+    title.value = editableNote.value.title;
     configureEditor();
 
     return {
@@ -310,6 +313,7 @@ export default defineComponent({
       editableNote,
       title,
       updateNote,
+      computedTitle,
       editor,
       saveNote,
       menu,
