@@ -7,7 +7,7 @@
           <input
             type="text"
             placeholder="Untitled"
-            v-model="editableNote.title"
+            v-model="title"
             class="outline-0 w-full text-lg focus:outline-none bg-transparent"
             maxlength="60"
             @keypress.enter="() => updateNote(['title'])"
@@ -165,6 +165,7 @@ import useTextEditor from "@/composables/useTextEditor";
 import FloatingMenu from "./FloatingMenu.vue";
 import SelectionDialog from "../SelectionDialog.vue";
 import { FEATURES, useFeatures } from "@/stores/features";
+import { nodeItemName, nodeItemPath } from "@/utils/grouping";
 
 type SaveStatus = "saving" | "error" | null;
 
@@ -197,6 +198,17 @@ export default defineComponent({
 
     const { editor, configureEditor, contentUpdated, editableNote } =
       useTextEditor();
+
+    const title = computed({
+      get(): string {
+        return nodeItemName(editableNote.value.title);
+      },
+      set(text: string) {
+        editableNote.value.title = `${nodeItemPath(
+          editableNote.value.title
+        )}/${text}`;
+      },
+    });
 
     const { idle } = useIdle(10 * 1000);
 
@@ -296,6 +308,7 @@ export default defineComponent({
       saveStatus,
       contentUpdated,
       editableNote,
+      title,
       updateNote,
       editor,
       saveNote,

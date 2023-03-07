@@ -12,7 +12,7 @@
         v-if="selecting"
         type="checkbox"
         :checked="selected"
-        class="pointer-events-none"
+        class="pointer-events-none accent-themed-accent-bg w-5"
       />
 
       <router-link
@@ -24,7 +24,7 @@
           <div class="flex-grow">
             <div class="">
               <p class="">
-                {{ note.title }}
+                {{ nodeItemName(note.title) }}
               </p>
             </div>
             <p
@@ -78,6 +78,7 @@ import { useRoute } from "vue-router";
 import { useNotesStore } from "@/stores/notes";
 import Icon from "./Icon";
 import { noteContextMenu } from "@/utils/contextmenus";
+import { nodeItemName } from "@/utils/grouping";
 
 export default defineComponent({
   props: {
@@ -133,6 +134,7 @@ export default defineComponent({
       hide_routing,
       shouldDirectlyOpenNote,
       restoreNote,
+      nodeItemName,
     };
   },
 });
