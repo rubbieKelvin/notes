@@ -46,7 +46,7 @@
         <div
           v-if="searchText.trim() && doCreateItem"
           @click="createItem"
-          class="py-3 px-4 bg-themed-bg-elevated flex gap-3 hover:bg-themed-hover-bg active:bg-themed-active-bg"
+          class="py-3 px-4 select-none bg-themed-bg-elevated flex gap-3 hover:bg-themed-hover-bg active:bg-themed-active-bg"
         >
           <Icon name="PlusIcon" class="w-6 h-6 text-themed-accent-bg" />
           <span>Create "{{ searchText.trim() }}" {{ resourceType }}</span>
