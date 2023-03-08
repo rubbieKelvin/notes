@@ -27,15 +27,15 @@ export default defineComponent({
         { id: Symbol(), type: "HEADER", title: authstore.user?.username },
         {
           id: Symbol(),
-          title: "Logout",
-          action: () => authstore.logout(),
-          icon: "ArrowRightIcon",
-        },
-        {
-          id: Symbol(),
           title: "Change Theme",
           action: () => (modalstore.modalstates.themeSelectionOpen = true),
           icon: "PaintBrushIcon",
+        },
+        {
+          id: Symbol(),
+          title: "Logout",
+          action: () => authstore.logout(),
+          icon: "ArrowLeftOnRectangleIcon",
         },
       ]
     );
