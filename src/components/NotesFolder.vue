@@ -7,7 +7,7 @@
       <Icon name="FolderIcon" class="w-6 h-6" />
       <span class="flex-grow">{{ title }}</span>
       <Icon
-        :name="opened ? 'ChevronDownIcon' : 'ChevronUpIcon'"
+        :name="opened ? 'ChevronDownIcon' : 'ChevronRightIcon'"
         class="w-5 h-5 text-themed-text-subtle"
       />
     </div>

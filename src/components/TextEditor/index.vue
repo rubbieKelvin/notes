@@ -144,7 +144,12 @@
       />
     </div>
 
-    <!-- <SelectionDialog v-model="tagSelectOpen" /> -->
+    <SelectionDialog
+      v-model="modals.movetofolder"
+      resourceType="folder"
+      :performSearch="searchFolders"
+      :doCreateItem="doCreateFolder"
+    />
   </div>
 </template>
 
@@ -165,7 +170,8 @@ import useTextEditor from "@/composables/useTextEditor";
 import FloatingMenu from "./FloatingMenu.vue";
 import SelectionDialog from "../SelectionDialog.vue";
 import { FEATURES, useFeatures } from "@/stores/features";
-import { nodeItemName, nodeItemPath } from "@/utils/grouping";
+import { filePathTree, nodeItemName, nodeItemPath } from "@/utils/grouping";
+import { MenuItem, SearchedItem } from "@/types";
 
 type SaveStatus = "saving" | "error" | null;
 
@@ -193,6 +199,10 @@ export default defineComponent({
     const authstore = useAuthStore();
     const features = useFeatures();
 
+    const modals = ref({
+      movetofolder: false,
+    });
+
     // check features
     features.hasFeature(FEATURES.TAGS);
 
@@ -213,13 +223,23 @@ export default defineComponent({
 
     const checkEditable = (note: Note) => !note.is_archived && !note.is_trashed;
 
-    const menu = computed(() =>
-      noteContextMenu(props.note, {
+    const menu = computed((): MenuItem[] => [
+      ...noteContextMenu(props.note, {
         onNoteEdited: (notes) => {
           emit("note:changed", notes[0]);
         },
-      })
-    );
+      }),
+
+      { id: Symbol(), type: "SEPARATOR" },
+      {
+        id: Symbol(),
+        title: "Move into",
+        icon: "FolderOpenIcon",
+        action: () => {
+          modals.value.movetofolder = true;
+        },
+      },
+    ]);
 
     const saveStatus = computed(() => {
       const stat = savingStatuses.value[editableNote.value.id] ?? null;
@@ -284,11 +304,18 @@ export default defineComponent({
       }
     };
 
-    const updateNote = async (updated_fields: Array<keyof NoteUpdate>) => {
+    const updateNote = async (
+      updated_fields: Array<keyof NoteUpdate>,
+      useStrictForTitle = true
+    ) => {
       if (updated_fields.includes("title")) {
         let t = title.value.trim().slice(0, 60);
-        if (t.startsWith("/")) t = t.slice(1) || "Untitled";
-        if (t.endsWith("/")) t = `${t}Untitled`;
+        if (useStrictForTitle) {
+          if (t.startsWith("/")) t = t.slice(1) || "Untitled";
+          if (t.endsWith("/")) t = `${t}Untitled`;
+        } else {
+          t = t || "Untitled";
+        }
         editableNote.value.title = t;
       }
 
@@ -305,6 +332,74 @@ export default defineComponent({
     title.value = editableNote.value.title;
     configureEditor();
 
+    async function searchFolders(
+      query?: string
+    ): Promise<SearchedItem[] | null> {
+      const folders: string[] = filePathTree<Note>(
+        notestore.basicNotes,
+        (n) => n.title
+      )
+        .filter(
+          (i) =>
+            i.type === "folder" &&
+            i.title.toLowerCase().includes((query || "").toLowerCase()) &&
+            editableNote.value.title.startsWith(`${i.title}/`)
+        )
+        .map((i) => i.title);
+
+      if (folders.length === 0) return null;
+
+      return [
+        {
+          title: "Root",
+          group: "All Folders",
+          icon: "FolderIcon",
+          action: () => {
+            let t = title.value;
+
+            if (t.includes("/")) {
+              t = t.split("/").slice(-1)[0];
+            }
+
+            title.value = t;
+            updateNote(["title"], false);
+          },
+        },
+        ...folders.map(
+          (folder): SearchedItem => ({
+            title: `${folder[0].toUpperCase()}${folder.slice(1)}`,
+            icon: "FolderIcon",
+            group: "All Folders",
+            action: () => {
+              let t = title.value;
+
+              if (t.includes("/")) {
+                t = `${folder}/${t.split("/").slice(-1)[0]}`;
+              } else {
+                t = `${folder}/${t}`;
+              }
+
+              title.value = t;
+              updateNote(["title"], false);
+            },
+          })
+        ),
+      ];
+    }
+
+    function doCreateFolder(name: string) {
+      let t = title.value;
+
+      if (t.includes("/")) {
+        t = `${name}/${t.split("/").slice(-1)[0]}`;
+      } else {
+        t = `${name}/${t}`;
+      }
+
+      title.value = t;
+      updateNote(["title"], false);
+    }
+
     return {
       features,
       FEATURES,
@@ -319,7 +414,10 @@ export default defineComponent({
       menu,
       authstore,
       notestore,
+      modals,
       tagSelectOpen,
+      doCreateFolder,
+      searchFolders,
     };
   },
 });

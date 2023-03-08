@@ -16,31 +16,41 @@
       class="bg-themed-bg text-themed-text border border-themed-stroke lg:rounded-lg w-screen lg:w-auto lg:min-w-[50rem] flex gap-3 flex-col h-full lg:h-auto lg:max-h-full"
     >
       <!-- top -->
-      <div
-        class="flex gap-4 items-center px-4 border-b border-b-themed-stroke mb-2 h-[4rem]"
-      >
-        <MagnifyingGlassIcon class="w-6 h-6 text-themed-accent-bg" />
-        <input
-          ref="searchInputEl"
-          type="text"
-          v-model="searchText"
-          class="outline-none bg-transparent flex-grow focus:outline-none py-4 text-lg"
-          :placeholder="`Search ${resourceType}...`"
-        />
-        <button
-          v-if="searchText.length > 0"
-          class="font-medium"
-          @click="clearText"
+      <div class="flex flex-col">
+        <div
+          class="flex gap-4 items-center px-4 border-b border-b-themed-stroke h-[4rem]"
         >
-          Clear
-        </button>
-        <button
-          v-else
-          @click="$emit('searchmodalclose')"
-          class="btn p-1 lg:hidden"
+          <MagnifyingGlassIcon class="w-6 h-6 text-themed-accent-bg" />
+          <input
+            ref="searchInputEl"
+            type="text"
+            v-model="searchText"
+            class="outline-none bg-transparent flex-grow focus:outline-none py-4 text-lg"
+            :placeholder="`Search ${resourceType}...`"
+          />
+          <button
+            v-if="searchText.length > 0"
+            class="font-medium"
+            @click="clearText"
+          >
+            Clear
+          </button>
+          <button
+            v-else
+            @click="$emit('searchmodalclose')"
+            class="btn p-1 lg:hidden"
+          >
+            <XMarkIcon class="w-6 h-6" />
+          </button>
+        </div>
+        <div
+          v-if="searchText.trim() && doCreateItem"
+          @click="createItem"
+          class="py-3 px-4 bg-themed-bg-elevated flex gap-3 hover:bg-themed-hover-bg active:bg-themed-active-bg"
         >
-          <XMarkIcon class="w-6 h-6" />
-        </button>
+          <Icon name="PlusIcon" class="w-6 h-6 text-themed-accent-bg" />
+          <span>Create "{{ searchText.trim() }}" {{ resourceType }}</span>
+        </div>
       </div>
 
       <!-- results -->
@@ -100,12 +110,6 @@
             <p class="font-bold text-2xl">Couldnt find {{ resourceType }}</p>
             <p v-if="searchText">"{{ searchText }}" didn't yield any results</p>
             <p v-else>Enter search query</p>
-            <!-- <button
-                  v-if="searchText"
-                  class="bg-themed-accent-bg rounded-md px-4 py-2 hover:bg-themed-accent-hover-bg active:bg-themed-accent-active-bg text-themed-accent-text"
-                >
-                  Create "{{ searchText }}"
-                </button> -->
           </div>
         </template>
       </div>
@@ -146,6 +150,7 @@ export default defineComponent({
   props: {
     resourceType: { type: String, default: "items" },
     modelValue: { type: Boolean },
+    doCreateItem: { type: Function as PropType<(name: string) => any> },
     performSearch: {
       type: Function as PropType<
         (query?: string) => Promise<SearchedItem[] | null>
@@ -153,7 +158,7 @@ export default defineComponent({
       required: true,
     },
   },
-  emits: ["update:model-value", "searchmodalclose"],
+  emits: ["update:model-value", "searchmodalclose", "action:create"],
   setup(props, { emit }) {
     const searchInputEl: Ref<HTMLInputElement | null> = ref(null);
     const searchText = ref("");
@@ -209,6 +214,13 @@ export default defineComponent({
       focused.value = true;
     }
 
+    function createItem() {
+      if (props.doCreateItem) {
+        props.doCreateItem(searchText.value);
+        visible.value = false;
+      }
+    }
+
     return {
       visible,
       searchInputEl,
@@ -217,6 +229,7 @@ export default defineComponent({
       searchItems,
       loading,
       groupedList,
+      createItem,
     };
   },
 });
