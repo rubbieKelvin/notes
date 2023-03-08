@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col h-full">
-    <PageHeader :title="noteTitle">
-      <MenuList :list="menu" alignRight>
+    <page-header title="Notes">
+      <menu-list :list="menu" alignRight>
         <template v-slot:trigger="{ open }">
           <div
             class="flex items-center rounded-lg justify-center overflow-clip"
@@ -21,9 +21,11 @@
             </button>
           </div>
         </template>
-      </MenuList>
-    </PageHeader>
+      </menu-list>
+    </page-header>
+    <!-- ... -->
     <div class="h-0 flex-grow overflow-y-auto custom-scrollbar">
+      <!-- empty state -->
       <div
         v-if="notestore.notes === null"
         class="flex justify-center pt-6 gap-3"
@@ -31,25 +33,47 @@
         <Loading v-if="authstore.isAuthenticated" class="text-black" />
         <p>Checking for notes</p>
       </div>
+      <!-- notes -->
       <template v-else>
-        <template v-if="notes.length > 0">
-          <NotesItem
-            v-for="note in notes"
-            :key="note.id"
-            :note="note"
-            :page="section"
-            :selecting="selecting"
-            :selected="selectedNotes.includes(note.id)"
-            @select="selectedNotes.push(note.id)"
-            @deselect="
-              selectedNotes = selectedNotes.filter((n) => n !== note.id)
-            "
-          />
+        <template v-if="notesTree.length > 0">
+          <!-- folder -->
+          <template
+            v-for="(item, index) in notesTree.filter(
+              (i) => i.type === 'folder'
+            )"
+            :key="index"
+          >
+            <notes-folder
+              v-if="item.items"
+              :items="item.items"
+              :title="item.title"
+              :selecting="selecting"
+              :selectedNotes="selectedNotes"
+              @notedeselect="deselect"
+              @noteselect="(id) => selectedNotes.push(id)"
+            />
+          </template>
+          <!-- notes -->
+          <template
+            v-for="(item, index) in notesTree.filter((i) => i.type === 'item')"
+            :key="index"
+          >
+            <NotesItem
+              v-if="item.item"
+              :key="item.item.id"
+              :note="item.item"
+              :page="section"
+              :selecting="selecting"
+              :selected="selectedNotes.includes(item.item.id)"
+              @select="if (item.item) selectedNotes.push(item.item.id);"
+              @deselect="() => deselect(item.item)"
+            />
+          </template>
         </template>
         <template v-else>
           <div class="bg-gray-100 m-2 rounded-md p-3 flex gap-2 text-gray-500">
             <Icon name="NoSymbolIcon" class="w-5 h-5" />
-            <span class="font-medium"> No items in {{ noteTitle }} </span>
+            <span class="font-medium"> You dont have any notes </span>
           </div>
         </template>
       </template>
@@ -58,20 +82,22 @@
 </template>
 
 <script lang="ts">
-import { computed, ComputedRef, defineComponent, Ref, ref, watch } from "vue";
 import PageHeader from "@/components/layout/ApplicationMenu/PageHeader.vue";
-import { MenuItem } from "@/types";
-import NotesItem from "@/components/NotesItem.vue";
-import Loading from "@/components/Loading.vue";
-import { useNotesStore } from "@/stores/notes";
-import { useAuthStore } from "@/stores/auth";
-import { NotePages } from "@/composables/useNavigation";
-import { onKeyStroke } from "@vueuse/core";
-import { useRoute, useRouter } from "vue-router";
-import Icon from "@/components/Icon";
-import { manyNotesContextMenu } from "@/utils/contextmenus";
 import MenuList from "@/components/Popup/MenuList.vue";
 import { createNewNoteModal } from "@/modals/newNoteModal";
+import { useNotesStore } from "@/stores/notes";
+import { MenuItem } from "@/types";
+import { manyNotesContextMenu } from "@/utils/contextmenus";
+import { computed, ComputedRef, defineComponent, Ref, ref } from "vue";
+import { useRouter } from "vue-router";
+import Icon from "@/components/Icon";
+import { filePathTree } from "@/utils/grouping";
+import { Note } from "@/types/models";
+import { useAuthStore } from "@/stores/auth";
+import { NotePages } from "@/composables/useNavigation";
+import Loading from "@/components/Loading.vue";
+import NotesItem from "@/components/NotesItem.vue";
+import NotesFolder from "@/components/NotesFolder.vue";
 
 export default defineComponent({
   props: {
@@ -80,40 +106,14 @@ export default defineComponent({
       default: "Note",
     },
   },
-  components: { PageHeader, NotesItem, Loading, Icon, MenuList },
-  setup(props) {
-    const route = useRoute();
-    const router = useRouter();
+  components: { PageHeader, MenuList, Icon, Loading, NotesItem, NotesFolder },
+  setup() {
     const selecting = ref(false);
+    const router = useRouter();
     const notestore = useNotesStore();
-    const authstore = useAuthStore();
     const selectedNotes: Ref<string[]> = ref([]);
-
-    const notes = computed(() => {
-      if (props.section === "Note") {
-        return notestore.basicNotes;
-      } else if (props.section === "StarredNote") {
-        return notestore.starredNotes;
-      } else if (props.section === "ArchivedNote") {
-        return notestore.archivedNotes;
-      } else if (props.section === "Trash") {
-        return notestore.trashedNotes;
-      }
-      return [];
-    });
-
-    watch(
-      () => notestore.notes,
-      () => notes.effect.run(),
-      { deep: true }
-    );
-
-    const noteTitle = computed(() => {
-      if (props.section.endsWith("Note") && props.section !== "Note") {
-        return props.section.slice(0, -4);
-      }
-      return props.section;
-    });
+    const notes = computed(() => notestore.basicNotes);
+    const authstore = useAuthStore();
 
     const menu: ComputedRef<Array<MenuItem>> = computed(
       (): Array<MenuItem> =>
@@ -124,34 +124,25 @@ export default defineComponent({
         })
     );
 
-    onKeyStroke(["Escape"], (e) => {
-      if (selecting.value) {
-        e.preventDefault();
-        selecting.value = false;
-      }
-    });
-
-    watch(
-      () => route.fullPath,
-      () => {
-        selecting.value = false;
-        selectedNotes.value = [];
-      }
+    const notesTree = computed(() =>
+      filePathTree<Note>(notes.value, (note) => note.title)
     );
-
-    function openNewNoteDialog() {
-      createNewNoteModal(router);
-    }
 
     return {
       menu,
-      noteTitle,
+      selecting,
+      notesTree,
       notestore,
       authstore,
-      notes,
-      selecting,
       selectedNotes,
-      openNewNoteDialog,
+      deselect: (note?: Note) => {
+        if (note) {
+          selectedNotes.value = selectedNotes.value.filter(
+            (n) => n !== note.id
+          );
+        }
+      },
+      openNewNoteDialog: () => createNewNoteModal(router),
     };
   },
 });

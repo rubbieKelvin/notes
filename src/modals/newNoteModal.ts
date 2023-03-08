@@ -13,10 +13,33 @@ export const createNewNoteModal = (router: Router) => {
   const notestore = useNotesStore();
   const publicsignalstore = usePublicSignalStore();
 
+  const validateInput = (text: string): { message: string; valid: boolean } => {
+    if (text.startsWith("/"))
+      return { message: "Dont start text with '/'", valid: false };
+    if (text.endsWith("/"))
+      return { message: "Dont end text with '/'", valid: false };
+    if (text.split("/").length > 2)
+      return { message: "Dont use more than 2 '/'", valid: false };
+    return { message: "", valid: true };
+  };
+
   async function createnote(ctx: { title: string }) {
-    if (authstore.isAuthenticated && authstore.user && ctx.title.trim()) {
+    if (
+      authstore.isAuthenticated &&
+      authstore.user &&
+      ctx.title.trim() &&
+      validateInput(ctx.title).valid
+    ) {
+      let title = ctx.title.trim();
+
+      if (title.includes("/")) {
+        const [path, name] = title.split("/");
+        title = `${path.trim()}/${name.trim()}`;
+      }
+
+      console.log({ title });
       const note = await notestore.createNote({
-        title: ctx.title,
+        title,
         author: authstore.user.id,
       });
       if (note) {
@@ -41,8 +64,10 @@ export const createNewNoteModal = (router: Router) => {
         type: "textinput",
         id: "title",
         textinput: {
+          label: "Title",
           placeholder: "Enter note title...",
           focus: true,
+          validateInput,
           keydownReturn: async (title) => {
             try {
               publicsignalstore.fire({

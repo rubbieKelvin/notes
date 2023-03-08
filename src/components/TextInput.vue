@@ -63,7 +63,7 @@ export default defineComponent({
       },
     },
   },
-  emits: ["update:model-value", "return"],
+  emits: ["update:model-value", "return", "textinput"],
   setup(props, { emit }) {
     const text = ref(props.modelValue || "");
     const focusedInputRef: Ref<HTMLInputElement | null> = ref(null);
@@ -72,6 +72,7 @@ export default defineComponent({
       () => props.modelValue,
       () => {
         text.value = props.modelValue || "";
+        emit("textinput", text.value);
       }
     );
 

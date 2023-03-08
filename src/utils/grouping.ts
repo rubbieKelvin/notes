@@ -28,7 +28,11 @@ export const linearGrouping = <T>(
   return res;
 };
 
-interface TreeItem<T> {
+export const nodeItemName = (path: string) => path.split("/").slice(-1)[0];
+export const nodeItemPath = (path: string) =>
+  path.split("/").slice(0, -1).join("/");
+
+export interface TreeItem<T> {
   fullPath: string;
   title: string;
   type: "folder" | "item";

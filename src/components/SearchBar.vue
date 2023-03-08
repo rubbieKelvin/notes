@@ -37,6 +37,7 @@ import { useNotesStore } from "@/stores/notes";
 import { noteRoute } from "@/composables/useNavigation";
 import { noteSorting } from "@/utils/sorting";
 import KeyboardShortcut from "./KeyboardShortcut.vue";
+import { nodeItemName, nodeItemPath } from "@/utils/grouping";
 
 export default defineComponent({
   components: { MagnifyingGlassIcon, SelectionDialog, KeyboardShortcut },
@@ -74,8 +75,10 @@ export default defineComponent({
           .splice(0, 6)
           .map(
             (note): SearchedItem => ({
-              title: note.title,
-              subtitle: useTimeAgo(new Date(note.last_updated)).value,
+              title: nodeItemName(note.title),
+              subtitle: note.title.includes("/")
+                ? `Inside ~/${nodeItemPath(note.title)}`
+                : useTimeAgo(new Date(note.last_updated)).value,
               group: "recent",
               icon: "ClockIcon",
               action: () => {
@@ -98,8 +101,10 @@ export default defineComponent({
       return [
         ...matchedByTitle.map(
           (note): SearchedItem => ({
-            title: note.title,
-            subtitle: useTimeAgo(new Date(note.last_updated)).value,
+            title: nodeItemName(note.title),
+            subtitle: note.title.includes("/")
+              ? `Inside ~/${nodeItemPath(note.title)}`
+              : useTimeAgo(new Date(note.last_updated)).value,
             group: "title",
             icon: "TagIcon",
             action: () => {
@@ -109,8 +114,10 @@ export default defineComponent({
         ),
         ...matchedByContent.map(
           (note): SearchedItem => ({
-            title: note.title,
-            subtitle: useTimeAgo(new Date(note.last_updated)).value,
+            title: nodeItemName(note.title),
+            subtitle: note.title.includes("/")
+              ? `Inside ~/${nodeItemPath(note.title)}`
+              : useTimeAgo(new Date(note.last_updated)).value,
             group: "content",
             icon: "NewspaperIcon",
             action: () => {
