@@ -1,5 +1,8 @@
 <template>
-  <div class="flex bg-themed-bg text-themed-text flex-grow h-full w-1" :class="{ 'px-5': isPublicNotePage }">
+  <div
+    class="flex bg-themed-bg text-themed-text flex-grow h-full w-1"
+    :class="{ 'px-5': isPublicNotePage }"
+  >
     <TextEditor
       v-if="note && writableContent"
       v-model="writableContent"
@@ -65,7 +68,7 @@ export default defineComponent({
         // get note
         notestore.openNote(
           readable_id,
-          isPublicNotePage.value ? (route.params?.username as string) : null
+          isPublicNotePage.value ? authstore.user?.username : null
         );
       }
     };
