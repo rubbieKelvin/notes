@@ -25,15 +25,6 @@ export default createRouter({
           },
         },
         {
-          path: "/public/mine/",
-          name: "Public",
-          props: { default: { section: "PublicNote" } },
-          components: {
-            default: () => import("@/views/notes.vue"),
-            extended: () => import("@/views/editor.vue"),
-          },
-        },
-        {
           path: "/shared",
           name: "Shared",
           components: {
@@ -54,7 +45,7 @@ export default createRouter({
           name: "Archive",
           props: { default: { section: "ArchivedNote" } },
           components: {
-            default: () => import("@/views/notes.vue"),
+            default: () => import("@/views/old.notes.vue"),
             extended: () => import("@/views/editor.vue"),
           },
         },
@@ -63,7 +54,7 @@ export default createRouter({
           name: "ArchivedNote",
           props: { default: { section: "ArchivedNote" } },
           components: {
-            default: () => import("@/views/notes.vue"),
+            default: () => import("@/views/old.notes.vue"),
             extended: () => import("@/views/editor.vue"),
           },
         },
@@ -72,7 +63,7 @@ export default createRouter({
           name: "Trash",
           props: { default: { section: "Trash" } },
           components: {
-            default: () => import("@/views/notes.vue"),
+            default: () => import("@/views/old.notes.vue"),
             extended: () => import("@/views/editor.vue"),
           },
         },
@@ -81,7 +72,7 @@ export default createRouter({
           name: "Starred",
           props: { default: { section: "StarredNote" } },
           components: {
-            default: () => import("@/views/notes.vue"),
+            default: () => import("@/views/old.notes.vue"),
             extended: () => import("@/views/editor.vue"),
           },
         },
@@ -90,7 +81,7 @@ export default createRouter({
           name: "StarredNote",
           props: { default: { section: "StarredNote" } },
           components: {
-            default: () => import("@/views/notes.vue"),
+            default: () => import("@/views/old.notes.vue"),
             extended: () => import("@/views/editor.vue"),
           },
         },
