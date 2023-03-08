@@ -342,8 +342,7 @@ export default defineComponent({
         .filter(
           (i) =>
             i.type === "folder" &&
-            i.title.toLowerCase().includes((query || "").toLowerCase()) &&
-            editableNote.value.title.startsWith(`${i.title}/`)
+            i.title.toLowerCase().includes((query || "").toLowerCase())
         )
         .map((i) => i.title);
 
