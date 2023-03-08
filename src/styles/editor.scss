@@ -1,14 +1,13 @@
 .ProseMirror {
-  height: 100%;
   outline: none;
-  @apply text-base text-themed-text;
+  @apply text-base text-themed-text pb-10 min-h-full h-max;
 
   > * + * {
     margin-top: 0.75em;
   }
 
   a {
-    @apply text-blue-500 underline cursor-default;
+    @apply text-themed-accent-bg cursor-default;
   }
 
   strong {
