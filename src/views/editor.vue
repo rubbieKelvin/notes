@@ -1,8 +1,5 @@
 <template>
-  <div
-    class="flex bg-themed-bg text-themed-text flex-grow h-full w-1"
-    :class="{ 'px-5': isPublicNotePage }"
-  >
+  <div class="flex bg-themed-bg text-themed-text flex-grow h-full w-1">
     <TextEditor
       v-if="note && writableContent"
       v-model="writableContent"
@@ -35,12 +32,10 @@ import { Note } from "@/types/models";
 import { JSONContent } from "@tiptap/core";
 import { useNotesStore } from "@/stores/notes";
 import { useAuthStore } from "@/stores/auth";
-import useUtils from "@/composables/useUtils";
 
 export default defineComponent({
   components: { EmptyPage, TextEditor },
   setup() {
-    const { isPublicNotePage } = useUtils();
     const route = useRoute();
     const router = useRouter();
     const notestore = useNotesStore();
@@ -66,23 +61,12 @@ export default defineComponent({
         if (readable_id === null) return;
 
         // get note
-        notestore.openNote(
-          readable_id,
-          isPublicNotePage.value ? authstore.user?.username : null
-        );
+        notestore.openNote(readable_id);
       }
     };
 
     watch(
-      () => authstore.isAuthenticated,
-      async () => {
-        await openNote();
-      },
-      { immediate: true }
-    );
-
-    watch(
-      () => route.fullPath,
+      () => [route.fullPath, authstore.isAuthenticated],
       async () => {
         await openNote();
       },
@@ -110,7 +94,7 @@ export default defineComponent({
       }
     };
 
-    return { note, writableContent, authstore, deleteNote, isPublicNotePage };
+    return { note, writableContent, authstore, deleteNote };
   },
 });
 </script>
