@@ -25,7 +25,8 @@
         " />
       <NotesDetailsDialog v-if="notestore.openedNote" v-model="modalstore.modalstates.noteDetails" />
       <selection-dialog v-model="modalstore.modalstates.themeSelectionOpen" resource-type="Themes"
-        :perform-search="searchThemes" />
+        :perform-search="searchThemes"
+        @searchmodalclose="modalstore.modalstates.themeSelectionOpen = false"/>
     </div>
   </AuthWrapper>
 </template>
