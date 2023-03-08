@@ -190,6 +190,7 @@ export const useNotesStore = defineStore("notes", {
       username: string | null = null,
       forceRemote: boolean = false
     ) {
+      const authstore = useAuthStore();
       if (this.notes === null || forceRemote) {
         const note =
           (
@@ -198,7 +199,7 @@ export const useNotesStore = defineStore("notes", {
                 readable_id: { _eq: rid },
                 ...(username
                   ? { author: { username: { _eq: username } } }
-                  : {}),
+                  : { author: { id: { _eq: authstore.user?.id } } }),
               },
               fields: NOTE_FIELDS,
               limit: 1,
