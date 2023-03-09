@@ -1,6 +1,6 @@
 <template>
   <div
-    class="dialog fixed top-0 left-0 right-0 bottom-0 z-[9999]"
+    class="dialog fixed top-0 left-0 right-0 bottom-0 z-[8999]"
     :class="{
       'bg-black bg-opacity-20': dim && visible,
       'pointer-events-none': !dim || !visible,

@@ -41,7 +41,6 @@ export type ToastDataUpdate = {
   title?: string;
   desciption?: string;
   timeout?: number | false;
-  persistent?: boolean;
   actions?: Array<{
     title: string;
     action: () => any;

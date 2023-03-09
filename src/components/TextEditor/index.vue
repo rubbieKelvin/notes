@@ -172,6 +172,7 @@ import SelectionDialog from "../SelectionDialog.vue";
 import { FEATURES, useFeatures } from "@/stores/features";
 import { filePathTree, nodeItemName, nodeItemPath } from "@/utils/grouping";
 import { MenuItem, SearchedItem } from "@/types";
+import { useToast } from "@/stores/toasts";
 
 type SaveStatus = "saving" | "error" | null;
 
@@ -198,6 +199,7 @@ export default defineComponent({
     const notestore = useNotesStore();
     const authstore = useAuthStore();
     const features = useFeatures();
+    const toaststore = useToast();
 
     const modals = ref({
       movetofolder: false,
@@ -319,10 +321,23 @@ export default defineComponent({
         editableNote.value.title = t;
       }
 
-      const note = await notestore.updateNote(
-        props.note,
-        pickProperties(editableNote.value as NoteUpdate, updated_fields)
-      );
+      const note = await toaststore.promise<Note | null>({
+        action: async () =>
+          await notestore.updateNote(
+            props.note,
+            pickProperties(editableNote.value as NoteUpdate, updated_fields)
+          ),
+        title: {
+          loading: "Saving",
+          success: "Saved",
+          error: "Error",
+        },
+        messages: {
+          loading: `Saving "${editableNote.value.title}""`,
+          success: `"${editableNote.value.title}" is on the cloud`,
+          error: "Error saving note",
+        },
+      });
 
       if (note) emit("note:changed", note);
       return note;

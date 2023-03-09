@@ -4,28 +4,44 @@
       <AppHeader />
 
       <div class="flex-grow flex">
-        <MainNav class="h-full hidden md:flex flex-col bg-themed-bg text-themed-text" />
-        <ApplicationMenu class="h-full md:flex-auto flex-grow" :class="{ 'mobile-hide': isNotePage }" />
+        <MainNav
+          class="h-full hidden md:flex flex-col bg-themed-bg text-themed-text"
+        />
+        <ApplicationMenu
+          class="h-full md:flex-auto flex-grow"
+          :class="{ 'mobile-hide': isNotePage }"
+        />
         <router-view name="extended" :class="{ 'mobile-hide': !isNotePage }">
         </router-view>
       </div>
 
       <MainNav
-        class="h-full bg-themed-accent-bg text-themed-accent-text flex px-6 sm:px-0 md:hidden justify-between sm:justify-center gap-0 sm:gap-20" />
+        class="h-full bg-themed-accent-bg text-themed-accent-text flex px-6 sm:px-0 md:hidden justify-between sm:justify-center gap-0 sm:gap-20"
+      />
 
       <!-- ... -->
       <Toast />
-      <extensible-dialog v-if="modalstore.extensibleDialogData" :modelValue="modalstore.extensibleDialogVisible"
-        :modalData="modalstore.extensibleDialogData" @update:model-value="
+      <extensible-dialog
+        v-if="modalstore.extensibleDialogData"
+        :modelValue="modalstore.extensibleDialogVisible"
+        :modalData="modalstore.extensibleDialogData"
+        @update:model-value="
           (visible) => {
             if (!visible) {
               modalstore.forceCloseExtensibleModal();
             }
           }
-        " />
-      <NotesDetailsDialog v-if="notestore.openedNote" v-model="modalstore.modalstates.noteDetails" />
-      <selection-dialog v-model="modalstore.modalstates.themeSelectionOpen" resource-type="Themes"
-        :perform-search="searchThemes" />
+        "
+      />
+      <NotesDetailsDialog
+        v-if="notestore.openedNote"
+        v-model="modalstore.modalstates.noteDetails"
+      />
+      <selection-dialog
+        v-model="modalstore.modalstates.themeSelectionOpen"
+        resource-type="Themes"
+        :perform-search="searchThemes"
+      />
     </div>
   </AuthWrapper>
 </template>
@@ -36,7 +52,7 @@ import AppHeader from "@/components/layout/Header.vue";
 import MainNav from "@/components/layout/SideMenu/index.vue";
 import ApplicationMenu from "@/components/layout/ApplicationMenu/index.vue";
 import TextEditor from "@/components/TextEditor/index.vue";
-import Toast from "@/components/Toast.vue";
+import Toast from "@/components/Toast/index.vue";
 import KeyboardShortcut from "@/components/KeyboardShortcut.vue";
 import AuthWrapper from "@/wrappers/AuthWrapper.vue";
 import { useAuthStore } from "@/stores/auth";
@@ -49,8 +65,9 @@ import ExtensibleDialog from "@/components/ExtensibleDialog/index.vue";
 import { createNewNoteModal } from "@/modals/newNoteModal";
 import { useRouter } from "vue-router";
 import SelectionDialog from "@/components/SelectionDialog.vue";
-import { useThemeStore } from "@/stores/theme"
+import { useThemeStore } from "@/stores/theme";
 import { SearchedItem } from "@/types";
+import { useToast } from "@/stores/toasts";
 
 export default defineComponent({
   components: {
@@ -63,7 +80,7 @@ export default defineComponent({
     AuthWrapper,
     NotesDetailsDialog,
     ExtensibleDialog,
-    SelectionDialog
+    SelectionDialog,
   },
   setup() {
     const utils = useUtils();
@@ -71,7 +88,8 @@ export default defineComponent({
     const notestore = useNotesStore();
     const modalstore = useModalStore();
     const router = useRouter();
-    const themestore = useThemeStore()
+    const themestore = useThemeStore();
+    const toaststore = useToast();
 
     onKeyStroke(["Control", "Alt", "n"], (e) => {
       // create new note
@@ -88,7 +106,6 @@ export default defineComponent({
         modalstore.modalstates.noteDetails = true;
       }
     });
-
 
     async function searchThemes(query?: string): Promise<SearchedItem[]> {
       if (!query)
@@ -118,7 +135,7 @@ export default defineComponent({
             },
           })
         );
-    };
+    }
     function transformThemeName(name: string) {
       const res = (name || "Default").replaceAll("-", " ").split("");
       res[0] = res[0].toUpperCase();
@@ -129,12 +146,27 @@ export default defineComponent({
       () => authstore.isAuthenticated,
       () => {
         if (!authstore.isAuthenticated) {
+          toaststore.success({
+            message: "User not logged in",
+            title: "Message",
+          });
           notestore.notes = [];
+        } else {
+          toaststore.success({
+            message: `Logged in as ${authstore.user?.username}`,
+          });
         }
       }
     );
 
-    return { modalstore, authstore, ...utils, notestore, searchThemes, transformThemeName };
+    return {
+      modalstore,
+      authstore,
+      ...utils,
+      notestore,
+      searchThemes,
+      transformThemeName,
+    };
   },
 });
 </script>
