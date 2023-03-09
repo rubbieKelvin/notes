@@ -41,6 +41,7 @@
         v-model="modalstore.modalstates.themeSelectionOpen"
         resource-type="Themes"
         :perform-search="searchThemes"
+        @searchmodalclose="modalstore.modalstates.themeSelectionOpen = false"
       />
     </div>
   </AuthWrapper>
