@@ -16,7 +16,11 @@ def themeToCssString(file: Path) -> str:
         name: str = data["name"]
         theme: dict[str, dict[str, typing.Any]] = data["theme"]
 
-        classname = THEME_WRAPPER_SELECTOR if name == "main" else f"{THEME_WRAPPER_SELECTOR}.{name}"
+        classname = (
+            THEME_WRAPPER_SELECTOR
+            if name == "main"
+            else f"{THEME_WRAPPER_SELECTOR}.{name}"
+        )
 
         properties: dict[str, typing.Any] = {}
 

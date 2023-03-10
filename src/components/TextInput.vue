@@ -1,7 +1,7 @@
 <template>
-  <div class="flex flex-col">
+  <div class="flex flex-col textinput">
     <div v-if="label || errorMessage" class="flex">
-      <p class="text-sm flex grow">{{ label }}</p>
+      <p class="text-sm flex grow textinput-label">{{ label }}</p>
       <p v-if="errorMessage" class="text-sm text-red-500">{{ errorMessage }}</p>
     </div>
     <div

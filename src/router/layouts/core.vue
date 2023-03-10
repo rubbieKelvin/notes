@@ -55,7 +55,7 @@ import ApplicationMenu from "@/components/layout/ApplicationMenu/index.vue";
 import TextEditor from "@/components/TextEditor/index.vue";
 import Toast from "@/components/Toast/index.vue";
 import KeyboardShortcut from "@/components/KeyboardShortcut.vue";
-import AuthWrapper from "@/wrappers/AuthWrapper.vue";
+import AuthWrapper from "@/wrappers/PassiveAuthWrapper.vue";
 import { useAuthStore } from "@/stores/auth";
 import { useNotesStore } from "@/stores/notes";
 import { useModalStore } from "@/stores/modals";
@@ -146,17 +146,7 @@ export default defineComponent({
     watch(
       () => authstore.isAuthenticated,
       () => {
-        if (!authstore.isAuthenticated) {
-          toaststore.success({
-            message: "User not logged in",
-            title: "Message",
-          });
-          notestore.notes = [];
-        } else {
-          toaststore.success({
-            message: `Logged in as ${authstore.user?.username}`,
-          });
-        }
+        if (!authstore.isAuthenticated) notestore.notes = [];
       }
     );
 

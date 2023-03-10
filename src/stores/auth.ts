@@ -1,6 +1,7 @@
 import { User } from "@/types/models";
 import { defineStore } from "pinia";
 import useSharedUQL from "@/composables/uql";
+import { afterLogout } from "@/router/hooks";
 
 interface State {
   user: User | null;
@@ -13,6 +14,7 @@ export const useAuthStore = defineStore("auth", {
     token: null,
   }),
   getters: {
+    isLazilyAuthenticated: () => localStorage.getItem("auth-token"),
     isAuthenticated: (state) => state.user !== null,
     authHeader: (state) =>
       state.token ? { Authorization: `Token ${state.token}` } : null,
@@ -34,8 +36,8 @@ export const useAuthStore = defineStore("auth", {
         meta: {
           headers,
           retry: {
-            max: 4,
-            retriesIn: 4000,
+            max: 2,
+            retriesIn: 2000,
             onError,
             onRetry,
           },
@@ -108,6 +110,7 @@ export const useAuthStore = defineStore("auth", {
       this.token = null;
       this.user = null;
       localStorage.removeItem("auth-token");
+      await afterLogout();
     },
   },
 });
