@@ -64,11 +64,7 @@ export default defineComponent({
 
     onMounted(async () => {
       fetchState.value.fetching = true;
-      note.value = await notestore.getNoteByRiD(
-        parseInt(identifier),
-        username,
-        true
-      );
+      note.value = await notestore.getNoteByID(identifier, username, true);
 
       fetchState.value.fetching = false;
       fetchState.value.noteexists = !!(
