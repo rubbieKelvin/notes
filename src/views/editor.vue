@@ -54,14 +54,14 @@ export default defineComponent({
     const openNote = async () => {
       if (route.name?.toString().endsWith("Note")) {
         // we want to select a note
-        const readable_id = route.params?.identifier
-          ? parseInt(route.params.identifier as string)
+        const id = route.params?.identifier
+          ? (route.params.identifier as string)
           : null;
 
-        if (readable_id === null) return;
+        if (id === null) return;
 
         // get note
-        notestore.openNote(readable_id);
+        notestore.openNote(id);
       }
     };
 

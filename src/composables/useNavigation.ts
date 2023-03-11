@@ -22,7 +22,7 @@ export const noteRoute = (
   return {
     name: name === "PublicNote" ? "Note" : name,
     params: {
-      identifier: note.readable_id,
+      identifier: note.id,
     },
   };
 };
