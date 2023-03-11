@@ -105,7 +105,7 @@ export default defineComponent({
         shouldDirectlyOpenNote.value &&
         props.note.readable_id !== null
       ) {
-        if (!props.note.is_trashed) notestore.openNote(props.note.readable_id);
+        if (!props.note.is_trashed) notestore.openNote(props.note.id);
       }
     };
 
