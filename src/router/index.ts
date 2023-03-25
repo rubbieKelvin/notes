@@ -17,7 +17,7 @@ export default createRouter({
           },
         },
         {
-          path: "/notes/note-:identifier",
+          path: "/notes/:identifier",
           name: "Note",
           components: {
             default: () => import("@/views/notes.vue"),
@@ -33,7 +33,7 @@ export default createRouter({
           },
         },
         {
-          path: "/shared/note-:identifier",
+          path: "/shared/:identifier",
           name: "SharedNote",
           components: {
             default: () => import("@/views/shared.vue"),
@@ -50,7 +50,7 @@ export default createRouter({
           },
         },
         {
-          path: "/archived/note-:identifier",
+          path: "/archived/:identifier",
           name: "ArchivedNote",
           props: { default: { section: "ArchivedNote" } },
           components: {
@@ -77,7 +77,7 @@ export default createRouter({
           },
         },
         {
-          path: "/starred/note-:identifier",
+          path: "/starred/:identifier",
           name: "StarredNote",
           props: { default: { section: "StarredNote" } },
           components: {
@@ -93,7 +93,7 @@ export default createRouter({
       component: () => import("@/views/public/index.vue"),
     },
     {
-      path: "/public/:username/note-:identifier",
+      path: "/public/:username/:identifier",
       name: "PublicNote",
       component: () => import("@/views/public/user/note/index.vue"),
     },
