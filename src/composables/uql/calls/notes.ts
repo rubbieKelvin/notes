@@ -20,6 +20,22 @@ export const NOTE_FIELDS = {
   is_public: true,
 };
 
+export const ANON_NOTE_FIELDS = {
+  id: true,
+  title: true,
+  content: true,
+  readable_id: true,
+  author: {
+    id: true,
+    username: true,
+    first_name: true,
+    last_name: true,
+  },
+  date_created: true,
+  last_updated: true,
+  is_public: true,
+};
+
 export const FETCH_USER_NOTES: (
   author: string
 ) => UQLFunctionCallInput<UqlIntents> = (author) => ({
