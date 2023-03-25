@@ -85,22 +85,6 @@ export default createRouter({
             extended: () => import("@/views/editor.vue"),
           },
         },
-        {
-          path: "/tags",
-          name: "Tags",
-          components: {
-            default: () => import("@/views/tags.vue"),
-            extended: () => import("@/views/editor.vue"),
-          },
-        },
-        {
-          path: "/tags/:id",
-          name: "Tag",
-          components: {
-            default: () => import("@/views/tag.vue"),
-            extended: () => import("@/views/editor.vue"),
-          },
-        },
       ],
     },
     {

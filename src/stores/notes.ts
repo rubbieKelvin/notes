@@ -1,9 +1,9 @@
-import { Note, NoteInsert, NoteUpdate, Tag } from "@/types/models";
+import { Note, NoteInsert, NoteUpdate } from "@/types/models";
 import { defineStore } from "pinia";
 import useSharedUQL from "@/composables/uql";
 import { useAuthStore } from "./auth";
 import { Pk } from "@/composables/uql/types";
-import { NOTE_FIELDS } from "@/composables/uql/calls/notes";
+import { NOTE_FIELDS, ANON_NOTE_FIELDS } from "@/composables/uql/calls/notes";
 import { noteSorting } from "@/utils/sorting";
 
 interface State {
@@ -201,7 +201,9 @@ export const useNotesStore = defineStore("notes", {
                   ? { author: { username: { _eq: username } } }
                   : { author: { id: { _eq: authstore.user?.id } } }),
               },
-              fields: NOTE_FIELDS,
+              fields: authstore.isAuthenticated
+                ? NOTE_FIELDS
+                : ANON_NOTE_FIELDS,
               limit: 1,
             })
           )?.slice(0, 1)[0] ?? null;

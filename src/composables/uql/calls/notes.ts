@@ -18,20 +18,22 @@ export const NOTE_FIELDS = {
   is_archived: true,
   is_trashed: true,
   is_public: true,
-  tag_attachments: {
+};
+
+export const ANON_NOTE_FIELDS = {
+  id: true,
+  title: true,
+  content: true,
+  readable_id: true,
+  author: {
     id: true,
-    tag: {
-      id: true,
-      title: true,
-      description: true,
-      author: {
-        id: true,
-        username: true,
-      },
-      color: true,
-      date_created: true,
-    },
+    username: true,
+    first_name: true,
+    last_name: true,
   },
+  date_created: true,
+  last_updated: true,
+  is_public: true,
 };
 
 export const FETCH_USER_NOTES: (

@@ -7,7 +7,6 @@ export type RouteName =
   | "Archive"
   | "Trash"
   | "Starred"
-  | "Tags"
   | "Public";
 
 export type MenuItem = {
