@@ -9,7 +9,8 @@
     <div class="flex-grow hidden md:flex flex-col justify-end">
       <button
         class="flex items-center p-2 gap-2 text-themed-text w-min lg:w-auto hover:bg-themed-hover-bg hover:text-themed-hover-text rounded-md"
-        @click="modalstore.modalstates.themeSelectionOpen = true">
+        @click="modalstore.modalstates.themeSelectionOpen = true"
+      >
         <MoonIcon class="w-5 h-5" />
         <span class="hidden lg:inline capitalize">
           {{ (themestore.current || "light").replaceAll("-", " ") }}
@@ -22,9 +23,9 @@
 <script lang="ts">
 import { FEATURES, useFeatures } from "@/stores/features";
 import { useThemeStore } from "@/stores/theme";
-import { MenuItem, SearchedItem } from "@/types";
+import { MenuItem } from "@/types";
 import { MoonIcon } from "@heroicons/vue/24/outline";
-import { computed, defineComponent, onMounted, ref } from "vue";
+import { computed, defineComponent, onMounted } from "vue";
 import NavItem from "./NavItem.vue";
 import { useModalStore } from "@/stores/modals";
 
@@ -33,7 +34,7 @@ export default defineComponent({
   setup() {
     const themestore = useThemeStore();
     const featurestore = useFeatures();
-    const modalstore = useModalStore()
+    const modalstore = useModalStore();
 
     const navItems = computed((): MenuItem[] => [
       {
@@ -41,13 +42,6 @@ export default defineComponent({
         icon: "FolderIcon",
         title: "notes",
         link: { name: "Notes" },
-      },
-      {
-        id: Symbol(),
-        icon: "TagIcon",
-        title: "tags",
-        link: { name: "Tags" },
-        hidden: !featurestore.features[FEATURES.TAGS],
       },
       {
         id: Symbol(),

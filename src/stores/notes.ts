@@ -1,4 +1,4 @@
-import { Note, NoteInsert, NoteUpdate, Tag } from "@/types/models";
+import { Note, NoteInsert, NoteUpdate } from "@/types/models";
 import { defineStore } from "pinia";
 import useSharedUQL from "@/composables/uql";
 import { useAuthStore } from "./auth";

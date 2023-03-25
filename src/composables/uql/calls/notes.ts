@@ -18,20 +18,6 @@ export const NOTE_FIELDS = {
   is_archived: true,
   is_trashed: true,
   is_public: true,
-  tag_attachments: {
-    id: true,
-    tag: {
-      id: true,
-      title: true,
-      description: true,
-      author: {
-        id: true,
-        username: true,
-      },
-      color: true,
-      date_created: true,
-    },
-  },
 };
 
 export const FETCH_USER_NOTES: (

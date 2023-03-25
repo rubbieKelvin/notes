@@ -110,28 +110,6 @@
       <p>This note has been archived and is in read-only state</p>
     </div>
 
-    <!-- tags -->
-    <div v-if="features.features[FEATURES.TAGS]" class="texteditor-tags">
-      <div
-        v-for="tagm in editableNote.tag_attachments"
-        :key="tagm.id"
-        class="border border-themed-stroke rounded-md"
-      >
-        <span class="px-1 text-sm">{{ tagm.tag.title }}</span>
-        <button class="px-1 btn border-0 h-full rounded-none border-l">
-          <Icon name="XMarkIcon" class="w-3 h-3" />
-        </button>
-      </div>
-      <button
-        @click="tagSelectOpen = true"
-        class="btn flex items-center justify-center text-sm py-0.5 px-1 group"
-        title="add tags"
-      >
-        <Icon name="PlusIcon" class="h-3 w-3" />
-        <span class="text-xs uppercase ml-1">Tags</span>
-      </button>
-    </div>
-
     <!-- input -->
     <div
       v-if="editor"
@@ -170,7 +148,7 @@ import useTextEditor from "@/composables/useTextEditor";
 import FloatingMenu from "./FloatingMenu.vue";
 import SelectionDialog from "../SelectionDialog.vue";
 import { FEATURES, useFeatures } from "@/stores/features";
-import { filePathTree, nodeItemName, nodeItemPath } from "@/utils/grouping";
+import { filePathTree, nodeItemPath } from "@/utils/grouping";
 import { MenuItem, SearchedItem } from "@/types";
 import { useToast } from "@/stores/toasts";
 
@@ -192,7 +170,6 @@ export default defineComponent({
   },
   emits: ["note:changed", "contextmenu:delete"],
   setup(props, { emit }) {
-    const tagSelectOpen = ref(false);
     // maps a notes id to it's status
     const savingStatuses: Ref<Record<string, SaveStatus>> = ref({});
 
@@ -204,9 +181,6 @@ export default defineComponent({
     const modals = ref({
       movetofolder: false,
     });
-
-    // check features
-    features.hasFeature(FEATURES.TAGS);
 
     const { editor, configureEditor, contentUpdated, editableNote } =
       useTextEditor();
@@ -429,7 +403,6 @@ export default defineComponent({
       authstore,
       notestore,
       modals,
-      tagSelectOpen,
       doCreateFolder,
       searchFolders,
     };
@@ -444,12 +417,6 @@ export default defineComponent({
   @apply gap-2;
 
   &-heading {
-    @apply px-2;
-  }
-
-  &-tags {
-    display: flex;
-    gap: 4px;
     @apply px-2;
   }
 

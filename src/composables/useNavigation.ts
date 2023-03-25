@@ -1,4 +1,4 @@
-import { Note, Tag } from "@/types/models";
+import { Note } from "@/types/models";
 import { useRouter } from "vue-router";
 
 export type Route = {
@@ -30,13 +30,4 @@ export const noteRoute = (
 export const goToLogin = () => {
   const router = useRouter();
   router.push("/");
-};
-
-export const tagRoute = (tag: Tag): Route => {
-  return {
-    name: "Tag",
-    params: {
-      id: tag.id,
-    },
-  };
 };
