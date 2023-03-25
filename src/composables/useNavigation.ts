@@ -17,12 +17,14 @@ export type NotePages = {
 
 export const noteRoute = (
   note: Note,
-  name: keyof NotePages = "Note"
+  name: keyof NotePages = "Note",
+  params?: Record<string, string>
 ): Route => {
   return {
-    name: name === "PublicNote" ? "Note" : name,
+    name,
     params: {
       identifier: note.id,
+      ...params,
     },
   };
 };

@@ -41,15 +41,22 @@ import { IconName } from "./Icon/types";
 import { boolToString } from "@/utils/helpers";
 import Icon from "./Icon";
 import { useAuthStore } from "@/stores/auth";
+import { noteRoute } from "@/composables/useNavigation";
+import { useRoute, useRouter } from "vue-router";
 
 export default defineComponent({
   components: { Icon },
   props: { note: { type: Object as () => Note, required: true } },
   setup(props) {
+    const router = useRouter();
     const publicLink = computed(() => {
       if (!props.note?.id) return "";
       const link = new URL(window.location.origin);
-      link.pathname = `/public/${props.note.author?.username}/note-${props.note.readable_id}`;
+      link.pathname = router.resolve(
+        noteRoute(props.note, "PublicNote", {
+          username: props.note.author.username,
+        })
+      ).href;
       return link.toString();
     });
 

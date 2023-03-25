@@ -1,5 +1,5 @@
 <template>
-  <div class="h-full flex flex-col">
+  <div class="h-full flex flex-col bg-themed-bg text-themed-text">
     <public-heading :note="note || undefined" />
     <template v-if="note">
       <div class="container mx-auto flex px-4 flex-grow justify-center">
