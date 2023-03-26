@@ -278,7 +278,7 @@ urllib3 = ">=1.26.5,<2"
 name = "colorama"
 version = "0.4.6"
 description = "Cross-platform colored terminal text."
-category = "dev"
+category = "main"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,!=3.6.*,>=2.7"
 files = [
@@ -1081,4 +1081,4 @@ brotli = ["Brotli"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "3143bebb088ce617b58b2eaf1e14c30f8eb85850f1ea9438520bbc70fc98c8dd"
+content-hash = "2525caf44f5858242634a86058272dbe1bcc5832b47dc0d1c0e1bd7fc745f5bb"
