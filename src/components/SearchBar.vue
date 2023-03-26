@@ -10,7 +10,7 @@
         @click="searchmodalopen = true"
       >
         <span class="hidden sm:inline-block">
-          Search tags, notes, folders, friends...
+          Search notes, folders, friends...
         </span>
         <span class="sm:hidden"> Search... </span>
       </p>

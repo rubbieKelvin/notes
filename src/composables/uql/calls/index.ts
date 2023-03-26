@@ -7,10 +7,6 @@ export type UqlIntents =
   | "models.api.note.findmany"
   | "models.api.note.update"
   | "models.api.note.find"
-  | "models.api.tag.find"
-  | "models.api.tag.insert"
-  | "models.api.tag.update"
-  | "models.api.tag.findmany";
 
 export type StaticUQLBody = UQLFunctionCallInput<UqlIntents>;
 

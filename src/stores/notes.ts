@@ -1,9 +1,9 @@
-import { Note, NoteInsert, NoteUpdate, Tag } from "@/types/models";
+import { Note, NoteInsert, NoteUpdate } from "@/types/models";
 import { defineStore } from "pinia";
 import useSharedUQL from "@/composables/uql";
 import { useAuthStore } from "./auth";
 import { Pk } from "@/composables/uql/types";
-import { NOTE_FIELDS } from "@/composables/uql/calls/notes";
+import { NOTE_FIELDS, ANON_NOTE_FIELDS } from "@/composables/uql/calls/notes";
 import { noteSorting } from "@/utils/sorting";
 
 interface State {
@@ -117,12 +117,12 @@ export const useNotesStore = defineStore("notes", {
         return null;
       }
     },
-    async openNote(rid: number, username: string | null = null) {
+    async openNote(id: string, username: string | null = null) {
       const authstore = useAuthStore();
       if (username) {
-        this.openedNote = await this.getNoteByRiD(rid, username);
+        this.openedNote = await this.getNoteByID(id, username);
       } else if (authstore.isAuthenticated) {
-        this.openedNote = await this.getNoteByRiD(rid);
+        this.openedNote = await this.getNoteByID(id);
       }
     },
     async createNote(object: NoteInsert) {
@@ -185,8 +185,8 @@ export const useNotesStore = defineStore("notes", {
 
       return notes ?? [];
     },
-    async getNoteByRiD(
-      rid: number,
+    async getNoteByID(
+      id: string,
       username: string | null = null,
       forceRemote: boolean = false
     ) {
@@ -196,12 +196,14 @@ export const useNotesStore = defineStore("notes", {
           (
             await this.notemodel.findMany({
               where: {
-                readable_id: { _eq: rid },
+                id: { _eq: id },
                 ...(username
                   ? { author: { username: { _eq: username } } }
                   : { author: { id: { _eq: authstore.user?.id } } }),
               },
-              fields: NOTE_FIELDS,
+              fields: authstore.isAuthenticated
+                ? NOTE_FIELDS
+                : ANON_NOTE_FIELDS,
               limit: 1,
             })
           )?.slice(0, 1)[0] ?? null;
@@ -210,7 +212,7 @@ export const useNotesStore = defineStore("notes", {
         if (this.notes === null && note !== null) this.notes = [note];
         return note;
       }
-      return this.notes?.find((n) => n.readable_id === rid) ?? null;
+      return this.notes?.find((n) => n.id === id) ?? null;
     },
     async updateNote(note: Note, updates: NoteUpdate) {
       const updatedNote = await this.notemodel.update({

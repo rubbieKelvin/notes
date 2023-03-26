@@ -17,7 +17,7 @@ const router = createRouter({
           },
         },
         {
-          path: "/notes/note-:identifier",
+          path: "/notes/:identifier",
           name: "Note",
           components: {
             default: () => import("@/views/notes.vue"),
@@ -33,7 +33,7 @@ const router = createRouter({
           },
         },
         {
-          path: "/shared/note-:identifier",
+          path: "/shared/:identifier",
           name: "SharedNote",
           components: {
             default: () => import("@/views/shared.vue"),
@@ -50,7 +50,7 @@ const router = createRouter({
           },
         },
         {
-          path: "/archived/note-:identifier",
+          path: "/archived/:identifier",
           name: "ArchivedNote",
           props: { default: { section: "ArchivedNote" } },
           components: {
@@ -77,27 +77,11 @@ const router = createRouter({
           },
         },
         {
-          path: "/starred/note-:identifier",
+          path: "/starred/:identifier",
           name: "StarredNote",
           props: { default: { section: "StarredNote" } },
           components: {
             default: () => import("@/views/old.notes.vue"),
-            extended: () => import("@/views/editor.vue"),
-          },
-        },
-        {
-          path: "/tags",
-          name: "Tags",
-          components: {
-            default: () => import("@/views/tags.vue"),
-            extended: () => import("@/views/editor.vue"),
-          },
-        },
-        {
-          path: "/tags/:id",
-          name: "Tag",
-          components: {
-            default: () => import("@/views/tag.vue"),
             extended: () => import("@/views/editor.vue"),
           },
         },
@@ -110,7 +94,7 @@ const router = createRouter({
       meta: { public: true },
     },
     {
-      path: "/public/:username/note-:identifier",
+      path: "/public/:username/:identifier",
       name: "PublicNote",
       component: () => import("@/views/public/user/note/index.vue"),
       meta: { public: true },

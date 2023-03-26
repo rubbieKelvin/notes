@@ -1,4 +1,4 @@
-import { Note, Tag } from "@/types/models";
+import { Note } from "@/types/models";
 import { useRouter } from "vue-router";
 
 export type Route = {
@@ -17,12 +17,14 @@ export type NotePages = {
 
 export const noteRoute = (
   note: Note,
-  name: keyof NotePages = "Note"
+  name: keyof NotePages = "Note",
+  params?: Record<string, string>
 ): Route => {
   return {
-    name: name === "PublicNote" ? "Note" : name,
+    name,
     params: {
-      identifier: note.readable_id,
+      identifier: note.id,
+      ...params,
     },
   };
 };
@@ -30,13 +32,4 @@ export const noteRoute = (
 export const goToLogin = () => {
   const router = useRouter();
   router.push("/");
-};
-
-export const tagRoute = (tag: Tag): Route => {
-  return {
-    name: "Tag",
-    params: {
-      id: tag.id,
-    },
-  };
 };

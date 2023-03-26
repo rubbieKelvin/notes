@@ -176,7 +176,6 @@ import { MaxRetriesReached } from "@/composables/uql";
 import { validatePassword, validateUsername } from "@/utils/validators";
 import { useRoute } from "vue-router";
 import useUtils from "@/composables/useUtils";
-import { useTagStore } from "@/stores/tag";
 
 export default defineComponent({
   components: {
@@ -190,7 +189,6 @@ export default defineComponent({
     const route = useRoute();
     const authstore = useAuthStore();
     const notestore = useNotesStore();
-    const tagstore = useTagStore();
 
     const authenticating = ref(true);
     const authenticationStatus = ref({
@@ -259,7 +257,6 @@ export default defineComponent({
       if (authstore.isAuthenticated) {
         console.log(`Logged in as ${authstore.user?.username}`);
         await notestore.fetchNotes();
-        await tagstore.loadTags()
       }
     };
 

@@ -11,33 +11,6 @@ export interface User {
   last_login: DateTime | null;
   first_name: string | null;
   last_name: string | null;
-  tags: Tag[];
-}
-
-export interface Tag {
-  id: UUID;
-  title: string;
-  description: string | null;
-  author: {
-    id: UUID;
-    username: string;
-  };
-  color: string | null;
-  date_created: DateTime;
-  note_attachments: {
-    note: Note;
-  }[];
-}
-
-export interface TagInsert {
-  title: string;
-  author: string;
-}
-
-export interface TagUpdate {
-  title: string;
-  description: string;
-  is_deleted: boolean;
 }
 
 export interface Note {
@@ -52,10 +25,6 @@ export interface Note {
   is_archived: boolean;
   is_public: boolean;
   is_trashed: boolean;
-  tag_attachments: {
-    id: UUID;
-    tag: Tag;
-  }[];
 }
 
 export interface NoteInsert {
