@@ -8,7 +8,6 @@ export const setupUserData = async () => {
   if (authstore.isAuthenticated) {
     console.log(`Logged in as ${authstore.user?.username}`);
     await notestore.fetchNotes();
-    // await tagstore.loadTags();
   }
 };
 
@@ -16,4 +15,5 @@ export const afterLogout = async () => {
   const notestore = useNotesStore();
   localStorage.clear();
   notestore.notes = [];
+  window.open("/", "_self");
 };

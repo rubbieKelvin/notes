@@ -2,6 +2,7 @@ import { User } from "@/types/models";
 import { defineStore } from "pinia";
 import useSharedUQL from "@/composables/uql";
 import { afterLogout } from "@/router/hooks";
+import { useRouter } from "vue-router";
 
 interface State {
   user: User | null;
@@ -98,6 +99,7 @@ export const useAuthStore = defineStore("auth", {
     },
     async logout() {
       if (!this.isAuthenticated) return;
+      const router = useRouter();
       const { call } = useSharedUQL();
       const headers = this.authHeader;
       const resp = await call({ functionName: "logout", meta: { headers } });
@@ -109,7 +111,6 @@ export const useAuthStore = defineStore("auth", {
 
       this.token = null;
       this.user = null;
-      localStorage.removeItem("auth-token");
       await afterLogout();
     },
   },

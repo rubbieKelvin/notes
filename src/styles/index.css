@@ -57,7 +57,7 @@ button {
   }
 
   .btn-primary:active {
-    @apply bg-themed-active-bg;
+    @apply bg-themed-accent-active-bg;
   }
 }
 

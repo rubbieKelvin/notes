@@ -12,7 +12,6 @@ Django = "^4.1.1"
 djangorestframework = "^3.14.0"
 typing-extensions = "^4.4.0"
 django-cors-headers = "^3.13.0"
-uql = {git = "https://github.com/rubbieKelvin/UntitledQL.git"}
 dj-database-url = "^1.2.0"
 psycopg2 = "^2.9.5"
 whitenoise = {extras = ["brotli"], version = "^6.3.0"}

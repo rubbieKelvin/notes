@@ -12,6 +12,7 @@ from uql.models.serializers import createSerializerClass
 from rest_framework.request import Request
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated
+from django.db.utils import IntegrityError
 
 
 @ApiFunction.decorator(
@@ -34,9 +35,13 @@ def signup(request: Request, args: dict):
         raise ValueError("password lenght should be >= 5")
 
     # user
-    user = User(username=username)
-    user.set_password(password)
-    user.save()
+    try:
+        user = User(username=username)
+        user.set_password(password)
+        user.save()
+    except IntegrityError as e:
+        e.args = (*e.args, 400)
+        raise e
 
     # token
     token: Token = Token.objects.create(user=user)
@@ -52,7 +57,10 @@ def login(request: Request, args: dict):
     username = args["username"]
     password = args["password"]
 
-    user: User = User.objects.get(username=username, is_active=True)
+    try:
+        user: User = User.objects.get(username=username, is_active=True)
+    except User.DoesNotExist as e:
+        raise User.DoesNotExist(f'User with usernmame="{username}" does not exist', 404)
 
     if not user.check_password(password):
         raise PermissionError("Invalid password", 400)
