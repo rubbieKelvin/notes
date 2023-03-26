@@ -9,13 +9,15 @@ interface State {
   token: string | null;
 }
 
+const TOKEN_STORAGE_KEY = "xoout";
+
 export const useAuthStore = defineStore("auth", {
   state: (): State => ({
     user: null,
     token: null,
   }),
   getters: {
-    isLazilyAuthenticated: () => localStorage.getItem("auth-token"),
+    isLazilyAuthenticated: () => localStorage.getItem(TOKEN_STORAGE_KEY),
     isAuthenticated: (state) => state.user !== null,
     authHeader: (state) =>
       state.token ? { Authorization: `Token ${state.token}` } : null,
@@ -25,7 +27,7 @@ export const useAuthStore = defineStore("auth", {
       onError: (retriesIn: number | null) => void,
       onRetry: () => void
     ) {
-      if (!this.token) this.token = localStorage.getItem("auth-token");
+      if (!this.token) this.token = localStorage.getItem(TOKEN_STORAGE_KEY);
       const headers = this.authHeader;
 
       if (!headers) return null;
@@ -72,7 +74,7 @@ export const useAuthStore = defineStore("auth", {
       this.user = data.user;
 
       // save token
-      localStorage.setItem("auth-token", this.token);
+      localStorage.setItem(TOKEN_STORAGE_KEY, this.token);
       return resp;
     },
     async signup(username: string, password: string) {
@@ -94,7 +96,7 @@ export const useAuthStore = defineStore("auth", {
       this.user = data.user;
 
       // save token
-      localStorage.setItem("auth-item", this.token);
+      localStorage.setItem(TOKEN_STORAGE_KEY, this.token);
       return resp;
     },
     async logout() {

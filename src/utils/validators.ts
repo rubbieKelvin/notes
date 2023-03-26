@@ -10,7 +10,7 @@ export const validateUsername = (username: string): ValidationResult => {
   return {
     valid,
     reason:
-      "Username should only contain alphbets, numbers and at most one userscore",
+      "Username should only contain alphabets, numbers and at most one userscore",
   };
 };
 
