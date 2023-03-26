@@ -8,7 +8,7 @@
           class="w-72 md:inline-block hidden px-4 pt-6"
         />
         <div
-          class="h-full max-h-full overflow-y-scroll flex max-w-[50rem] flex-col flex-grow md:border-l md:border-l-themed-stroke px-2 md:px-4 pt-6"
+          class="h-full max-h-full custom-scrollbar overflow-y-scroll flex max-w-[50rem] flex-col flex-grow md:border-l md:border-l-themed-stroke px-2 md:px-4 pt-6"
         >
           <div class="pb-4">
             <h1 class="text-2xl font-medium">{{ note.title }}</h1>
