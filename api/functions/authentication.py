@@ -1,3 +1,4 @@
+import re
 import typing
 
 from api.models.users import User
@@ -19,7 +20,13 @@ from django.db.utils import IntegrityError
     rule=dto.Dictionary(
         {
             "username": dto.String(
-                min_length=4, allow_whitespace=False, allow_special_characters=False
+                min_length=4,
+                allow_whitespace=False,
+                validators=[
+                    lambda username: bool(
+                        re.match(r"^[A-Za-z0-9]+(_[A-Za-z0-9]+)?$", username)
+                    )
+                ],
             ),
             "password": dto.String(min_length=6),
         }
