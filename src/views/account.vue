@@ -10,7 +10,7 @@
           <div class="flex flex-col flex-grow">
             <p class="text-themed-text-subtle text-xs">OPENNOTES</p>
             <h2 class="text-3xl">
-              {{ type == "signin" ? "Sign In" : "Sign Up" }}
+              {{ pagetype == "signin" ? "Sign In" : "Sign Up" }}
             </h2>
           </div>
           <div class="flex gap-2 justify-end">
@@ -51,25 +51,25 @@
             class=""
             icon="UserIcon"
             placeholder="Username"
-            v-model="form.username"
+            v-model="formUsername"
           />
 
           <text-input
-            :inputType="form.password_type"
+            :inputType="formPasswordType"
             label="Password"
             class=""
             icon="KeyIcon"
             placeholder="Password"
-            v-model="form.password"
+            v-model="formPassword"
             :button="{
               action: passwordShowAction,
-              icon: form.password_field_icon,
+              icon: formPasswordFieldIcon,
             }"
           />
         </div>
 
         <div>
-          <p v-if="type == 'signin'">
+          <p v-if="pagetype == 'signin'">
             Don't have an account?
             <router-link
               :to="{ name: 'SignUp' }"
@@ -126,7 +126,7 @@ import { promiseTimeout } from "@vueuse/core";
 
 export default defineComponent({
   props: {
-    type: { type: String as () => "signup" | "signin", default: "signin" },
+    pagetype: { type: String as () => "signup" | "signin", default: "signin" },
   },
   components: { TextInput, Icon, Loading },
   setup(props) {
@@ -138,28 +138,25 @@ export default defineComponent({
     const button_action_loading = ref(false);
 
     const alert: Ref<string | null> = ref(null);
-
-    const form = ref({
-      username: "",
-      password: "",
-      password_type: <"text" | "password" | undefined>"password",
-      password_field_icon: <IconName>"EyeSlashIcon",
-    });
+    const formUsername = ref("");
+    const formPassword = ref("");
+    const formPasswordType: Ref<"password" | "text"> = ref("password");
+    const formPasswordFieldIcon: Ref<IconName> = ref("EyeSlashIcon");
 
     const resetForm = () => {
-      form.value.username = "";
-      form.value.password = "";
-      form.value.password_type = "password";
-      form.value.password_field_icon = "EyeSlashIcon";
+      formUsername.value = "";
+      formPassword.value = "";
+      formPasswordType.value = "password";
+      formPasswordFieldIcon.value = "EyeSlashIcon";
     };
 
     const passwordShowAction = () => {
-      if (form.value.password_type === "password") {
-        form.value.password_type = "text";
-        form.value.password_field_icon = "EyeIcon";
+      if (formPasswordType.value === "password") {
+        formPasswordType.value = "text";
+        formPasswordFieldIcon.value = "EyeIcon";
       } else {
-        form.value.password_type = "password";
-        form.value.password_field_icon = "EyeSlashIcon";
+        formPasswordType.value = "password";
+        formPasswordFieldIcon.value = "EyeSlashIcon";
       }
     };
 
@@ -167,10 +164,10 @@ export default defineComponent({
       button_action_loading.value = true;
       try {
         let res;
-        const username = form.value.username.trim().toLowerCase();
-        const password = form.value.password;
+        const username = formUsername.value.trim().toLowerCase();
+        const password = formPassword.value;
 
-        if (props.type === "signup") {
+        if (props.pagetype === "signup") {
           const usernameValidation = validateUsername(username);
           if (!usernameValidation.valid) {
             alert.value = usernameValidation.reason ?? "Username error";
@@ -237,7 +234,10 @@ export default defineComponent({
     });
 
     return {
-      form,
+      formUsername,
+      formPassword,
+      formPasswordType,
+      formPasswordFieldIcon,
       alert,
       authenticate,
       passwordShowAction,

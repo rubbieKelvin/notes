@@ -295,7 +295,7 @@ export default defineComponent({
         editableNote.value.title = t;
       }
 
-      const note = await toaststore.promise<Note | null>({
+      const note = await toaststore.promise<Note | null>(Symbol(), {
         action: async () =>
           await notestore.updateNote(
             props.note,

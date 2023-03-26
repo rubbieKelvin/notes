@@ -102,14 +102,14 @@ const router = createRouter({
     {
       path: "/signin",
       component: () => import("@/views/account.vue"),
-      props: { type: "signin" },
+      props: { pagetype: "signin" },
       name: "SignIn",
       meta: { public: true },
     },
     {
       path: "/signup",
       name: "SignUp",
-      props: { type: "signup" },
+      props: { pagetype: "signup" },
       component: () => import("@/views/account.vue"),
       meta: { public: true },
     },

@@ -46,7 +46,7 @@ urlpatterns = [
                 # ...
                 features.hasFeature,
             ],
-            raiseExceptions=False,#DEBUG and DevelopmentMode.DEV,
+            raiseExceptions=DEBUG and DevelopmentMode.DEV,
             userRoleFactory=getUserRole,
         ).as_view(),
     ),  # uql
