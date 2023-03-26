@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 
-export default createRouter({
+const router = createRouter({
   history: createWebHistory(),
   routes: [
     {
@@ -91,11 +91,29 @@ export default createRouter({
       path: "/public",
       name: "PublicHome",
       component: () => import("@/views/public/index.vue"),
+      meta: { public: true },
     },
     {
       path: "/public/:username/:identifier",
       name: "PublicNote",
       component: () => import("@/views/public/user/note/index.vue"),
+      meta: { public: true },
+    },
+    {
+      path: "/signin",
+      component: () => import("@/views/account/index.vue"),
+      props: { type: "signin" },
+      name: "SignIn",
+      meta: { public: true },
+    },
+    {
+      path: "/signup",
+      name: "SignUp",
+      props: { type: "signup" },
+      component: () => import("@/views/account/index.vue"),
+      meta: { public: true },
     },
   ],
 });
+
+export default router;

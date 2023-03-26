@@ -5,19 +5,16 @@ type ValidationResult = {
 
 export const validateUsername = (username: string): ValidationResult => {
   // Regular expression to match valid username pattern
-  const usernameRegex = /^[a-zA-Z0-9._]{3,15}$/;
+  const usernameRegex = /^[A-Za-z0-9]+(_[A-Za-z0-9]+)?$/;
   const valid = usernameRegex.test(username);
   return {
     valid,
+    reason:
+      "Username should only contain alphabets, numbers and at most one userscore",
   };
 };
 
 export const validatePassword = (password: string): ValidationResult => {
-  const res: ValidationResult = {
-    valid: true,
-    reason: null,
-  };
-
   if (password.length < 6) {
     return {
       valid: false,
@@ -25,5 +22,8 @@ export const validatePassword = (password: string): ValidationResult => {
     };
   }
 
-  return res;
+  return {
+    valid: true,
+    reason: null,
+  };
 };

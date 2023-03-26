@@ -66,15 +66,29 @@ export const useToast = defineStore("toast", {
       this.toasts.push(toast);
       return toast;
     },
-    async promise<T = any>(options: {
-      action: () => Promise<T>;
-      title: { loading: string; error: string; success: string };
-      messages: { loading: string; error: string; success: string };
-    }): Promise<T> {
+    async promise<T = any>(
+      id: symbol,
+      options: {
+        action: () => Promise<T>;
+        onError?: (e: any) => any;
+        title:
+          | { loading: string; error: string; success: string }
+          | (() => { loading: string; error: string; success: string });
+        messages:
+          | { loading: string; error: string; success: string }
+          | (() => { loading: string; error: string; success: string });
+      }
+    ): Promise<T | undefined> {
       const toast: ToastData = {
-        id: Symbol(),
-        title: options.title.loading,
-        desciption: options.messages.loading,
+        id,
+        title:
+          typeof options.title === "function"
+            ? options.title().loading
+            : options.title.loading,
+        desciption:
+          typeof options.messages === "function"
+            ? options.messages().loading
+            : options.messages.loading,
         timeout: false,
       };
 
@@ -82,8 +96,14 @@ export const useToast = defineStore("toast", {
       try {
         const res = await options.action();
         this.updateToast(toast.id, {
-          title: options.title.success,
-          desciption: options.messages.success,
+          title:
+            typeof options.title === "function"
+              ? options.title().success
+              : options.title.success,
+          desciption:
+            typeof options.messages === "function"
+              ? options.messages().success
+              : options.messages.success,
           timeout: 5000,
           icon: "InformationCircleIcon",
         });
@@ -91,8 +111,14 @@ export const useToast = defineStore("toast", {
         return res;
       } catch (e) {
         this.updateToast(toast.id, {
-          title: options.title.error,
-          desciption: options.messages.error,
+          title:
+            typeof options.title === "function"
+              ? options.title().error
+              : options.title.error,
+          desciption:
+            typeof options.messages === "function"
+              ? options.messages().error
+              : options.messages.error,
           timeout: 5000,
           icon: "ExclamationTriangleIcon",
           colorClasses: {
@@ -100,7 +126,8 @@ export const useToast = defineStore("toast", {
             fg: "text-white",
           },
         });
-        throw e;
+        if (options.onError) options.onError(e);
+        else throw e;
       }
     },
   },

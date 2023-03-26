@@ -1,11 +1,15 @@
 import { User } from "@/types/models";
 import { defineStore } from "pinia";
 import useSharedUQL from "@/composables/uql";
+import { afterLogout } from "@/router/hooks";
+import { useRouter } from "vue-router";
 
 interface State {
   user: User | null;
   token: string | null;
 }
+
+const TOKEN_STORAGE_KEY = "xoout";
 
 export const useAuthStore = defineStore("auth", {
   state: (): State => ({
@@ -13,6 +17,7 @@ export const useAuthStore = defineStore("auth", {
     token: null,
   }),
   getters: {
+    isLazilyAuthenticated: () => localStorage.getItem(TOKEN_STORAGE_KEY),
     isAuthenticated: (state) => state.user !== null,
     authHeader: (state) =>
       state.token ? { Authorization: `Token ${state.token}` } : null,
@@ -22,7 +27,7 @@ export const useAuthStore = defineStore("auth", {
       onError: (retriesIn: number | null) => void,
       onRetry: () => void
     ) {
-      if (!this.token) this.token = localStorage.getItem("auth-token");
+      if (!this.token) this.token = localStorage.getItem(TOKEN_STORAGE_KEY);
       const headers = this.authHeader;
 
       if (!headers) return null;
@@ -34,8 +39,8 @@ export const useAuthStore = defineStore("auth", {
         meta: {
           headers,
           retry: {
-            max: 4,
-            retriesIn: 4000,
+            max: 2,
+            retriesIn: 2000,
             onError,
             onRetry,
           },
@@ -69,7 +74,7 @@ export const useAuthStore = defineStore("auth", {
       this.user = data.user;
 
       // save token
-      localStorage.setItem("auth-token", this.token);
+      localStorage.setItem(TOKEN_STORAGE_KEY, this.token);
       return resp;
     },
     async signup(username: string, password: string) {
@@ -91,11 +96,12 @@ export const useAuthStore = defineStore("auth", {
       this.user = data.user;
 
       // save token
-      localStorage.setItem("auth-item", this.token);
+      localStorage.setItem(TOKEN_STORAGE_KEY, this.token);
       return resp;
     },
     async logout() {
       if (!this.isAuthenticated) return;
+      const router = useRouter();
       const { call } = useSharedUQL();
       const headers = this.authHeader;
       const resp = await call({ functionName: "logout", meta: { headers } });
@@ -107,7 +113,7 @@ export const useAuthStore = defineStore("auth", {
 
       this.token = null;
       this.user = null;
-      localStorage.removeItem("auth-token");
+      await afterLogout();
     },
   },
 });

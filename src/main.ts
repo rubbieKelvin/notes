@@ -9,6 +9,7 @@ import "./styles/editor.scss";
 
 import router from "./router";
 import { createPinia } from "pinia";
+import { injectGaurds } from "./router/gaurds";
 
 const app = createApp(App);
 const pinia = createPinia();
@@ -16,6 +17,9 @@ const pinia = createPinia();
 app.config.unwrapInjectedRef = true;
 
 // plugins
-app.use(router);
 app.use(pinia);
+app.use(router);
+
+injectGaurds(router);
+
 app.mount("#app");

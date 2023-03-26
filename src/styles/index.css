@@ -47,6 +47,18 @@ button {
     @apply rounded-md hover:bg-themed-hover-bg border border-themed-stroke active:bg-themed-active-bg select-none;
     @apply focus:outline-black focus:outline-1;
   }
+
+  .btn-primary {
+    @apply bg-themed-accent-bg text-themed-accent-text;
+  }
+
+  .btn-primary:hover {
+    @apply text-themed-accent-hover-text bg-themed-accent-hover-bg;
+  }
+
+  .btn-primary:active {
+    @apply bg-themed-accent-active-bg;
+  }
 }
 
 @layer utilities {
