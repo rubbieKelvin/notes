@@ -7,7 +7,7 @@ OUTPUT_CSS_FILE = BASE_DIR / "src/styles/theme.css"
 TAILWIND_DATA_FILE = Path(__file__).resolve().parent / "tailwind.config.json"
 OUTPUT_TS_CONFIG_FILE = BASE_DIR / "tailwind.config.cjs"
 DATA_DIRECTORY = Path(__file__).resolve().parent / "themes"
-THEME_WRAPPER_SELECTOR = ".notes-app-theme"
+THEME_WRAPPER_SELECTOR = "body"
 
 
 def themeToCssString(file: Path) -> str:
@@ -19,7 +19,7 @@ def themeToCssString(file: Path) -> str:
         classname = (
             THEME_WRAPPER_SELECTOR
             if name == "main"
-            else f"{THEME_WRAPPER_SELECTOR}.{name}"
+            else f'{THEME_WRAPPER_SELECTOR}[theme="{name}"]'
         )
 
         properties: dict[str, typing.Any] = {}

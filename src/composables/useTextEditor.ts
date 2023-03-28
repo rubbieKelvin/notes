@@ -18,6 +18,8 @@ import { Superscript } from "@tiptap/extension-superscript";
 import { Underline } from "@tiptap/extension-underline";
 import { DropHandler } from "@/components/TextEditor/extensions/DropHandler";
 import { ImageExtension } from "@/components/TextEditor/extensions/ImageNode";
+import Commands from "@/components/TextEditor/extensions/Commands";
+import suggestion from "@/components/TextEditor/extensions/suggestions";
 
 export const extensions = [
   TaskList,
@@ -27,6 +29,7 @@ export const extensions = [
   Underline,
   DropHandler,
   ImageExtension,
+  Commands.configure({ suggestion }),
   Link.configure({
     autolink: true,
     linkOnPaste: true,
