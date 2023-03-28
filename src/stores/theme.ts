@@ -14,6 +14,7 @@ export type ThemeClass =
   | "dark-funky"
   | "jetbrains"
   | "black"
+  | "red"
   | "solarized-yellow";
 
 interface State {
@@ -41,6 +42,7 @@ export const useThemeStore = defineStore("themestore", {
       { className: "jetbrains", group: "Dark" },
       { className: "dark-funky", group: "Dark" },
       { className: "black", group: "Dark" },
+      { className: "red", group: "Dark" },
     ],
     current: "",
   }),

@@ -1,0 +1,24 @@
+{
+    "name": "red",
+    "theme": {
+      "colors": {
+        "themed-bg": "#b1000f",
+        "themed-bg-elevated": "#74000b",
+        "themed-text": "#f5f5f5",
+        "themed-text-tinted": "#f5f5f5",
+        "themed-text-subtle": "#9e9e9e",
+        "themed-stroke": "#f5f5f5",
+        "themed-stroke-light": "#f5f5f5",
+        "themed-hover-bg": "#cf020e",
+        "themed-active-bg": "#8b020d",
+        "themed-hover-text": "#f5f5f5",
+        "themed-hover-text-subtle": "#9e9e9e",
+        "themed-accent-bg": "#f5f5f5",
+        "themed-accent-text": "#b1000f",
+        "themed-accent-hover-bg": "#e6e6e6",
+        "themed-accent-active-bg": "#cccccc",
+        "themed-accent-hover-text": "#b1000f",
+        "themed-accent-hover-text-subtle": "#9e9e9e"
+      }
+    }
+}
