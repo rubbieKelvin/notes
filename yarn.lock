@@ -301,6 +301,11 @@
     "@tiptap/extension-strike" "^2.0.0-beta.220"
     "@tiptap/extension-text" "^2.0.0-beta.220"
 
+"@tiptap/suggestion@^2.0.0-beta.220":
+  version "2.0.0-beta.220"
+  resolved "https://registry.yarnpkg.com/@tiptap/suggestion/-/suggestion-2.0.0-beta.220.tgz#2dc05f65e89006ffaad9f2b6a3468311a305e5ee"
+  integrity sha512-lYb2HOAKJLjEBbTx5VXA32wRryQiMwaKkNfr3v6UhlwoNgD6NkCYID08UJbpMV7iM+iFQp9408D/vVWFwvOuKg==
+
 "@tiptap/vue-3@^2.0.0-beta.199":
   version "2.0.0-beta.220"
   resolved "https://registry.yarnpkg.com/@tiptap/vue-3/-/vue-3-2.0.0-beta.220.tgz#69f772f6b58734dc3dec09ac3793fa3a895336b9"
