@@ -15,7 +15,24 @@
           />
 
           <p class="text-themed-text-tinted text-sm flex gap-2 items-center">
-            <span>
+            <span
+              v-if="showDateCreated"
+              @click="showDateCreated = false"
+              :title="`${note.date_created} - Click to see last updated`"
+            >
+              Created
+              <UseTimeAgo
+                v-slot="{ timeAgo }"
+                :time="new Date(note.date_created)"
+              >
+                {{ timeAgo }}
+              </UseTimeAgo>
+            </span>
+            <span
+              v-else
+              @click="showDateCreated = true"
+              :title="`${note.last_updated} - Click to see date created`"
+            >
               Last updated
               <UseTimeAgo
                 v-slot="{ timeAgo }"
@@ -177,6 +194,7 @@ export default defineComponent({
     const authstore = useAuthStore();
     const features = useFeatures();
     const toaststore = useToast();
+    const showDateCreated = ref(true);
 
     const modals = ref({
       movetofolder: false,
@@ -389,6 +407,7 @@ export default defineComponent({
     }
 
     return {
+      showDateCreated,
       features,
       FEATURES,
       saveStatus,
