@@ -7,7 +7,7 @@ export type RouteName =
   | "Archive"
   | "Trash"
   | "Starred"
-  | "Public";
+  | "PublicHome";
 
 export type MenuItem = {
   id: string | number | symbol;
@@ -21,6 +21,8 @@ export type MenuItem = {
   disabled?: boolean;
   hidden?: boolean | (() => boolean);
   link?: string | { name: RouteName; params?: Record<string, string> };
+  isExternal?: boolean;
+  hideOnMobile?: boolean;
   colorClasses?: {
     bg?: string;
     fg?: string;

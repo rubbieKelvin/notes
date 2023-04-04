@@ -9,8 +9,7 @@
     <div class="flex-grow hidden md:flex flex-col justify-end">
       <button
         class="flex items-center p-2 gap-2 text-themed-text w-min lg:w-auto hover:bg-themed-hover-bg hover:text-themed-hover-text rounded-md"
-        @click="modalstore.modalstates.themeSelectionOpen = true"
-      >
+        @click="modalstore.modalstates.themeSelectionOpen = true">
         <MoonIcon class="w-5 h-5" />
         <span class="hidden lg:inline capitalize">
           {{ (themestore.current || "light").replaceAll("-", " ") }}
@@ -28,6 +27,7 @@ import { MoonIcon } from "@heroicons/vue/24/outline";
 import { computed, defineComponent, onMounted } from "vue";
 import NavItem from "./NavItem.vue";
 import { useModalStore } from "@/stores/modals";
+import { mdiGithub } from '@mdi/js'
 
 export default defineComponent({
   components: { NavItem, MoonIcon },
@@ -35,6 +35,8 @@ export default defineComponent({
     const themestore = useThemeStore();
     const featurestore = useFeatures();
     const modalstore = useModalStore();
+    const REPO_LINK = import.meta.env.VITE_GH_REPO_LINK;
+
 
     const navItems = computed((): MenuItem[] => [
       {
@@ -66,8 +68,17 @@ export default defineComponent({
         id: Symbol(),
         icon: "GlobeEuropeAfricaIcon",
         title: "public",
-        link: { name: "Public" },
-        hidden: true,
+        link: { name: "PublicHome" },
+        isExternal: true,
+        hideOnMobile: true
+      },
+      {
+        id: Symbol(),
+        mdiIconPath: mdiGithub,
+        title: "github",
+        link: REPO_LINK,
+        isExternal: true,
+        hideOnMobile: true
       },
       {
         id: Symbol(),

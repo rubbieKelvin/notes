@@ -14,7 +14,7 @@
             @blur="() => updateNote(['title'])"
           />
 
-          <p class="text-themed-text-tinted text-sm flex gap-2 items-center">
+          <p class="text-themed-text-tinted text-sm flex gap-2 items-center select-none">
             <span
               v-if="showDateCreated"
               @click="showDateCreated = false"
