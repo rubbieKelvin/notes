@@ -20,9 +20,7 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 if DevelopmentMode.DEV:
-    for port in range(5170, 5178):
-        CORS_ALLOWED_ORIGINS.append(f"http://127.0.0.1:${port}")
-        CORS_ALLOWED_ORIGINS.append(f"http://localhost:${port}")
+    CORS_ALLOW_ALL_ORIGINS = True
 
 MEDIA_URL = "/media/"  # or any prefix you choose
 DEFAULT_FILE_STORAGE = (
