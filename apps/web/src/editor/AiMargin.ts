@@ -1,5 +1,6 @@
 import { Mark, mergeAttributes, type Editor } from '@tiptap/core'
 import { reactive } from 'vue'
+import { api } from '../api'
 
 export type Whisper = { id: string; note: string; agent: string; from: number; to: number; text: string }
 
@@ -69,13 +70,9 @@ export async function fetchNote(editor: Editor, id: string) {
   pending.add(id)
   failed.delete(id)
   try {
-    const res = await fetch('/v1/whisper', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ text: w.text, context: editor.state.doc.resolve(w.from).parent.textContent }),
+    const { note, agent_id } = await api<{ note: string; agent_id: string }>('/v1/whisper', {
+      body: { text: w.text, context: editor.state.doc.resolve(w.from).parent.textContent },
     })
-    if (!res.ok) throw new Error((await res.text()) || `HTTP ${res.status}`)
-    const { note, agent_id } = await res.json()
     setWhisper(editor, id, { note, agent: agent_id }, false)
   } catch (e) {
     failed.set(id, e instanceof Error ? e.message : String(e))

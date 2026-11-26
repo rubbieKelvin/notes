@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import type { Editor, JSONContent } from '@tiptap/vue-3'
 import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { api } from './api'
 
-type Item = { id: number; agent_id: string; title: string | null; content_md: string; source_uri: string | null; created_at: number }
+type Item = { id: string; agent_id: string; title: string | null; content_md: string; source_uri: string | null; created_at: string }
 const props = defineProps<{ editor: Editor }>()
 const items = ref<Item[]>([])
 const open = ref(false)
@@ -10,11 +11,10 @@ const root = ref<HTMLElement>()
 
 async function load() {
   try {
-    const res = await fetch('/v1/inbox')
-    if (res.ok) items.value = await res.json()
-  } catch { /* server offline: keep the last list */ }
+    items.value = await api<Item[]>('/v1/inbox')
+  } catch { /* offline: keep the last list */ }
 }
-// shortcut: polling; switch to the yrs WebSocket push in Phase 3.
+// shortcut: polls every 15s; push over the sync socket if inbox latency matters.
 const timer = setInterval(load, 15_000)
 const outside = (e: PointerEvent) => { if (!root.value?.contains(e.target as Node)) open.value = false }
 onMounted(() => { load(); window.addEventListener('pointerdown', outside) })
@@ -30,15 +30,15 @@ function block(item: Item, provenance: 'ai_agent' | 'human_edited'): JSONContent
   }
 }
 
-async function remove(item: Item) {
+async function remove(item: Item, action: 'absorb' | 'archive') {
   items.value = items.value.filter((i) => i.id !== item.id)
-  await fetch(`/v1/inbox/${item.id}`, { method: 'DELETE' }).catch(() => {})
+  await api(`/v1/inbox/${item.id}/${action}`, { method: 'POST' }).catch(load)
 }
 
 function absorb(item: Item, provenance: 'ai_agent' | 'human_edited') {
   props.editor.chain().focus().insertContent(block(item, provenance)).run()
   open.value = false
-  remove(item)
+  remove(item, 'absorb')
 }
 
 // Dragging hands ProseMirror ready-made ai-source HTML; built via DOM so agent text stays inert.
@@ -50,7 +50,7 @@ function dragStart(e: DragEvent, item: Item) {
   e.dataTransfer?.setData('text/html', div.outerHTML)
   e.dataTransfer?.setData('text/plain', item.content_md)
 }
-const dragEnd = (e: DragEvent, item: Item) => e.dataTransfer?.dropEffect !== 'none' && remove(item)
+const dragEnd = (e: DragEvent, item: Item) => e.dataTransfer?.dropEffect !== 'none' && remove(item, 'absorb')
 </script>
 
 <template>
@@ -76,7 +76,7 @@ const dragEnd = (e: DragEvent, item: Item) => e.dataTransfer?.dropEffect !== 'no
         <div class="mt-1.5 flex gap-3 text-xs text-stone-500">
           <button class="hover:text-stone-900" title="Insert into the page and make it yours to rewrite" @click="absorb(item, 'human_edited')">Rewrite-to-Own</button>
           <button class="hover:text-stone-900" @click="absorb(item, 'ai_agent')">Insert</button>
-          <button class="hover:text-stone-900" @click="remove(item)">Dismiss</button>
+          <button class="hover:text-stone-900" @click="remove(item, 'archive')">Dismiss</button>
         </div>
       </article>
     </div>

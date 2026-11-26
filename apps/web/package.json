@@ -12,6 +12,7 @@
     "@tiptap/core": "3.35.0",
     "@tiptap/extension-bubble-menu": "^3.35.0",
     "@tiptap/extension-code-block-lowlight": "^3.35.0",
+    "@tiptap/extension-collaboration": "3.35.0",
     "@tiptap/extension-list": "^3.35.0",
     "@tiptap/extension-mathematics": "^3.35.0",
     "@tiptap/extensions": "^3.35.0",
@@ -19,13 +20,17 @@
     "@tiptap/starter-kit": "^3.35.0",
     "@tiptap/suggestion": "^3.35.0",
     "@tiptap/vue-3": "^3.35.0",
+    "@tiptap/y-tiptap": "^3.3.1",
     "highlight.js": "^11.12.0",
     "katex": "^0.18.10",
     "lowlight": "^3.3.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "tldraw": "^5.6.2",
-    "vue": "^3.5.44"
+    "vue": "^3.5.44",
+    "y-protocols": "^1.0.7",
+    "y-websocket": "^3.1.0",
+    "yjs": "^13.6.33"
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.20",
