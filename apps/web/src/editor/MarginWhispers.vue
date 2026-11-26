@@ -39,24 +39,24 @@ const toggle = (id: string) => (open.has(id) ? open.delete(id) : open.add(id))
   <!-- shortcut: margin only exists on wide screens (xl+); narrow layouts need an inline/sheet fallback -->
   <div class="pointer-events-none absolute inset-y-0 left-full hidden w-64 xl:block" aria-label="AI margin notes">
     <template v-for="w in placed" :key="w.id">
-      <div class="absolute -left-6 w-6 border-t border-stone-300" :style="{ top: `${w.lineY}px` }" />
+      <div class="absolute -left-6 w-6 border-t border-dashed border-ai-300" :style="{ top: `${w.lineY}px` }" />
       <aside
-        class="pointer-events-auto absolute left-0 w-60 rounded-md border border-stone-200 bg-white/95 px-2.5 py-1.5 text-xs leading-snug text-stone-600 shadow-sm"
+        class="pointer-events-auto absolute left-0 w-60 rounded-md border bg-background px-3 py-2 text-xs leading-snug text-muted-foreground"
         :style="{ top: `${w.top}px` }"
       >
-        <div class="mb-0.5 flex items-center gap-1.5 text-[10px] uppercase tracking-wide text-stone-400">
-          <span class="rounded bg-stone-100 px-1 font-medium">AI</span>
-          <span class="truncate normal-case">on “{{ w.text }}”</span>
+        <div class="mb-1 flex items-center gap-1.5 text-[10px] text-stone-400">
+          <span class="rounded-full bg-ai-50 px-1.5 py-px font-semibold tracking-wide text-ai-700">AI</span>
+          <span class="truncate">on “{{ w.text }}”</span>
         </div>
-        <p v-if="pending.has(w.id)" class="animate-pulse text-stone-400">Thinking…</p>
+        <p v-if="pending.has(w.id)" class="flex items-center gap-1.5 text-stone-400"><span class="size-1.5 animate-pulse rounded-full bg-ai-500" />Thinking…</p>
         <p v-else-if="failed.has(w.id) || !w.note" class="text-amber-700">
           {{ failed.get(w.id) ?? 'No note yet.' }}
-          <button class="ml-1 underline" @click="fetchNote(editor, w.id)">Retry</button>
+          <button class="ml-1 font-medium underline" @click="fetchNote(editor, w.id)">Retry</button>
         </p>
-        <p v-else class="cursor-pointer" :class="open.has(w.id) ? '' : 'line-clamp-2'" :title="open.has(w.id) ? '' : 'Expand'" @click="toggle(w.id)">{{ w.note }}</p>
-        <div class="mt-1 flex gap-2 text-[11px] text-stone-400">
-          <button v-if="w.note" class="hover:text-stone-800" @click="promoteWhisper(editor, w.id)">Insert below</button>
-          <button class="hover:text-stone-800" title="Dismiss (Esc inside the word)" @click="setWhisper(editor, w.id, null)">Dismiss</button>
+        <p v-else class="cursor-pointer text-stone-700" :class="open.has(w.id) ? '' : 'line-clamp-2'" :title="open.has(w.id) ? '' : 'Expand'" @click="toggle(w.id)">{{ w.note }}</p>
+        <div class="mt-1.5 flex gap-3 text-[11px] font-medium text-stone-400">
+          <button v-if="w.note" class="hover:text-stone-900" @click="promoteWhisper(editor, w.id)">Insert below</button>
+          <button class="hover:text-stone-900" title="Dismiss (Esc inside the word)" @click="setWhisper(editor, w.id, null)">Dismiss</button>
         </div>
       </aside>
     </template>

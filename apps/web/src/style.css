@@ -1,7 +1,85 @@
 @import "tailwindcss";
+@import "tw-animate-css";
 @plugin "@tailwindcss/typography";
 
-html, body { @apply bg-white text-stone-800 antialiased; }
+@custom-variant dark (&:is(.dark *));
+
+/* shadcn-vue tokens on Colabra's palette: warm brown-tinted neutrals, purple marks AI. */
+:root {
+  --radius: 0.5rem;
+  --background: #ffffff;
+  --foreground: #210700;
+  --card: #ffffff;
+  --card-foreground: #210700;
+  --popover: #ffffff;
+  --popover-foreground: #210700;
+  --primary: #210700;
+  --primary-foreground: #ffffff;
+  --secondary: #f4f3f3;
+  --secondary-foreground: #210700;
+  --muted: #f4f3f3;
+  --muted-foreground: #7a6a66;
+  --accent: #f4f3f3;
+  --accent-foreground: #210700;
+  --destructive: #be0000;
+  --border: #e9e6e6;
+  --input: #e9e6e6;
+  --ring: #e5adef;
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+}
+
+@theme {
+  /* Flat UI: no shadow utilities exist, so neither our code nor shadcn components can add one. */
+  --shadow-*: initial;
+  --drop-shadow-*: initial;
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --color-stone-50: #f8f7f7;
+  --color-stone-100: #f4f3f3;
+  --color-stone-200: #e9e6e6;
+  --color-stone-300: #d3cdcc;
+  --color-stone-400: #a69c99;
+  --color-stone-500: #7a6a66;
+  --color-stone-600: #64514d;
+  --color-stone-700: #4d3933;
+  --color-stone-800: #37201a;
+  --color-stone-900: #210700;
+  --color-stone-950: #090301;
+  --color-ai-50: #fdefff;
+  --color-ai-100: #f5dff9;
+  --color-ai-300: #e5adef;
+  --color-ai-500: #9c27b0;
+  --color-ai-700: #7b1fa2;
+}
+
+@layer base {
+  * { @apply border-border outline-ring/50; }
+  html, body { @apply bg-background font-sans text-foreground antialiased; }
+}
+::selection { @apply bg-ai-100; }
 
 .ProseMirror { @apply outline-none min-h-[60vh] pb-[40vh]; }
 .ProseMirror p.is-editor-empty:first-child::before {
@@ -12,18 +90,18 @@ html, body { @apply bg-white text-stone-800 antialiased; }
 .ProseMirror ul[data-type="taskList"] li { @apply flex gap-2 items-start; }
 .ProseMirror ul[data-type="taskList"] li > label { @apply mt-1; }
 .ProseMirror ul[data-type="taskList"] li > div { @apply flex-1; }
-.ProseMirror pre { @apply bg-stone-50 text-stone-800 border border-stone-200; }
+.ProseMirror pre { @apply rounded-lg bg-stone-50 text-stone-800 border border-stone-200; }
 .ProseMirror [data-type="inline-math"], .ProseMirror [data-type="block-math"] { @apply cursor-pointer; }
 
-.ai-margin { @apply decoration-stone-400 underline decoration-dotted underline-offset-4; }
-.ProseMirror div[data-type="ai-source"] { @apply my-4 border-l-2 border-stone-300 pl-4 text-stone-600; }
+.ai-margin { @apply rounded-sm bg-ai-50 decoration-ai-300 underline decoration-dotted underline-offset-4; }
+.ProseMirror div[data-type="ai-source"] { @apply my-4 border-l-2 border-ai-300 pl-4 text-stone-600; }
 .ProseMirror div[data-type="ai-source"]::before {
   content: "AI-Source · " attr(data-agent);
-  @apply block text-[11px] uppercase tracking-wide text-stone-400;
+  @apply block text-[11px] font-medium uppercase tracking-wide text-ai-500;
 }
 .ProseMirror div[data-type="ai-source"][data-provenance="human_edited"]::before { content: "Rewritten from " attr(data-agent); }
 
-.ProseMirror div[data-type="callout"] { @apply my-4 rounded-md border-l-4 px-4 py-1; }
+.ProseMirror div[data-type="callout"] { @apply my-4 rounded-none border-l-4 px-4 py-1; }
 .ProseMirror div[data-type="callout"]::before { @apply mt-2 block text-[11px] font-medium uppercase tracking-wide; }
 .ProseMirror div[data-type="callout"][data-kind="hypothesis"] { @apply border-sky-400 bg-sky-50/60; }
 .ProseMirror div[data-type="callout"][data-kind="hypothesis"]::before { content: "Hypothesis"; @apply text-sky-700; }

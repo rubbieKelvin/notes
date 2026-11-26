@@ -3,14 +3,29 @@ import { onMounted, ref } from 'vue'
 import { api, ApiError, errorText, type DocInfo, type Me } from './api'
 import AuthView from './AuthView.vue'
 import DocPage from './DocPage.vue'
+import FeedbackHost from './ui/FeedbackHost.vue'
 
 const state = ref<'loading' | 'signed-out' | 'ready' | 'error'>('loading')
 const me = ref<Me>()
 const docs = ref<DocInfo[]>([])
 const doc = ref<DocInfo>()
 const error = ref('')
+const linkError = ref('')
+
+/** An emailed sign-in link lands as /#signin=<token>: trade it for a session cookie. */
+async function consumeSignInLink() {
+  const token = new URLSearchParams(location.hash.slice(1)).get('signin')
+  if (!token) return
+  history.replaceState(null, '', location.pathname) // drop the token from the address bar and history
+  try {
+    await api('/v1/auth/verify', { body: { token } })
+  } catch (e) {
+    linkError.value = errorText(e)
+  }
+}
 
 async function boot() {
+  await consumeSignInLink()
   try {
     me.value = await api<Me>('/v1/me')
   } catch (e) {
@@ -31,11 +46,14 @@ async function boot() {
 }
 
 window.addEventListener('opennotes:signed-out', () => (state.value = 'signed-out'))
+// Pasting the link into a tab already on the sign-in screen only changes the hash, so nothing reloads.
+window.addEventListener('hashchange', () => location.hash.includes('signin=') && boot())
 onMounted(boot)
 </script>
 
 <template>
-  <AuthView v-if="state === 'signed-out'" />
+  <AuthView v-if="state === 'signed-out'" :link-error="linkError" />
   <DocPage v-else-if="state === 'ready' && me && doc" :key="doc.id" :me="me" :doc="doc" :docs="docs" />
   <p v-else-if="state === 'error'" role="alert" class="p-8 text-sm text-red-700">Couldn't reach the server: {{ error }}</p>
+  <FeedbackHost />
 </template>

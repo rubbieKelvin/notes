@@ -1,17 +1,42 @@
 import { test as base, expect, type APIRequestContext, type BrowserContext, type Page } from '@playwright/test'
+import { readFileSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 
 export { expect }
 export type { Page }
 export const MOCK = `http://127.0.0.1:${process.env.MOCK_AI_PORT ?? 19999}`
 export const GOOD_KEY = 'sk-good-key-123456'
-export const PASSWORD = 'correct horse battery'
 
 export const uniqueEmail = (tag = 'u') => `${tag}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@example.com`
 
+/** Asks for a sign-in email and returns the link it would contain (support/server.mjs captures it). */
+export async function requestLink(request: APIRequestContext, email: string) {
+  const file = join(tmpdir(), 'opennotes-e2e-mail', email)
+  rmSync(file, { force: true })
+  const res = await request.post('/v1/auth/link', { data: { email } })
+  expect(res.status(), await res.text()).toBe(204)
+  let link = ''
+  await expect.poll(() => (link = (() => { try { return readFileSync(file, 'utf8') } catch { return '' } })())).not.toBe('')
+  return link
+}
+
+export const linkToken = (link: string) => new URLSearchParams(new URL(link).hash.slice(1)).get('signin')!
+
+/** Signs `context` in through a magic link, creating the account on first use. */
 export async function signUp(context: BrowserContext, email = uniqueEmail()) {
-  const res = await context.request.post('/v1/auth/signup', { data: { email, password: PASSWORD } })
+  const token = linkToken(await requestLink(context.request, email))
+  const res = await context.request.post('/v1/auth/verify', { data: { token } })
   expect(res.status(), await res.text()).toBe(200)
   return email
+}
+
+/** Fills and confirms the in-app prompt dialog (LaTeX, clip links, …). */
+export async function answerPrompt(page: Page, text: string) {
+  const dialog = page.getByRole('dialog').filter({ has: page.getByRole('textbox') })
+  await dialog.getByRole('textbox').fill(text)
+  await dialog.locator('button[type=submit]').click()
+  await expect(dialog).toBeHidden()
 }
 
 /** Point the signed-in user at the mock provider (OpenAI-compatible "custom" or Anthropic). */

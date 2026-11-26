@@ -49,7 +49,7 @@ test('agents read exposed pages (with margin notes) and push to the inbox', asyn
   expect(await mcp.call('list_documents')).toContain('No documents are exposed')
 
   await page.getByRole('button', { name: /^MCP/ }).click()
-  await page.getByRole('checkbox').check()
+  await page.getByText('Let my agents read this page').click()
   await expect(page.getByRole('button', { name: 'MCP: Live' })).toBeVisible()
   const slug = (await (await page.request.get('/v1/docs')).json()).find((d: { id: string }) => d.id === docId).mcp_exposed_slug
   await page.waitForTimeout(2500) // text cache is written with the next persist

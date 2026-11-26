@@ -15,8 +15,9 @@ test('without a provider, the margin note points to Settings', async ({ page, us
 test('set up a custom OpenAI-compatible provider in Settings, then get margin notes', async ({ page, user: _ }) => {
   await openEditor(page)
   await page.getByRole('button', { name: 'Menu' }).click()
-  await page.getByRole('button', { name: 'Settings' }).click()
-  await page.getByLabel('Provider').selectOption('custom')
+  await page.getByRole('menuitem', { name: 'Settings' }).click()
+  await page.getByRole('combobox', { name: 'Provider' }).click()
+  await page.getByRole('option', { name: /^Custom/ }).click()
   await page.getByLabel('Base URL').fill(`${MOCK}/v1`)
   await page.getByLabel('API key').fill('sk-wrong-key-000000')
   await page.getByRole('button', { name: 'Load models' }).click()
@@ -50,7 +51,7 @@ test('Anthropic provider uses the Messages API with low effort and fallbacks', a
   await openEditor(page)
   await typeInEditor(page, SENTENCE)
   await selectText(page, 'breadth')
-  await page.getByRole('button', { name: '+ AI' }).click()
+  await page.getByRole('button', { name: 'Ask AI' }).click()
   await expect(page.getByRole('complementary')).toContainText('V = s³')
   const call = (await mockRequests()).filter((r) => r.path === '/v1/messages').at(-1)!
   expect(call.body).toMatchObject({ model: 'claude-opus-5-5', output_config: { effort: 'low' }, fallbacks: 'default' })

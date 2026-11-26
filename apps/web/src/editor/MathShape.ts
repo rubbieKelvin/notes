@@ -1,6 +1,7 @@
 import katex from 'katex'
 import { createElement } from 'react'
 import { BaseBoxShapeUtil, HTMLContainer, T, type TLShape } from 'tldraw'
+import { askLatex } from '../ui/feedback'
 
 declare module 'tldraw' {
   interface TLGlobalShapePropsMap {
@@ -20,9 +21,9 @@ export class MathShapeUtil extends BaseBoxShapeUtil<MathShape> {
   }
 
   onDoubleClick(shape: MathShape) {
-    const latex = window.prompt('LaTeX', shape.props.latex)
-    if (latex === null || latex === shape.props.latex) return
-    return { id: shape.id, type: 'math' as const, props: { latex } }
+    askLatex(shape.props.latex).then((latex) => {
+      if (latex && latex !== shape.props.latex) this.editor.updateShape({ id: shape.id, type: 'math', props: { latex } })
+    })
   }
 
   component(shape: MathShape) {

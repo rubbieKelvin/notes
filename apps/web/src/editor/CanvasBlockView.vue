@@ -5,13 +5,15 @@ import { createRoot, type Root } from 'react-dom/client'
 import { Box, Tldraw, createShapeId, getSnapshot, loadSnapshot, toRichText, type Editor as TLEditor } from 'tldraw'
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { api, errorText } from '../api'
+import { Maximize2, Minimize2, Sigma, Sparkles, Trash2 } from '@lucide/vue'
+import { Button } from '@/components/ui/button'
+import { askLatex, confirmDialog } from '../ui/feedback'
 import { shapeUtils } from './MathShape'
 
 const props = defineProps(nodeViewProps)
 const host = ref<HTMLDivElement>()
 const expanded = ref(false)
 const pure = ref(false)
-const tool = 'rounded-md border border-stone-200 bg-white/90 px-2 py-1 text-stone-500 hover:text-stone-900 disabled:opacity-40 disabled:hover:text-stone-500'
 const vtName = 'canvas-' + crypto.randomUUID().slice(0, 8)
 const initial = props.node.attrs.snapshot ?? undefined
 const hasSelection = ref(false)
@@ -53,10 +55,10 @@ function onMount(editor: TLEditor) {
   stopSelection = editor.store.listen(() => (hasSelection.value = editor.getSelectedShapeIds().length > 0), { scope: 'session' })
 }
 
-function insertMath() {
+async function insertMath() {
   if (!tl) return
-  const latex = window.prompt('LaTeX', '\\nabla \\cdot \\mathbf{E} = \\frac{\\rho}{\\varepsilon_0}')
-  if (!latex) return
+  const latex = await askLatex()
+  if (!latex || !tl) return
   const c = tl.getViewportPageBounds().center
   tl.createShape({ type: 'math', x: c.x - 130, y: c.y - 45, props: { latex } })
 }
@@ -83,6 +85,12 @@ async function annotate() {
   } finally {
     annotating.value = false
   }
+}
+
+async function remove() {
+  if (!(await confirmDialog({ title: 'Delete this canvas?', body: 'Its drawing goes with it. Undo (⌘Z) brings it back.', confirmLabel: 'Delete canvas', danger: true }))) return
+  if (expanded.value) setExpanded(false)
+  props.deleteNode()
 }
 
 const render = () => root?.render(createElement(Tldraw, { snapshot: initial, shapeUtils, autoFocus: false, hideUi: pure.value, onMount }))
@@ -112,7 +120,7 @@ function goToBookmark(n: number) {
 }
 
 function onKey(e: KeyboardEvent) {
-  if (!tl?.getIsFocused()) return
+  if (!tl?.getIsFocused() || (e.target as Element).closest?.('dialog')) return // typing in a prompt isn't a canvas shortcut
   const mod = e.metaKey || e.ctrlKey
   const idle = !tl.getEditingShapeId()
   let handled = true
@@ -145,24 +153,27 @@ onBeforeUnmount(() => {
   <NodeViewWrapper
     contenteditable="false"
     class="not-prose"
-    :class="expanded ? 'fixed inset-0 z-50 bg-white' : 'relative my-6'"
+    :class="expanded ? 'fixed inset-0 z-50 bg-background' : 'relative my-6'"
     :style="{ viewTransitionName: vtName }"
   >
     <!-- clicks inside a contenteditable host would otherwise leave focus on ProseMirror -->
-    <div ref="host" class="w-full" @pointerdown="tl?.getIsFocused() || tl?.focus()" :class="expanded ? 'h-full' : 'h-96 overflow-hidden rounded-lg border border-stone-200'" />
+    <div ref="host" class="w-full" @pointerdown="tl?.getIsFocused() || tl?.focus()" :class="expanded ? 'h-full' : 'h-96 overflow-hidden rounded-md border'" />
     <div
       v-if="!pure"
-      class="absolute z-[1000] flex gap-1 text-xs"
-      :class="expanded ? 'left-1/2 top-3 -translate-x-1/2' : '-right-28 top-0 w-24 flex-col items-start'"
+      class="absolute z-[1000] flex gap-1"
+      :class="expanded ? 'left-1/2 top-3 -translate-x-1/2' : '-right-32 top-0 w-28 flex-col items-stretch'"
     >
-      <button :class="tool" :title="expanded ? 'Collapse (Esc)' : 'Expand (⌘⇧E)'" @click="setExpanded(!expanded)">{{ expanded ? '⤡ Collapse' : '⤢ Expand' }}</button>
-      <button :class="tool" title="Add a LaTeX equation" @click="insertMath">∑ Math</button>
-      <button
-        :class="tool" :disabled="!hasSelection || annotating"
+      <Button variant="outline" size="xs" class="justify-start bg-background" :title="expanded ? 'Collapse (Esc)' : 'Expand (⌘⇧E)'" @click="setExpanded(!expanded)">
+        <Minimize2 v-if="expanded" /><Maximize2 v-else />{{ expanded ? 'Collapse' : 'Expand' }}
+      </Button>
+      <Button variant="outline" size="xs" class="justify-start bg-background" title="Add a LaTeX equation" @click="insertMath"><Sigma />Math</Button>
+      <Button
+        variant="outline" size="xs" class="justify-start bg-background text-ai-500 hover:text-ai-700" :disabled="!hasSelection || annotating"
         :title="hasSelection ? 'Ask AI to annotate the selected drawing' : 'Select or lasso part of the drawing first'"
         @click="annotate"
-      >{{ annotating ? 'Annotating…' : 'AI Annotate' }}</button>
-      <p v-if="annotateError" role="alert" class="max-w-56 rounded bg-white/90 px-1 text-amber-700">{{ annotateError }}</p>
+      ><Sparkles />{{ annotating ? 'Annotating…' : 'AI Annotate' }}</Button>
+      <Button variant="outline" size="xs" class="justify-start bg-background hover:bg-destructive/10 hover:text-destructive" title="Delete this canvas" @click="remove"><Trash2 />Delete</Button>
+      <p v-if="annotateError" role="alert" class="max-w-56 rounded-md border bg-background px-2 py-1 text-xs text-amber-700">{{ annotateError }}</p>
     </div>
   </NodeViewWrapper>
 </template>

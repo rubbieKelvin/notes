@@ -1,4 +1,4 @@
-import { expect, mockRequests, openEditor, slash, test, typeInEditor, useMockProvider, type Page } from '../support/fixtures'
+import { answerPrompt, expect, mockRequests, openEditor, slash, test, typeInEditor, useMockProvider, type Page } from '../support/fixtures'
 
 async function addCanvas(page: Page) {
   await typeInEditor(page, 'Intro')
@@ -31,27 +31,27 @@ test('draw, expand, collapse, and keep the drawing after reload', async ({ page,
 })
 
 test('LaTeX math shapes render and sync live between tabs', async ({ page, context, user: _ }) => {
-  page.on('dialog', (d) => d.accept('A = 6s^2'))
   await openEditor(page)
   await addCanvas(page)
-  await page.getByRole('button', { name: '∑ Math' }).click()
+  await page.getByRole('button', { name: 'Math' }).click()
+  await answerPrompt(page, 'A = 6s^2')
   await expect(page.locator('.tl-container .katex')).toHaveCount(1)
 
   const second = await context.newPage()
-  second.on('dialog', (d) => d.accept('x^2'))
   await second.goto(page.url())
   await expect(second.locator('.tl-container .katex')).toHaveCount(1)
-  await second.getByRole('button', { name: '∑ Math' }).click()
+  await second.getByRole('button', { name: 'Math' }).click()
+  await answerPrompt(second, 'x^2')
   await expect(page.locator('.tl-container .katex')).toHaveCount(2) // no tab overwrote the other
   await expect(second.locator('.tl-container .katex')).toHaveCount(2)
 })
 
 test('AI Annotate sends the selection as an image and pins a note beside it', async ({ page, user: _ }) => {
   await useMockProvider(page.request)
-  page.on('dialog', (d) => d.accept('A = 6s^2'))
   await openEditor(page)
   const box = await addCanvas(page)
-  await page.getByRole('button', { name: '∑ Math' }).click()
+  await page.getByRole('button', { name: 'Math' }).click()
+  await answerPrompt(page, 'A = 6s^2')
   const annotate = page.getByRole('button', { name: 'AI Annotate' })
   await expect(annotate).toBeDisabled()
   await page.mouse.click(box.x + 30, box.y + 120)

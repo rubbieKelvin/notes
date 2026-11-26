@@ -1,4 +1,5 @@
 import { createApp } from 'vue'
+import '@fontsource-variable/inter'
 import 'katex/dist/katex.min.css'
 import 'highlight.js/styles/github.css'
 import 'tldraw/tldraw.css'

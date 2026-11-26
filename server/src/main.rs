@@ -26,6 +26,7 @@ pub struct AppState {
     pub rooms: Arc<sync::Rooms>,
     pub cfg: Arc<Config>,
     pub login_limiter: Arc<auth::LoginLimiter>,
+    pub mailer: Arc<auth::Mailer>,
 }
 
 pub struct Config {
@@ -34,6 +35,8 @@ pub struct Config {
     pub anthropic_base: String,
     pub allow_private_ai_urls: bool,
     pub hosts: Vec<String>,
+    /// Origin the browser uses, for links in emails. Never taken from the request's Host header.
+    pub public_url: String,
 }
 
 #[derive(Debug)]
@@ -66,8 +69,8 @@ fn env(name: &str) -> Option<String> {
 pub fn app(state: AppState) -> Router {
     Router::new()
         .route("/health", get(|| async { "ok" }))
-        .route("/v1/auth/signup", post(auth::signup))
-        .route("/v1/auth/login", post(auth::login))
+        .route("/v1/auth/link", post(auth::request_link))
+        .route("/v1/auth/verify", post(auth::verify))
         .route("/v1/auth/logout", post(auth::logout))
         .route("/v1/me", get(auth::me))
         .route("/v1/settings/ai", put(ai::save).delete(ai::delete))
@@ -87,7 +90,7 @@ pub fn app(state: AppState) -> Router {
         .with_state(state)
 }
 
-/// FR-3.3 Knowledge Half-Life: archive unreviewed inbox items after 14 days; drop dead sessions.
+/// FR-3.3 Knowledge Half-Life: archive unreviewed inbox items after 14 days; drop dead sessions and sign-in links.
 async fn cleanup(db: PgPool) {
     let mut tick = tokio::time::interval(Duration::from_secs(3600));
     loop {
@@ -95,6 +98,7 @@ async fn cleanup(db: PgPool) {
         let archived = sqlx::query("UPDATE agent_inbox_items SET status = 'archived' WHERE status = 'pending' AND expires_at < NOW()")
             .execute(&db).await;
         let _ = sqlx::query("DELETE FROM sessions WHERE expires_at < NOW()").execute(&db).await;
+        let _ = sqlx::query("DELETE FROM magic_links WHERE expires_at < NOW()").execute(&db).await;
         if let Err(e) = archived {
             eprintln!("cleanup failed: {e}");
         }
@@ -113,6 +117,7 @@ async fn main() {
         allow_signup: env("ALLOW_SIGNUP").map_or(true, |v| v != "false"),
         anthropic_base: env("ANTHROPIC_BASE_URL").unwrap_or_else(|| "https://api.anthropic.com".into()),
         allow_private_ai_urls: env("ALLOW_PRIVATE_AI_URLS").is_some_and(|v| v == "true"),
+        public_url: env("PUBLIC_URL").unwrap_or_else(|| "http://localhost:3000".into()).trim_end_matches('/').to_string(),
         hosts: env("OPENNOTES_HOSTS").unwrap_or_else(|| "localhost,127.0.0.1".into()).split(',').map(|h| h.trim().to_string()).collect(),
     };
     let state = AppState {
@@ -122,6 +127,7 @@ async fn main() {
         rooms: Default::default(),
         cfg: Arc::new(cfg),
         login_limiter: Default::default(),
+        mailer: Arc::new(auth::Mailer::from_env(env("SMTP_URL"), env("MAIL_FROM"))),
     };
     tokio::spawn(cleanup(db));
 

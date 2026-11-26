@@ -14,8 +14,18 @@ services:
       retries: 20
     restart: unless-stopped
 
+  # Dev server: rebuilds and restarts on changes under server/. Run the web app on the host: `pnpm dev`.
   server:
-    build: ./server
+    build:
+      context: ./server
+      target: dev
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./server:/app
+      # Linux build output and crate downloads stay in volumes: fast rebuilds, and the host's target/ is left alone.
+      - server-target:/app/target
+      - cargo-registry:/usr/local/cargo/registry
     environment:
       DATABASE_URL: postgres://opennotes:${POSTGRES_PASSWORD}@db:5432/opennotes
       OPENNOTES_SECRET: ${OPENNOTES_SECRET:?set OPENNOTES_SECRET in .env}
@@ -24,20 +34,16 @@ services:
       ALLOW_SIGNUP: ${ALLOW_SIGNUP:-true}
       OPENNOTES_HOSTS: ${OPENNOTES_HOSTS:-localhost,127.0.0.1}
       ALLOW_PRIVATE_AI_URLS: ${ALLOW_PRIVATE_AI_URLS:-false}
+      PUBLIC_URL: ${PUBLIC_URL:-http://localhost:5173}
+      # Sign-in is by emailed link. Without SMTP_URL the links are printed to `docker compose logs server`.
+      SMTP_URL: ${SMTP_URL:-}
+      MAIL_FROM: ${MAIL_FROM:-}
     depends_on:
       db:
         condition: service_healthy
     restart: unless-stopped
 
-  web:
-    build:
-      context: .
-      dockerfile: apps/web/Dockerfile
-    ports:
-      - "${PORT:-3000}:80"
-    depends_on:
-      - server
-    restart: unless-stopped
-
 volumes:
   db:
+  server-target:
+  cargo-registry:

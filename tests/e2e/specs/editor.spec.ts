@@ -1,8 +1,7 @@
-import { expect, openEditor, slash, test, typeInEditor } from '../support/fixtures'
+import { answerPrompt, expect, openEditor, slash, test, typeInEditor } from '../support/fixtures'
 
 test('slash menu inserts headings and math', async ({ page, user: _ }) => {
   await openEditor(page)
-  page.on('dialog', (d) => d.accept('E = mc^2'))
   await page.locator('.ProseMirror').click()
   await page.keyboard.type('/head')
   await expect(page.getByRole('option')).toHaveCount(3)
@@ -11,6 +10,7 @@ test('slash menu inserts headings and math', async ({ page, user: _ }) => {
   await expect(page.locator('.ProseMirror h1')).toHaveText('Boxes')
   await page.keyboard.press('Enter')
   await slash(page, 'math')
+  await answerPrompt(page, 'E = mc^2')
   await expect(page.locator('[data-type=block-math] .katex')).toBeVisible()
   await page.keyboard.type('Inline $$a^2$$ ')
   await expect(page.locator('[data-type=inline-math] .katex')).toBeVisible()
@@ -18,7 +18,6 @@ test('slash menu inserts headings and math', async ({ page, user: _ }) => {
 
 test('epistemic callouts, clips and runbooks', async ({ page, user: _ }) => {
   await openEditor(page)
-  page.on('dialog', (d) => d.accept('https://www.youtube.com/watch?v=abc 14:22-15:08'))
   await page.locator('.ProseMirror').click()
   for (const [cmd, text] of [['hypothesis', 'Boxes are cubes.'], ['evidence', 'Measured 3.'], ['contradicts', 'Shoebox.']]) {
     await slash(page, cmd)
@@ -30,14 +29,15 @@ test('epistemic callouts, clips and runbooks', async ({ page, user: _ }) => {
   expect(await page.locator('div[data-type=callout]').evaluateAll((els) => els.map((e) => (e as HTMLElement).dataset.kind))).toEqual(['hypothesis', 'fact', 'contradicts'])
 
   await slash(page, 'clip')
+  await answerPrompt(page, 'https://www.youtube.com/watch?v=abc 14:22-15:08')
   await page.keyboard.type('Boxes are everywhere.')
   await expect(page.locator('[data-type=clip] a')).toHaveAttribute('href', 'https://www.youtube.com/watch?v=abc&t=862s')
-  await expect(page.locator('[data-type=clip] a')).toHaveText('▶ 14:22 – 15:08')
+  await expect(page.locator('[data-type=clip] a')).toHaveText('14:22 – 15:08')
   await page.keyboard.press('Enter')
 
   await slash(page, 'runbook')
   await page.keyboard.type('psql -c "select 1"')
-  const status = page.locator('[data-type=runbook] button')
+  const status = page.locator('[data-type=runbook]').getByTitle('Click to change status')
   await expect(status).toHaveText('untested')
   await status.click()
   await expect(status).toHaveText('works')
@@ -68,9 +68,31 @@ test('pages menu creates and switches pages', async ({ page, user: _ }) => {
   const first = await openEditor(page)
   await typeInEditor(page, 'first page')
   await page.getByRole('button', { name: 'Menu' }).click()
-  await page.getByRole('button', { name: '+ New page' }).click()
+  await page.getByRole('menuitem', { name: 'New page' }).click()
   await expect(page).not.toHaveURL(new RegExp(first))
   await expect(page.locator('.ProseMirror')).not.toContainText('first page')
   await page.goto(`/d/${first}`)
   await expect(page.locator('.ProseMirror')).toContainText('first page')
+})
+
+test('note blocks get their own toolbar: switch callout kind, unwrap, delete', async ({ page, user: _ }) => {
+  await openEditor(page)
+  await page.locator('.ProseMirror').click()
+  await slash(page, 'hypothesis')
+  await page.keyboard.type('Boxes are cubes.')
+  const toolbar = page.getByRole('toolbar', { name: 'Callout actions' })
+  await expect(toolbar).toBeVisible()
+  await toolbar.getByRole('button', { name: 'Evidence' }).click()
+  await expect(page.locator('div[data-type=callout]')).toHaveAttribute('data-kind', 'fact')
+  await expect(page.locator('.ProseMirror')).toBeFocused() // toolbar keeps you writing
+  await toolbar.getByRole('button', { name: 'Unwrap' }).click()
+  await expect(page.locator('div[data-type=callout]')).toHaveCount(0)
+  await expect(page.locator('.ProseMirror p', { hasText: 'Boxes are cubes.' })).toBeVisible()
+
+  await page.keyboard.press('End')
+  await page.keyboard.press('Enter')
+  await slash(page, 'runbook')
+  await page.keyboard.type('ls -la')
+  await page.getByRole('toolbar', { name: 'Runbook actions' }).getByRole('button', { name: 'Delete runbook' }).click()
+  await expect(page.locator('[data-type=runbook]')).toHaveCount(0)
 })

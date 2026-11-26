@@ -1,40 +1,31 @@
 use crate::{crypto, AppError, AppState, Res};
-use argon2::{password_hash::PasswordHasher, password_hash::PasswordVerifier, Argon2, PasswordHash};
 use axum::{
     extract::{FromRequestParts, State},
     http::{header, request::Parts, StatusCode},
     Json,
 };
 use axum_extra::extract::cookie::{Cookie, CookieJar, SameSite};
+use lettre::{message::Mailbox, AsyncSmtpTransport, AsyncTransport, Message, Tokio1Executor};
 use serde::Deserialize;
 use serde_json::{json, Value};
-use std::{collections::HashMap, sync::{LazyLock, Mutex}, time::{Duration, Instant}};
+use std::{collections::HashMap, sync::Mutex, time::{Duration, Instant}};
 use uuid::Uuid;
 
 const COOKIE: &str = "on_session";
-const MAX_FAILS: u32 = 5;
+const MAX_LINKS: u32 = 5;
 const LOCK_WINDOW: Duration = Duration::from_secs(15 * 60);
+const LINK_MINUTES: i32 = 15;
+const SESSION_DAYS: i64 = 30;
 
-/// Per-email brute-force guard: MAX_FAILS failed logins lock that email for LOCK_WINDOW.
+/// Per-email throttle: at most MAX_LINKS sign-in emails per LOCK_WINDOW, so nobody can mail-bomb an address.
 /// shortcut: in-memory and per-process; move to Postgres/Redis if you run several server replicas.
 #[derive(Default)]
 pub struct LoginLimiter(Mutex<HashMap<String, (u32, Instant)>>);
 
 impl LoginLimiter {
-    /// Seconds until this email may try again, if it's locked.
-    pub fn locked_for(&self, email: &str) -> Option<u64> {
-        let map = self.0.lock().unwrap();
-        let (fails, since) = map.get(email)?;
-        let left = LOCK_WINDOW.checked_sub(since.elapsed())?;
-        (*fails >= MAX_FAILS).then(|| left.as_secs().max(1))
-    }
-
-    pub fn record(&self, email: &str, ok: bool) {
+    /// Counts one attempt for `email`; returns seconds to wait if it is over the limit.
+    pub fn hit(&self, email: &str) -> Option<u64> {
         let mut map = self.0.lock().unwrap();
-        if ok {
-            map.remove(email);
-            return;
-        }
         if map.len() > 100_000 {
             map.retain(|_, (_, since)| since.elapsed() < LOCK_WINDOW);
         }
@@ -42,19 +33,52 @@ impl LoginLimiter {
         if entry.1.elapsed() >= LOCK_WINDOW {
             *entry = (0, Instant::now());
         }
+        if entry.0 >= MAX_LINKS {
+            return Some(LOCK_WINDOW.saturating_sub(entry.1.elapsed()).as_secs().max(1));
+        }
         entry.0 += 1;
+        None
     }
 }
-const SESSION_DAYS: i64 = 30;
-// Verified against when the email is unknown, so login timing doesn't reveal which accounts exist.
-static DUMMY_HASH: LazyLock<String> = LazyLock::new(|| hash_password("not-a-real-password").unwrap());
 
-fn hash_password(pw: &str) -> Option<String> {
-    Argon2::default().hash_password(pw.as_bytes()).ok().map(|h| h.to_string())
+/// Where sign-in emails go: SMTP in production, the server log in development.
+pub enum Mailer {
+    Smtp(AsyncSmtpTransport<Tokio1Executor>, Mailbox),
+    Log,
 }
 
-fn verify_password(pw: &str, stored: &str) -> bool {
-    PasswordHash::new(stored).is_ok_and(|h| Argon2::default().verify_password(pw.as_bytes(), &h).is_ok())
+impl Mailer {
+    /// SMTP_URL like `smtps://user:pass@smtp.example.com` plus MAIL_FROM; without SMTP_URL links are printed.
+    pub fn from_env(smtp_url: Option<String>, from: Option<String>) -> Self {
+        let Some(url) = smtp_url else {
+            eprintln!("SMTP_URL not set: sign-in links are printed to this log instead of emailed");
+            return Self::Log;
+        };
+        let transport = AsyncSmtpTransport::<Tokio1Executor>::from_url(&url).expect("SMTP_URL is not a valid smtp:// or smtps:// URL").build();
+        let from = from.expect("MAIL_FROM is required with SMTP_URL").parse().expect("MAIL_FROM must be an address like `opennotes <notes@example.com>`");
+        Self::Smtp(transport, from)
+    }
+
+    async fn send_link(&self, to: &str, link: &str) -> Res<()> {
+        let Self::Smtp(transport, from) = self else {
+            println!("magic link for {to}: {link}");
+            return Ok(());
+        };
+        let failed = |e: &dyn std::fmt::Display| {
+            eprintln!("mail to {to} failed: {e}");
+            AppError::new(StatusCode::BAD_GATEWAY, "couldn't send the email; try again in a minute")
+        };
+        let msg = Message::builder()
+            .from(from.clone())
+            .to(to.parse().map_err(|_| AppError::new(StatusCode::BAD_REQUEST, "enter a valid email"))?)
+            .subject("Your opennotes sign-in link")
+            .body(format!(
+                "Click to sign in to opennotes:\n\n{link}\n\nThe link works once and expires in {LINK_MINUTES} minutes. If you didn't ask for it, ignore this email."
+            ))
+            .map_err(|e| failed(&e))?;
+        transport.send(msg).await.map_err(|e| failed(&e))?;
+        Ok(())
+    }
 }
 
 /// A signed-in browser user (session cookie).
@@ -97,12 +121,6 @@ pub async fn bearer_user(state: &AppState, headers: &axum::http::HeaderMap, scop
     }
 }
 
-#[derive(Deserialize)]
-pub struct Credentials {
-    email: String,
-    password: String,
-}
-
 async fn start_session(state: &AppState, jar: CookieJar, user_id: Uuid) -> Res<CookieJar> {
     let token = crypto::new_token("");
     sqlx::query("INSERT INTO sessions (token_hash, user_id, expires_at) VALUES ($1, $2, NOW() + make_interval(days => $3))")
@@ -125,42 +143,59 @@ fn time_days(d: i64) -> time::Duration {
     time::Duration::days(d)
 }
 
-pub async fn signup(State(state): State<AppState>, jar: CookieJar, Json(c): Json<Credentials>) -> Res<(CookieJar, Json<Value>)> {
-    if !state.cfg.allow_signup {
-        return Err(AppError::new(StatusCode::FORBIDDEN, "sign-ups are closed on this server"));
-    }
-    let email = c.email.trim().to_lowercase();
-    if !email.contains('@') || email.len() > 254 {
-        return Err(AppError::new(StatusCode::BAD_REQUEST, "enter a valid email"));
-    }
-    if c.password.chars().count() < 8 || c.password.len() > 1024 {
-        return Err(AppError::new(StatusCode::BAD_REQUEST, "password must be at least 8 characters"));
-    }
-    let hash = hash_password(&c.password).ok_or_else(|| AppError::new(StatusCode::INTERNAL_SERVER_ERROR, "hashing failed"))?;
-    let id: Option<Uuid> = sqlx::query_scalar("INSERT INTO users (email, password_hash) VALUES ($1, $2) ON CONFLICT (email) DO NOTHING RETURNING id")
-        .bind(&email)
-        .bind(hash)
-        .fetch_optional(&state.db)
-        .await?;
-    let id = id.ok_or_else(|| AppError::new(StatusCode::CONFLICT, "an account with that email already exists"))?;
-    Ok((start_session(&state, jar, id).await?, Json(json!({ "email": email }))))
+#[derive(Deserialize)]
+pub struct LinkRequest {
+    email: String,
 }
 
-pub async fn login(State(state): State<AppState>, jar: CookieJar, Json(c): Json<Credentials>) -> Res<(CookieJar, Json<Value>)> {
-    let email = c.email.trim().to_lowercase();
-    if let Some(secs) = state.login_limiter.locked_for(&email) {
-        return Err(AppError::new(StatusCode::TOO_MANY_REQUESTS, format!("too many attempts; try again in {} minutes", secs.div_ceil(60))));
+/// Emails a single-use sign-in link. Answers the same whether or not the account exists.
+pub async fn request_link(State(state): State<AppState>, Json(r): Json<LinkRequest>) -> Res<StatusCode> {
+    let email = r.email.trim().to_lowercase();
+    if !email.contains('@') || email.len() > 254 || email.parse::<Mailbox>().is_err() {
+        return Err(AppError::new(StatusCode::BAD_REQUEST, "enter a valid email"));
     }
-    let row: Option<(Uuid, String)> = sqlx::query_as("SELECT id, password_hash FROM users WHERE email = $1")
+    if let Some(secs) = state.login_limiter.hit(&email) {
+        return Err(AppError::new(StatusCode::TOO_MANY_REQUESTS, format!("too many sign-in emails; try again in {} minutes", secs.div_ceil(60))));
+    }
+    if !state.cfg.allow_signup {
+        let exists: bool = sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM users WHERE email = $1)").bind(&email).fetch_one(&state.db).await?;
+        if !exists {
+            return Ok(StatusCode::NO_CONTENT); // sign-ups closed: silently skip, so the reply doesn't reveal accounts
+        }
+    }
+    let token = crypto::new_token("");
+    sqlx::query("INSERT INTO magic_links (token_hash, email, expires_at) VALUES ($1, $2, NOW() + make_interval(mins => $3))")
+        .bind(crypto::hash_token(&token))
         .bind(&email)
+        .bind(LINK_MINUTES)
+        .execute(&state.db)
+        .await?;
+    // In the fragment, so the token never reaches server logs or Referer headers.
+    let link = format!("{}/#signin={token}", state.cfg.public_url);
+    state.mailer.send_link(&email, &link).await?;
+    Ok(StatusCode::NO_CONTENT)
+}
+
+#[derive(Deserialize)]
+pub struct Verify {
+    token: String,
+}
+
+/// Trades a magic-link token for a session, creating the account on first sign-in.
+pub async fn verify(State(state): State<AppState>, jar: CookieJar, Json(v): Json<Verify>) -> Res<(CookieJar, Json<Value>)> {
+    // Deleted even when expired, so every link is single use.
+    let row: Option<(String, bool)> = sqlx::query_as("DELETE FROM magic_links WHERE token_hash = $1 RETURNING email, expires_at > NOW()")
+        .bind(crypto::hash_token(v.token.trim()))
         .fetch_optional(&state.db)
         .await?;
-    let ok = verify_password(&c.password, row.as_ref().map_or(DUMMY_HASH.as_str(), |r| r.1.as_str()));
-    state.login_limiter.record(&email, ok && row.is_some());
-    match row {
-        Some((id, _)) if ok => Ok((start_session(&state, jar, id).await?, Json(json!({ "email": email })))),
-        _ => Err(AppError::new(StatusCode::UNAUTHORIZED, "wrong email or password")),
-    }
+    let Some((email, true)) = row else {
+        return Err(AppError::new(StatusCode::UNAUTHORIZED, "this sign-in link has expired or was already used; request a new one"));
+    };
+    let id: Uuid = sqlx::query_scalar("INSERT INTO users (email) VALUES ($1) ON CONFLICT (email) DO UPDATE SET email = EXCLUDED.email RETURNING id")
+        .bind(&email)
+        .fetch_one(&state.db)
+        .await?;
+    Ok((start_session(&state, jar, id).await?, Json(json!({ "email": email }))))
 }
 
 pub async fn logout(State(state): State<AppState>, jar: CookieJar) -> Res<CookieJar> {
@@ -183,24 +218,12 @@ pub async fn me(State(state): State<AppState>, user: User) -> Res<Json<Value>> {
 #[cfg(test)]
 mod tests {
     #[test]
-    fn limiter_locks_after_max_fails_and_resets_on_success() {
+    fn limiter_caps_links_per_email() {
         let l = super::LoginLimiter::default();
-        for _ in 0..super::MAX_FAILS - 1 {
-            l.record("a@x", false);
+        for _ in 0..super::MAX_LINKS {
+            assert!(l.hit("a@x").is_none());
         }
-        assert!(l.locked_for("a@x").is_none());
-        l.record("a@x", false);
-        assert!(l.locked_for("a@x").is_some_and(|s| s <= 900));
-        assert!(l.locked_for("b@x").is_none(), "other accounts unaffected");
-        l.record("a@x", true);
-        assert!(l.locked_for("a@x").is_none());
-    }
-
-    #[test]
-    fn password_hash_verifies() {
-        let h = super::hash_password("correct horse").unwrap();
-        assert!(super::verify_password("correct horse", &h));
-        assert!(!super::verify_password("wrong", &h));
-        assert!(!super::verify_password("x", "not a phc string"));
+        assert!(l.hit("a@x").is_some_and(|s| s <= 900));
+        assert!(l.hit("b@x").is_none(), "other addresses unaffected");
     }
 }

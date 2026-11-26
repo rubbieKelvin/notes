@@ -21,7 +21,7 @@ test('inbox items can be rewritten, inserted, dragged in, or dismissed', async (
   const pill = page.getByRole('button', { name: /^\d+ AI$/ })
   await expect(pill).toHaveText('4 AI')
   await pill.click()
-  const dialog = page.getByRole('dialog', { name: 'AI inbox' })
+  const dialog = page.getByRole('dialog').filter({ has: page.getByRole('heading', { name: 'AI inbox' }) })
   await expect(dialog.locator('a')).toHaveCount(0) // javascript: source links are never rendered
 
   await dialog.locator('article', { hasText: 'Trace' }).getByRole('button', { name: 'Rewrite-to-Own' }).click()
