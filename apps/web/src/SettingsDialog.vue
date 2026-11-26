@@ -1,15 +1,50 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { api, errorText, type Me } from './api'
+import { computed, ref, watch } from 'vue'
+import { api, errorText, type AiSettings, type Me } from './api'
 
 type Token = { id: string; name: string; scopes: string[]; last_used_at: string | null; created_at: string }
 const props = defineProps<{ me: Me }>()
 const dialog = ref<HTMLDialogElement>()
 
-const keyHint = ref(props.me.anthropic_key_hint)
+const providers = [
+  { id: 'anthropic', label: 'Anthropic' },
+  { id: 'openai', label: 'OpenAI' },
+  { id: 'deepseek', label: 'DeepSeek (text only)' },
+  { id: 'gemini', label: 'Google Gemini' },
+  { id: 'openrouter', label: 'OpenRouter' },
+  { id: 'custom', label: 'Custom (OpenAI-compatible URL)' },
+]
+const ai = ref<AiSettings | null>(props.me.ai)
+const provider = ref(ai.value?.provider ?? 'anthropic')
+const baseUrl = ref(ai.value?.base_url ?? '')
 const keyInput = ref('')
-const keyError = ref('')
-const keyBusy = ref(false)
+const models = ref<string[]>([])
+const model = ref(ai.value?.model ?? '')
+const aiError = ref('')
+const aiBusy = ref(false)
+const keepsSavedKey = computed(() => !!ai.value?.key_hint && ai.value.provider === provider.value)
+const body = () => ({ provider: provider.value, base_url: provider.value === 'custom' ? baseUrl.value : undefined, key: keyInput.value || undefined, model: model.value })
+
+watch(provider, () => { models.value = []; model.value = provider.value === ai.value?.provider ? ai.value.model : ''; aiError.value = '' })
+
+async function run(fn: () => Promise<void>) {
+  aiError.value = ''
+  aiBusy.value = true
+  try { await fn() } catch (e) { aiError.value = errorText(e) } finally { aiBusy.value = false }
+}
+const loadModels = () => run(async () => {
+  models.value = (await api<{ models: string[] }>('/v1/settings/ai/models', { body: body() })).models
+  if (!models.value.includes(model.value)) model.value = models.value[0] ?? ''
+})
+const saveAi = () => run(async () => {
+  ai.value = await api<AiSettings>('/v1/settings/ai', { method: 'PUT', body: body() })
+  keyInput.value = ''
+})
+const removeAi = () => run(async () => {
+  await api('/v1/settings/ai', { method: 'DELETE' })
+  ai.value = null
+})
+const label = (id: string) => providers.find((p) => p.id === id)?.label ?? id
 
 const tokens = ref<Token[]>([])
 const tokenName = ref('')
@@ -22,24 +57,6 @@ async function show() {
   tokens.value = await api<Token[]>('/v1/tokens').catch(() => [])
 }
 defineExpose({ show })
-
-async function saveKey() {
-  keyError.value = ''
-  keyBusy.value = true
-  try {
-    keyHint.value = (await api<{ anthropic_key_hint: string }>('/v1/settings/anthropic-key', { method: 'PUT', body: { key: keyInput.value } })).anthropic_key_hint
-    keyInput.value = ''
-  } catch (e) {
-    keyError.value = errorText(e)
-  } finally {
-    keyBusy.value = false
-  }
-}
-
-async function removeKey() {
-  await api('/v1/settings/anthropic-key', { method: 'DELETE' })
-  keyHint.value = null
-}
 
 async function createToken() {
   tokenError.value = ''
@@ -72,17 +89,30 @@ const input = 'w-full rounded-md border border-stone-200 px-2.5 py-1.5 text-sm o
       </header>
 
       <section class="space-y-2">
-        <h3 class="font-medium">Anthropic API key</h3>
-        <p class="text-xs text-stone-500">Margin notes run on your own key and your own Anthropic bill. It's stored encrypted and never sent back to the browser.</p>
-        <div v-if="keyHint" class="flex items-center justify-between rounded-md bg-stone-50 px-2.5 py-1.5">
-          <span>Saved key <code>••••{{ keyHint }}</code></span>
-          <button class="text-xs text-red-700 hover:underline" @click="removeKey">Remove</button>
+        <h3 class="font-medium">AI provider</h3>
+        <p class="text-xs text-stone-500">Margin notes and canvas annotations run on your own account with the provider you choose. Keys are stored encrypted and never sent back to the browser.</p>
+        <div v-if="ai" class="flex items-center justify-between gap-2 rounded-md bg-stone-50 px-2.5 py-1.5">
+          <span class="truncate">{{ label(ai.provider) }} · <code>{{ ai.model }}</code><template v-if="ai.key_hint"> · key <code>••••{{ ai.key_hint }}</code></template></span>
+          <button class="shrink-0 text-xs text-red-700 hover:underline" @click="removeAi">Remove</button>
         </div>
-        <form class="flex gap-2" @submit.prevent="saveKey">
-          <input v-model="keyInput" type="password" autocomplete="off" :placeholder="keyHint ? 'Replace with a new key' : 'sk-ant-…'" :class="input" aria-label="Anthropic API key" />
-          <button :disabled="keyBusy || !keyInput" class="shrink-0 rounded-md bg-stone-900 px-3 text-white disabled:opacity-40">{{ keyBusy ? 'Checking…' : 'Save' }}</button>
+        <form class="space-y-2" @submit.prevent="saveAi">
+          <select v-model="provider" :class="input" aria-label="Provider">
+            <option v-for="p in providers" :key="p.id" :value="p.id">{{ p.label }}</option>
+          </select>
+          <input v-if="provider === 'custom'" v-model="baseUrl" :class="input" placeholder="https://api.example.com/v1" aria-label="Base URL" />
+          <input
+            v-model="keyInput" type="password" autocomplete="off" :class="input" aria-label="API key"
+            :placeholder="keepsSavedKey ? 'Leave blank to keep your saved key' : provider === 'custom' ? 'API key (optional for local servers)' : 'API key'"
+          />
+          <div class="flex gap-2">
+            <input v-model="model" list="ai-models" :class="input" placeholder="Model" aria-label="Model" />
+            <datalist id="ai-models"><option v-for="m in models" :key="m" :value="m" /></datalist>
+            <button type="button" :disabled="aiBusy" class="shrink-0 rounded-md border border-stone-300 px-3 hover:bg-stone-50 disabled:opacity-40" @click="loadModels">Load models</button>
+            <button :disabled="aiBusy || !model" class="shrink-0 rounded-md bg-stone-900 px-3 text-white disabled:opacity-40">{{ aiBusy ? 'Checking…' : 'Save' }}</button>
+          </div>
+          <p v-if="models.length" class="text-xs text-stone-500">{{ models.length }} models available. Pick one above.</p>
         </form>
-        <p v-if="keyError" role="alert" class="text-xs text-red-700">{{ keyError }}</p>
+        <p v-if="aiError" role="alert" class="text-xs text-red-700">{{ aiError }}</p>
       </section>
 
       <section class="space-y-2">

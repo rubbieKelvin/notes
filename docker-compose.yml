@@ -23,6 +23,7 @@ services:
       COOKIE_SECURE: ${COOKIE_SECURE:-false}
       ALLOW_SIGNUP: ${ALLOW_SIGNUP:-true}
       OPENNOTES_HOSTS: ${OPENNOTES_HOSTS:-localhost,127.0.0.1}
+      ALLOW_PRIVATE_AI_URLS: ${ALLOW_PRIVATE_AI_URLS:-false}
     depends_on:
       db:
         condition: service_healthy

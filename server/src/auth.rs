@@ -171,11 +171,13 @@ pub async fn logout(State(state): State<AppState>, jar: CookieJar) -> Res<Cookie
 }
 
 pub async fn me(State(state): State<AppState>, user: User) -> Res<Json<Value>> {
-    let (email, hint): (String, Option<String>) = sqlx::query_as("SELECT email, anthropic_key_hint FROM users WHERE id = $1")
-        .bind(user.id)
-        .fetch_one(&state.db)
-        .await?;
-    Ok(Json(json!({ "email": email, "anthropic_key_hint": hint })))
+    let (email, provider, base_url, model, hint): (String, Option<String>, Option<String>, Option<String>, Option<String>) =
+        sqlx::query_as("SELECT email, ai_provider, ai_base_url, ai_model, ai_key_hint FROM users WHERE id = $1")
+            .bind(user.id)
+            .fetch_one(&state.db)
+            .await?;
+    let ai = provider.map(|p| json!({ "provider": p, "base_url": base_url, "model": model, "key_hint": hint }));
+    Ok(Json(json!({ "email": email, "ai": ai })))
 }
 
 #[cfg(test)]

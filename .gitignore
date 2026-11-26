@@ -10,3 +10,5 @@ dist
 .vscode/*
 !.vscode/extensions.json
 target
+test-results
+playwright-report

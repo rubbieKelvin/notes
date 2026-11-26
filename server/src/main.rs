@@ -32,6 +32,7 @@ pub struct Config {
     pub cookie_secure: bool,
     pub allow_signup: bool,
     pub anthropic_base: String,
+    pub allow_private_ai_urls: bool,
     pub hosts: Vec<String>,
 }
 
@@ -69,7 +70,8 @@ pub fn app(state: AppState) -> Router {
         .route("/v1/auth/login", post(auth::login))
         .route("/v1/auth/logout", post(auth::logout))
         .route("/v1/me", get(auth::me))
-        .route("/v1/settings/anthropic-key", put(ai::set_key).delete(ai::delete_key))
+        .route("/v1/settings/ai", put(ai::save).delete(ai::delete))
+        .route("/v1/settings/ai/models", post(ai::models))
         .route("/v1/whisper", post(ai::whisper))
         .route("/v1/annotate", post(ai::annotate).layer(DefaultBodyLimit::max(ai::MAX_IMAGE_B64 + 4096)))
         .route("/v1/tokens", get(tokens::list).post(tokens::create))
@@ -110,6 +112,7 @@ async fn main() {
         cookie_secure: env("COOKIE_SECURE").map_or(true, |v| v != "false"),
         allow_signup: env("ALLOW_SIGNUP").map_or(true, |v| v != "false"),
         anthropic_base: env("ANTHROPIC_BASE_URL").unwrap_or_else(|| "https://api.anthropic.com".into()),
+        allow_private_ai_urls: env("ALLOW_PRIVATE_AI_URLS").is_some_and(|v| v == "true"),
         hosts: env("OPENNOTES_HOSTS").unwrap_or_else(|| "localhost,127.0.0.1".into()).split(',').map(|h| h.trim().to_string()).collect(),
     };
     let state = AppState {
