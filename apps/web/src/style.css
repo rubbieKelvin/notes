@@ -22,3 +22,12 @@ html, body { @apply bg-white text-stone-800 antialiased; }
   @apply block text-[11px] uppercase tracking-wide text-stone-400;
 }
 .ProseMirror div[data-type="ai-source"][data-provenance="human_edited"]::before { content: "Rewritten from " attr(data-agent); }
+
+.ProseMirror div[data-type="callout"] { @apply my-4 rounded-md border-l-4 px-4 py-1; }
+.ProseMirror div[data-type="callout"]::before { @apply mt-2 block text-[11px] font-medium uppercase tracking-wide; }
+.ProseMirror div[data-type="callout"][data-kind="hypothesis"] { @apply border-sky-400 bg-sky-50/60; }
+.ProseMirror div[data-type="callout"][data-kind="hypothesis"]::before { content: "Hypothesis"; @apply text-sky-700; }
+.ProseMirror div[data-type="callout"][data-kind="fact"] { @apply border-emerald-400 bg-emerald-50/60; }
+.ProseMirror div[data-type="callout"][data-kind="fact"]::before { content: "Verified fact"; @apply text-emerald-700; }
+.ProseMirror div[data-type="callout"][data-kind="contradicts"] { @apply border-rose-400 bg-rose-50/60; }
+.ProseMirror div[data-type="callout"][data-kind="contradicts"]::before { content: "Contradicts"; @apply text-rose-700; }

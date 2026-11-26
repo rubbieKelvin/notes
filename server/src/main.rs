@@ -9,6 +9,7 @@ mod text;
 mod tokens;
 
 use axum::{
+    extract::DefaultBodyLimit,
     http::StatusCode,
     response::{IntoResponse, Response},
     routing::{delete, get, post, put},
@@ -24,6 +25,7 @@ pub struct AppState {
     pub cipher: Arc<crypto::Cipher>,
     pub rooms: Arc<sync::Rooms>,
     pub cfg: Arc<Config>,
+    pub login_limiter: Arc<auth::LoginLimiter>,
 }
 
 pub struct Config {
@@ -69,6 +71,7 @@ pub fn app(state: AppState) -> Router {
         .route("/v1/me", get(auth::me))
         .route("/v1/settings/anthropic-key", put(ai::set_key).delete(ai::delete_key))
         .route("/v1/whisper", post(ai::whisper))
+        .route("/v1/annotate", post(ai::annotate).layer(DefaultBodyLimit::max(ai::MAX_IMAGE_B64 + 4096)))
         .route("/v1/tokens", get(tokens::list).post(tokens::create))
         .route("/v1/tokens/{id}", delete(tokens::revoke))
         .route("/v1/docs", get(docs::list).post(docs::create))
@@ -115,6 +118,7 @@ async fn main() {
         cipher: Arc::new(crypto::Cipher::from_base64(&secret).expect("OPENNOTES_SECRET must be 32 bytes, base64")),
         rooms: Default::default(),
         cfg: Arc::new(cfg),
+        login_limiter: Default::default(),
     };
     tokio::spawn(cleanup(db));
 

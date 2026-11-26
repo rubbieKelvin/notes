@@ -48,6 +48,7 @@ fn collect_text(v: &Value, out: &mut Vec<String>) {
             for (k, v) in m {
                 match (k.as_str(), v) {
                     ("text", Value::String(s)) if !s.trim().is_empty() => out.push(s.trim().to_string()),
+                    ("latex", Value::String(s)) if !s.trim().is_empty() => out.push(format!("${}$", s.trim())),
                     _ => collect_text(v, out),
                 }
             }
@@ -125,6 +126,26 @@ fn node<T: ReadTxn>(txn: &T, n: XmlOut, out: &mut String) {
                     let who = if attr("provenance") == "human_edited" { "Rewritten from" } else { "AI-Source ·" };
                     out.push_str(&format!("[{who} {}] {}\n\n", str_attr(&attr("agent")), inner.trim()));
                 }
+                "callout" => {
+                    let mut inner = String::new();
+                    children(&mut inner);
+                    let label = match attr("kind").as_str() {
+                        Some("fact") => "Verified fact",
+                        Some("contradicts") => "Contradicts",
+                        _ => "Hypothesis",
+                    };
+                    out.push_str(&format!("[{label}] {}\n\n", inner.trim()));
+                }
+                "clip" => {
+                    let mut inner = String::new();
+                    children(&mut inner);
+                    out.push_str(&format!("[Clip ▶ {} {}–{}] \"{}\"\n\n", str_attr(&attr("url")), str_attr(&attr("start")), str_attr(&attr("end")), inner.trim()));
+                }
+                "runbook" => {
+                    out.push_str(&format!("```{} (status: {})\n", str_attr(&attr("lang")), str_attr(&attr("status"))));
+                    children(out);
+                    out.push_str("\n```\n\n");
+                }
                 "paragraph" => {
                     children(out);
                     out.push_str("\n\n");
@@ -164,11 +185,16 @@ mod tests {
             m.insert_attribute(&mut txn, "latex", "E=mc^2");
 
             let c = frag.push_back(&mut txn, XmlElementPrelim::empty("canvasBlock"));
-            let snap: Any = serde_json::from_str::<Any>(r#"{"store":{"shape:1":{"typeName":"shape","props":{"richText":{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"V=s³"}]}]}}}}}"#).unwrap();
+            let snap: Any = serde_json::from_str::<Any>(r#"{"store":{"shape:1":{"typeName":"shape","props":{"richText":{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"V=s³"}]}]}}},"shape:2":{"typeName":"shape","props":{"latex":"A=6s^2"}}}}"#).unwrap();
             c.insert_attribute(&mut txn, "snapshot", snap);
+
+            let k = frag.push_back(&mut txn, XmlElementPrelim::empty("callout"));
+            k.insert_attribute(&mut txn, "kind", "contradicts");
+            let kp = k.push_back(&mut txn, XmlElementPrelim::empty("paragraph"));
+            kp.push_back(&mut txn, XmlTextPrelim::new("Boxes vary."));
         }
         let (title, text) = serialize(&doc);
         assert_eq!(title, "Box Geometry");
-        assert_eq!(text, "## Boxes\n\nsame size in height [AI margin note: V = s³ for a cube].\n\n$$E=mc^2$$\n\n[Canvas: V=s³]");
+        assert_eq!(text, "## Boxes\n\nsame size in height [AI margin note: V = s³ for a cube].\n\n$$E=mc^2$$\n\n[Canvas: V=s³ · $A=6s^2$]\n\n[Contradicts] Boxes vary.");
     }
 }

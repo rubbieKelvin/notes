@@ -2,6 +2,7 @@ use crate::{auth::User, AppError, AppState, Res};
 use axum::{extract::State, http::StatusCode, Json};
 use serde::Deserialize;
 use serde_json::{json, Value};
+use uuid::Uuid;
 
 const MODEL: &str = "claude-opus-5-5";
 const API_VERSION: &str = "2026-10-21";
@@ -56,27 +57,19 @@ pub struct WhisperReq {
     context: String,
 }
 
-pub async fn whisper(State(s): State<AppState>, user: User, Json(b): Json<WhisperReq>) -> Res<Json<Value>> {
-    let enc: Option<Vec<u8>> = sqlx::query_scalar("SELECT anthropic_key_enc FROM users WHERE id = $1").bind(user.id).fetch_one(&s.db).await?;
+/// One short Claude call on the user's own key. Returns (note, model).
+async fn ask_claude(s: &AppState, user: Uuid, system: &str, content: Value) -> Res<Json<Value>> {
+    let enc: Option<Vec<u8>> = sqlx::query_scalar("SELECT anthropic_key_enc FROM users WHERE id = $1").bind(user).fetch_one(&s.db).await?;
     let key = enc
         .and_then(|e| s.cipher.decrypt(&e))
-        .ok_or_else(|| AppError::new(StatusCode::PRECONDITION_REQUIRED, "Add your Anthropic API key in Settings to get margin notes"))?;
-    let text = b.text.trim();
-    if text.is_empty() {
-        return Err(AppError::new(StatusCode::BAD_REQUEST, "highlight some text first"));
-    }
-    if text.chars().count() > 500 || b.context.chars().count() > 8000 {
-        return Err(AppError::new(StatusCode::PAYLOAD_TOO_LARGE, "highlight or paragraph is too long for a margin note"));
-    }
+        .ok_or_else(|| AppError::new(StatusCode::PRECONDITION_REQUIRED, "Add your Anthropic API key in Settings to use AI notes"))?;
     let body = json!({
         "model": MODEL,
         "max_tokens": 4000,
         "output_config": { "effort": "low" },
         "fallbacks": "default",
-        "system": WHISPER_SYSTEM,
-        "messages": [{ "role": "user", "content": format!(
-            "<paragraph>{}</paragraph>\n<highlighted>{}</highlighted>", b.context, text
-        )}],
+        "system": system,
+        "messages": [{ "role": "user", "content": content }],
     });
     let res = s.http
         .post(format!("{}/v1/messages", s.cfg.anthropic_base))
@@ -107,4 +100,41 @@ pub async fn whisper(State(s): State<AppState>, user: User, Json(b): Json<Whispe
         return Err(AppError::new(StatusCode::BAD_GATEWAY, "the AI returned no note"));
     }
     Ok(Json(json!({ "note": note.trim(), "agent_id": msg["model"].as_str().unwrap_or(MODEL) })))
+}
+
+pub async fn whisper(State(s): State<AppState>, user: User, Json(b): Json<WhisperReq>) -> Res<Json<Value>> {
+    let text = b.text.trim();
+    if text.is_empty() {
+        return Err(AppError::new(StatusCode::BAD_REQUEST, "highlight some text first"));
+    }
+    if text.chars().count() > 500 || b.context.chars().count() > 8000 {
+        return Err(AppError::new(StatusCode::PAYLOAD_TOO_LARGE, "highlight or paragraph is too long for a margin note"));
+    }
+    let prompt = format!("<paragraph>{}</paragraph>\n<highlighted>{}</highlighted>", b.context, text);
+    ask_claude(&s, user.id, WHISPER_SYSTEM, json!(prompt)).await
+}
+
+const ANNOTATE_SYSTEM: &str = "You annotate part of a user's whiteboard: a hand-drawn sketch, diagram, or equation. \
+Reply with one short sticky note (under 240 characters): say what it shows and add one useful insight, check, or correction \
+(for example, verify an equation or name the pattern in a diagram). Plain text only, no preamble, no markdown.";
+pub const MAX_IMAGE_B64: usize = 7_000_000;
+
+#[derive(Deserialize)]
+pub struct AnnotateReq {
+    image_jpeg_base64: String,
+}
+
+/// FR-1.4: a picture of the lassoed region goes to Claude; the note is placed beside it, strokes untouched.
+pub async fn annotate(State(s): State<AppState>, user: User, Json(b): Json<AnnotateReq>) -> Res<Json<Value>> {
+    if b.image_jpeg_base64.is_empty() || b.image_jpeg_base64.len() > MAX_IMAGE_B64 {
+        return Err(AppError::new(StatusCode::PAYLOAD_TOO_LARGE, "selection image is empty or too large"));
+    }
+    if !b.image_jpeg_base64.bytes().all(|c| c.is_ascii_alphanumeric() || matches!(c, b'+' | b'/' | b'=')) {
+        return Err(AppError::new(StatusCode::BAD_REQUEST, "image must be base64"));
+    }
+    let content = json!([
+        { "type": "image", "source": { "type": "base64", "media_type": "image/jpeg", "data": b.image_jpeg_base64 } },
+        { "type": "text", "text": "Annotate this part of my whiteboard." },
+    ]);
+    ask_claude(&s, user.id, ANNOTATE_SYSTEM, content).await
 }

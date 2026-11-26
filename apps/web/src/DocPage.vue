@@ -17,6 +17,7 @@ import InboxPill from './InboxPill.vue'
 import McpPill from './McpPill.vue'
 import { AiMargin, requestWhisper } from './editor/AiMargin'
 import { AiSource } from './editor/AiSource'
+import { Callout, Clip, Runbook } from './editor/Blocks'
 import { CanvasBlock } from './editor/CanvasBlock'
 import MarginWhispers from './editor/MarginWhispers.vue'
 import { SlashCommand } from './editor/SlashCommand'
@@ -58,6 +59,9 @@ const editor = useEditor({
     CanvasBlock,
     AiMargin,
     AiSource,
+    Callout,
+    Clip,
+    Runbook,
     SlashCommand,
   ],
 })

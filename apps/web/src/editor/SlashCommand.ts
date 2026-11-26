@@ -1,6 +1,7 @@
 import { Extension, type Editor, type Range } from '@tiptap/core'
 import Suggestion, { exitSuggestion } from '@tiptap/suggestion'
 import { VueRenderer, type Editor as VueEditor } from '@tiptap/vue-3'
+import { parseClip } from './Blocks'
 import SlashMenu from './SlashMenu.vue'
 
 export type SlashItem = { title: string; hint: string; run: (editor: Editor, range: Range) => void }
@@ -24,6 +25,19 @@ export const slashItems: SlashItem[] = [
       if (latex) e.commands.insertInlineMath({ latex })
     },
   },
+  { title: 'hypothesis', hint: 'Callout', run: (e, r) => e.chain().focus().deleteRange(r).wrapIn('callout', { kind: 'hypothesis' }).run() },
+  { title: 'evidence', hint: 'Verified fact', run: (e, r) => e.chain().focus().deleteRange(r).wrapIn('callout', { kind: 'fact' }).run() },
+  { title: 'contradicts', hint: 'Counter-evidence', run: (e, r) => e.chain().focus().deleteRange(r).wrapIn('callout', { kind: 'contradicts' }).run() },
+  {
+    title: 'clip', hint: '▶ 14:22 – 15:08', run: (e, r) => {
+      const input = window.prompt('Link and time range, e.g. https://youtu.be/… 14:22-15:08')
+      e.chain().focus().deleteRange(r).run()
+      const clip = input && parseClip(input)
+      if (clip) e.chain().focus().setNode('clip', clip).run()
+      else if (input) window.alert('Use: an http(s) link, a space, then a time like 14:22 or 14:22-15:08')
+    },
+  },
+  { title: 'runbook', hint: 'Command + status', run: (e, r) => e.chain().focus().deleteRange(r).setNode('runbook', { lang: 'cmd' }).run() },
   { title: 'heading 1', hint: '#', run: (e, r) => e.chain().focus().deleteRange(r).setHeading({ level: 1 }).run() },
   { title: 'heading 2', hint: '##', run: (e, r) => e.chain().focus().deleteRange(r).setHeading({ level: 2 }).run() },
   { title: 'heading 3', hint: '###', run: (e, r) => e.chain().focus().deleteRange(r).setHeading({ level: 3 }).run() },

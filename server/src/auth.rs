@@ -8,10 +8,43 @@ use axum::{
 use axum_extra::extract::cookie::{Cookie, CookieJar, SameSite};
 use serde::Deserialize;
 use serde_json::{json, Value};
-use std::sync::LazyLock;
+use std::{collections::HashMap, sync::{LazyLock, Mutex}, time::{Duration, Instant}};
 use uuid::Uuid;
 
 const COOKIE: &str = "on_session";
+const MAX_FAILS: u32 = 5;
+const LOCK_WINDOW: Duration = Duration::from_secs(15 * 60);
+
+/// Per-email brute-force guard: MAX_FAILS failed logins lock that email for LOCK_WINDOW.
+/// shortcut: in-memory and per-process; move to Postgres/Redis if you run several server replicas.
+#[derive(Default)]
+pub struct LoginLimiter(Mutex<HashMap<String, (u32, Instant)>>);
+
+impl LoginLimiter {
+    /// Seconds until this email may try again, if it's locked.
+    pub fn locked_for(&self, email: &str) -> Option<u64> {
+        let map = self.0.lock().unwrap();
+        let (fails, since) = map.get(email)?;
+        let left = LOCK_WINDOW.checked_sub(since.elapsed())?;
+        (*fails >= MAX_FAILS).then(|| left.as_secs().max(1))
+    }
+
+    pub fn record(&self, email: &str, ok: bool) {
+        let mut map = self.0.lock().unwrap();
+        if ok {
+            map.remove(email);
+            return;
+        }
+        if map.len() > 100_000 {
+            map.retain(|_, (_, since)| since.elapsed() < LOCK_WINDOW);
+        }
+        let entry = map.entry(email.to_string()).or_insert((0, Instant::now()));
+        if entry.1.elapsed() >= LOCK_WINDOW {
+            *entry = (0, Instant::now());
+        }
+        entry.0 += 1;
+    }
+}
 const SESSION_DAYS: i64 = 30;
 // Verified against when the email is unknown, so login timing doesn't reveal which accounts exist.
 static DUMMY_HASH: LazyLock<String> = LazyLock::new(|| hash_password("not-a-real-password").unwrap());
@@ -114,13 +147,16 @@ pub async fn signup(State(state): State<AppState>, jar: CookieJar, Json(c): Json
 }
 
 pub async fn login(State(state): State<AppState>, jar: CookieJar, Json(c): Json<Credentials>) -> Res<(CookieJar, Json<Value>)> {
-    // shortcut: no rate limiting on login yet; put the server behind a proxy rate limit before exposing it publicly.
     let email = c.email.trim().to_lowercase();
+    if let Some(secs) = state.login_limiter.locked_for(&email) {
+        return Err(AppError::new(StatusCode::TOO_MANY_REQUESTS, format!("too many attempts; try again in {} minutes", secs.div_ceil(60))));
+    }
     let row: Option<(Uuid, String)> = sqlx::query_as("SELECT id, password_hash FROM users WHERE email = $1")
         .bind(&email)
         .fetch_optional(&state.db)
         .await?;
     let ok = verify_password(&c.password, row.as_ref().map_or(DUMMY_HASH.as_str(), |r| r.1.as_str()));
+    state.login_limiter.record(&email, ok && row.is_some());
     match row {
         Some((id, _)) if ok => Ok((start_session(&state, jar, id).await?, Json(json!({ "email": email })))),
         _ => Err(AppError::new(StatusCode::UNAUTHORIZED, "wrong email or password")),
@@ -144,6 +180,20 @@ pub async fn me(State(state): State<AppState>, user: User) -> Res<Json<Value>> {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn limiter_locks_after_max_fails_and_resets_on_success() {
+        let l = super::LoginLimiter::default();
+        for _ in 0..super::MAX_FAILS - 1 {
+            l.record("a@x", false);
+        }
+        assert!(l.locked_for("a@x").is_none());
+        l.record("a@x", false);
+        assert!(l.locked_for("a@x").is_some_and(|s| s <= 900));
+        assert!(l.locked_for("b@x").is_none(), "other accounts unaffected");
+        l.record("a@x", true);
+        assert!(l.locked_for("a@x").is_none());
+    }
+
     #[test]
     fn password_hash_verifies() {
         let h = super::hash_password("correct horse").unwrap();
