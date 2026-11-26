@@ -1,8 +1,7 @@
-import { Extension, VueRenderer, type Editor as VueEditor, type Range } from '@tiptap/vue-3'
-import Suggestion, { exitSuggestion, type SuggestionProps } from '@tiptap/suggestion'
+import { Extension, type Editor, type Range } from '@tiptap/core'
+import Suggestion, { exitSuggestion } from '@tiptap/suggestion'
+import { VueRenderer, type Editor as VueEditor } from '@tiptap/vue-3'
 import SlashMenu from './SlashMenu.vue'
-
-type Editor = SuggestionProps['editor']
 
 export type SlashItem = { title: string; hint: string; run: (editor: Editor, range: Range) => void }
 

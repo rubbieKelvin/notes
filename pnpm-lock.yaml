@@ -10,6 +10,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@tiptap/core':
+        specifier: 3.35.0
+        version: 3.35.0(@tiptap/pm@3.35.0)
       '@tiptap/extension-bubble-menu':
         specifier: ^3.35.0
         version: 3.35.0(@tiptap/core@3.35.0(@tiptap/pm@3.35.0))(@tiptap/pm@3.35.0)

@@ -14,3 +14,11 @@ html, body { @apply bg-white text-stone-800 antialiased; }
 .ProseMirror ul[data-type="taskList"] li > div { @apply flex-1; }
 .ProseMirror pre { @apply bg-stone-50 text-stone-800 border border-stone-200; }
 .ProseMirror [data-type="inline-math"], .ProseMirror [data-type="block-math"] { @apply cursor-pointer; }
+
+.ai-margin { @apply decoration-stone-400 underline decoration-dotted underline-offset-4; }
+.ProseMirror div[data-type="ai-source"] { @apply my-4 border-l-2 border-stone-300 pl-4 text-stone-600; }
+.ProseMirror div[data-type="ai-source"]::before {
+  content: "AI-Source · " attr(data-agent);
+  @apply block text-[11px] uppercase tracking-wide text-stone-400;
+}
+.ProseMirror div[data-type="ai-source"][data-provenance="human_edited"]::before { content: "Rewritten from " attr(data-agent); }

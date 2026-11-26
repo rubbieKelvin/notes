@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@tiptap/core": "3.35.0",
     "@tiptap/extension-bubble-menu": "^3.35.0",
     "@tiptap/extension-code-block-lowlight": "^3.35.0",
     "@tiptap/extension-list": "^3.35.0",
