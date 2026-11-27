@@ -6,6 +6,7 @@
 # (cookies and the sync origin check need that).
 [services.opennotes-web]
 type = "web"
+region = "eu-central"
 
 [services.opennotes-web.build]
 dockerfile = "apps/web/Dockerfile" # build context is the repo root (pnpm workspace)
@@ -26,6 +27,7 @@ headers = { frame = "DENY", nosniff = true, hsts = true }
 # Rust server. Private: only the web service reaches it, so X-Real-IP always comes from our nginx.
 [services.opennotes]
 type = "web"
+region = "eu-central"
 root = "server"
 
 [services.opennotes.build]
@@ -69,6 +71,7 @@ required = ["OPENNOTES_SECRET", "EMAIL_RESEND_API_KEY", "AWS_BUCKET", "AWS_REGIO
 
 [databases.db]
 engine = "postgresql"
+region = "eu-central"
 version = "18"
 disk = "10gb"
 backups = { schedule = "0 2 * * *", timezone = "UTC", keep = "14d" }
