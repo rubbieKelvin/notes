@@ -109,3 +109,11 @@
 .ProseMirror div[data-type="callout"][data-kind="fact"]::before { content: "Verified fact"; @apply text-emerald-700; }
 .ProseMirror div[data-type="callout"][data-kind="contradicts"] { @apply border-rose-400 bg-rose-50/60; }
 .ProseMirror div[data-type="callout"][data-kind="contradicts"]::before { content: "Contradicts"; @apply text-rose-700; }
+
+/* Note typography: hierarchy comes from size, never bold. Medium (500) is the heaviest weight in a note. */
+.prose :is(h1, h2, h3, h4, h5, h6, strong, b, th, dt, blockquote, code, a) { font-weight: 400; }
+.prose :is(h3, h4, h5, h6, strong, b, th, dt) { font-weight: 500; }
+.prose h1 { font-size: 2.25em; line-height: 1.15; letter-spacing: -0.025em; }
+.prose h2 { font-size: 1.625em; line-height: 1.25; letter-spacing: -0.015em; }
+.prose h3 { font-size: 1.25em; line-height: 1.4; letter-spacing: -0.01em; }
+.prose h4 { font-size: 1.0625em; }

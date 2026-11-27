@@ -103,7 +103,7 @@ const marks = [
 
 <template>
   <header class="pointer-events-none fixed inset-x-0 top-0 z-40 flex items-center justify-between px-4 py-3 text-sm [&>*]:pointer-events-auto">
-    <div class="flex items-center gap-0.5 rounded-full border bg-background/85 p-0.5 text-sm backdrop-blur">
+    <div class="flex items-center gap-0.5 rounded-full bg-background/85 p-0.5 text-sm backdrop-blur">
       <UserMenu :me="me" />
       <NoteSwitcher :doc="doc" :docs="docs" :title="title" />
       <Button variant="ghost" size="icon-sm" class="rounded-full text-muted-foreground" aria-label="Edit title and description" title="Edit title and description" @click="details?.show()"><Pencil /></Button>

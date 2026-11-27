@@ -45,7 +45,7 @@ const toggle = (id: string) => (open.has(id) ? open.delete(id) : open.add(id))
         :style="{ top: `${w.top}px` }"
       >
         <div class="mb-1 flex items-center gap-1.5 text-[10px] text-stone-400">
-          <span class="rounded-full bg-ai-50 px-1.5 py-px font-semibold tracking-wide text-ai-700">AI</span>
+          <span class="rounded-full bg-ai-50 px-1.5 py-px font-medium tracking-wide text-ai-700">AI</span>
           <span class="truncate">on “{{ w.text }}”</span>
         </div>
         <p v-if="pending.has(w.id)" class="flex items-center gap-1.5 text-stone-400"><span class="size-1.5 animate-pulse rounded-full bg-ai-500" />Thinking…</p>
