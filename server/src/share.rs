@@ -91,7 +91,7 @@ pub async fn invite(State(s): State<AppState>, user: User, Path(id): Path<Uuid>,
             "link": format!("{}/d/{id}", s.cfg.public_url), "preheader": format!("{} shared a note with you", one_line(&owner_name)),
         });
         if let Err(e) = s.email.send(email::kinds::SHARE_INVITE, &email, ctx).await {
-            eprintln!("invite mail to {email} failed: {e}"); // the share itself stands; the owner can send the link
+            tracing::error!(error = %e, "invite mail failed"); // the share itself stands; the owner can send the link
         }
     }
     Ok(Json(json!({ "shares": shares(&s, id).await? })))

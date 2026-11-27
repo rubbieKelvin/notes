@@ -51,7 +51,7 @@ fn user(parts: &Parts) -> Result<Uuid, ErrorData> {
 }
 
 fn db_err(e: sqlx::Error) -> ErrorData {
-    eprintln!("mcp db error: {e}");
+    tracing::error!(error = %e, "mcp db error");
     ErrorData::internal_error("database error", None)
 }
 

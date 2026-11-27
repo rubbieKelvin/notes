@@ -44,14 +44,19 @@ async fn persist(s: &AppState, id: Uuid, room: &Room) -> Res<()> {
         .transact()
         .encode_state_as_update_v1(&StateVector::default());
     let (title, plain) = text::serialize(&room.doc);
+    let (human, ai, canvases) = text::stats(&room.doc);
     sqlx::query(
-        "UPDATE documents SET yjs_state = $2, plain_text_cache = $3, title = COALESCE(NULLIF($4, ''), 'Untitled'), description = $5, updated_at = NOW() WHERE id = $1",
+        "UPDATE documents SET yjs_state = $2, plain_text_cache = $3, title = COALESCE(NULLIF($4, ''), 'Untitled'), description = $5, \
+         human_chars = $6, ai_chars = $7, canvas_blocks = $8, updated_at = NOW() WHERE id = $1",
     )
     .bind(id)
     .bind(state)
     .bind(plain)
     .bind(title)
     .bind(text::meta(&room.doc, "description"))
+    .bind(human)
+    .bind(ai)
+    .bind(canvases)
     .execute(&s.db)
     .await?;
     crate::files::sync_refs(&s.db, id, &text::file_ids(&room.doc)).await?;
@@ -102,7 +107,7 @@ async fn join(s: &AppState, id: Uuid) -> Res<Arc<Room>> {
             if room.dirty.swap(false, Ordering::SeqCst) {
                 if let Err(e) = persist(&s2, id, &room).await {
                     room.dirty.store(true, Ordering::SeqCst);
-                    eprintln!("persist {id} failed: {}", e.1);
+                    tracing::error!(doc = %id, error = %e.1, "persist failed");
                 }
             }
         }
@@ -115,10 +120,22 @@ async fn leave(s: &AppState, id: Uuid, room: Arc<Room>) {
     if room.conns.fetch_sub(1, Ordering::SeqCst) == 1 {
         if room.dirty.swap(false, Ordering::SeqCst) {
             if let Err(e) = persist(s, id, &room).await {
-                eprintln!("final persist {id} failed: {}", e.1); // room stays dropped; last <2s of edits may be lost
+                tracing::error!(doc = %id, error = %e.1, "final persist failed"); // room stays dropped; last <2s of edits may be lost
             }
         }
         map.remove(&id);
+    }
+}
+
+/// Saves every room with unsaved edits; run on shutdown so a deploy doesn't drop the last debounce window.
+pub async fn flush_all(s: &AppState) {
+    let rooms: Vec<_> = s.rooms.map.lock().await.iter().map(|(id, r)| (*id, r.clone())).collect();
+    for (id, room) in rooms {
+        if room.dirty.swap(false, Ordering::SeqCst) {
+            if let Err(e) = persist(s, id, &room).await {
+                tracing::error!(doc = %id, error = %e.1, "shutdown persist failed");
+            }
+        }
     }
 }
 
@@ -217,7 +234,7 @@ async fn serve(s: &AppState, room: &Room, socket: WebSocket, read_only: bool) {
                         let applied = Update::decode_v1(&u).map_err(|e| e.to_string())
                             .and_then(|up| room.doc.transact_mut().apply_update(up).map_err(|e| e.to_string()));
                         if let Err(e) = applied {
-                            eprintln!("rejected update: {e}");
+                            tracing::warn!(error = %e, "rejected update");
                             break;
                         }
                         room.dirty.store(true, Ordering::SeqCst);

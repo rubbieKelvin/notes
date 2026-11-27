@@ -35,6 +35,8 @@ services:
       ALLOW_SIGNUP: ${ALLOW_SIGNUP:-true}
       OPENNOTES_HOSTS: ${OPENNOTES_HOSTS:-localhost,127.0.0.1}
       ALLOW_PRIVATE_AI_URLS: ${ALLOW_PRIVATE_AI_URLS:-false}
+      RUST_LOG: ${RUST_LOG:-info}
+      LOG_FORMAT: ${LOG_FORMAT:-}
       PUBLIC_URL: ${PUBLIC_URL:-http://localhost:5173}
       STORAGE_DRIVER: ${STORAGE_DRIVER:-fs}
       FILES_DIR: /data/files

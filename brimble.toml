@@ -1,0 +1,77 @@
+#:schema https://brimble.io/schema/brimble.json
+# Brimble deploy: nginx web app (public) → Rust API (private) → managed Postgres.
+# Reference: https://paper.brimble.io/config-as-code/reference
+
+# Static app + nginx proxy for /v1 (API, sync WebSocket) and /mcp, so the browser sees one origin
+# (cookies and the sync origin check need that).
+[services.opennotes-web]
+type = "web"
+
+[services.opennotes-web.build]
+dockerfile = "apps/web/Dockerfile" # build context is the repo root (pnpm workspace)
+watch = ["apps/web/**", "package.json", "pnpm-lock.yaml", "pnpm-workspace.yaml"]
+
+[services.opennotes-web.deploy]
+port = 80
+health = "/"
+
+[services.opennotes-web.env]
+# <project-slug>.service.brimble.internal, plain http. Must match the API project's slug.
+API_UPSTREAM = "opennotes-api.service.brimble.internal:8080"
+
+[services.opennotes-web.network]
+# domains = ["notes.example.com"]  # add yours; then set PUBLIC_URL and OPENNOTES_HOSTS on the API to match
+headers = { frame = "DENY", nosniff = true, hsts = true }
+
+# Rust server. Private: only the web service reaches it, so X-Real-IP always comes from our nginx.
+[services.opennotes-api]
+type = "web"
+root = "server"
+
+[services.opennotes-api.build]
+dockerfile = "Dockerfile" # final stage is the slim release image
+watch = ["server/**"]
+
+[services.opennotes-api.deploy]
+port = 8080
+health = "/health"
+# migrations run inside the server on startup; no before_start needed
+
+[services.opennotes-api.resources]
+cpu = 0.5
+memory = "512mb"
+
+# Live sync rooms are held in memory and uploads sit on the volume: exactly one instance.
+[services.opennotes-api.scale]
+replicas = 1
+
+# Uploaded files. Not snapshotted by Brimble: back it up, or move to STORAGE_DRIVER=s3.
+[services.opennotes-api.volume]
+path = "/data/files"
+size = "10gb"
+
+[services.opennotes-api.network]
+public = false
+
+[services.opennotes-api.env]
+DATABASE_URL = "{{@db.PRIVATE_CONNECTION_STRING}}"
+BIND = "0.0.0.0:8080"
+COOKIE_SECURE = "true"
+ALLOW_SIGNUP = "false"
+ALLOW_PRIVATE_AI_URLS = "false"
+LOG_FORMAT = "json"
+RUST_LOG = "info"
+STORAGE_DRIVER = "fs"
+FILES_DIR = "/data/files"
+EMAIL_DRIVER = "resend"
+
+# Set in the dashboard; deploys are blocked until each exists.
+# PUBLIC_URL = https://<your domain>, OPENNOTES_HOSTS = <your domain>, EMAIL_FROM = "opennotes <notes@your domain>"
+[services.opennotes-api.secrets]
+required = ["OPENNOTES_SECRET", "EMAIL_RESEND_API_KEY", "EMAIL_FROM", "PUBLIC_URL", "OPENNOTES_HOSTS"]
+
+[databases.db]
+engine = "postgresql"
+version = "17"
+disk = "10gb"
+backups = { schedule = "0 2 * * *", timezone = "UTC", keep = "14d" }

@@ -128,6 +128,36 @@ pub fn file_ids(doc: &Doc) -> Vec<uuid::Uuid> {
     ids
 }
 
+/// Characters written by people, characters in AI-Source blocks (still the agent's words), and canvas blocks.
+/// Rewritten (`human_edited`) AI-Source blocks count as human. For the PRD §7 KPIs; never stores the text.
+pub fn stats(doc: &Doc) -> (i32, i32, i32) {
+    let tabs = tabs(doc);
+    let txn = doc.transact();
+    let mut st = (0, 0, 0);
+    for (_, frag) in &tabs {
+        frag.children(&txn).for_each(|c| count(&txn, c, false, &mut st));
+    }
+    st
+}
+
+fn count<T: ReadTxn>(txn: &T, n: XmlOut, ai: bool, st: &mut (i32, i32, i32)) {
+    match n {
+        XmlOut::Text(t) => {
+            let len = t.diff(txn, YChange::identity).iter().map(|d| match &d.insert { Out::Any(Any::String(s)) => s.chars().count() as i32, _ => 0 }).sum::<i32>();
+            if ai { st.1 += len } else { st.0 += len }
+        }
+        XmlOut::Fragment(f) => f.children(txn).for_each(|c| count(txn, c, ai, st)),
+        XmlOut::Element(e) => {
+            let tag = e.tag();
+            if tag.as_ref() == "canvasBlock" {
+                st.2 += 1;
+            }
+            let ai = ai || (tag.as_ref() == "aiSource" && to_json(e.get_attribute(txn, "provenance")) != "human_edited");
+            e.children(txn).for_each(|c| count(txn, c, ai, st));
+        }
+    }
+}
+
 fn collect_files<T: ReadTxn>(txn: &T, canvases: &MapRef, n: XmlOut, ids: &mut Vec<uuid::Uuid>) {
     let XmlOut::Element(e) = n else { return };
     let attr = |k: &str| str_attr(&to_json(e.get_attribute(txn, k)));
@@ -309,7 +339,27 @@ mod tests {
         assert_eq!(title, "Box Geometry");
         let ids: Vec<String> = file_ids(&doc).iter().map(|i| i.to_string()).collect();
         assert_eq!(ids, ["00000000-0000-0000-0000-000000000001", "00000000-0000-0000-0000-000000000002"]);
+        // canvas text and margin notes aren't prose: "Boxes" + "same size in height." + "Boxes vary."
+        assert_eq!(stats(&doc), (36, 0, 1));
         assert_eq!(text, "## Boxes\n\nsame size in height [AI margin note: V = s³ for a cube].\n\n$$E=mc^2$$\n\n[Canvas \"Cube\": V=s³ · $A=6s^2$]\n\n[File \"data.csv\" (application/octet-stream)]\n\n[Contradicts] Boxes vary.");
+    }
+
+    #[test]
+    fn stats_split_ai_source_by_provenance() {
+        let doc = Doc::new();
+        let frag = doc.get_or_insert_xml_fragment("default");
+        {
+            let mut txn = doc.transact_mut();
+            let p = frag.push_back(&mut txn, XmlElementPrelim::empty("paragraph"));
+            p.push_back(&mut txn, XmlTextPrelim::new("mine"));
+            for (prov, text) in [("ai_agent", "agent says"), ("human_edited", "rewritten")] {
+                let a = frag.push_back(&mut txn, XmlElementPrelim::empty("aiSource"));
+                a.insert_attribute(&mut txn, "provenance", prov);
+                let ap = a.push_back(&mut txn, XmlElementPrelim::empty("paragraph"));
+                ap.push_back(&mut txn, XmlTextPrelim::new(text));
+            }
+        }
+        assert_eq!(stats(&doc), (4 + 9, 10, 0));
     }
 
     #[test]

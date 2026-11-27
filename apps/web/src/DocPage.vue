@@ -25,6 +25,7 @@ import BlockToolbar from './editor/BlockToolbar.vue'
 import { confirmDialog, toast } from './ui/feedback'
 import ShareDialog from './ShareDialog.vue'
 import CommentsPanel from './CommentsPanel.vue'
+import { sheetReady } from './telemetry'
 
 const props = defineProps<{ me: Me; doc: DocInfo; docs: DocInfo[] }>()
 const owner = props.doc.role === 'owner'
@@ -40,6 +41,7 @@ const status = ref<'connecting' | 'connected' | 'disconnected'>('connecting')
 const hue = [...props.me.email].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 360, 0)
 provider.awareness.setLocalStateField('user', { name: displayName(props.me), color: `hsl(${hue} 70% 45%)` })
 provider.on('status', (e: { status: 'connecting' | 'connected' | 'disconnected' }) => (status.value = e.status))
+if (!readOnly) provider.once('sync', () => sheetReady(props.doc.id))
 
 const meta = ydoc.getMap<string>('meta')
 const title = ref(meta.get('title') ?? '')

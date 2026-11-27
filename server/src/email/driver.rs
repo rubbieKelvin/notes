@@ -30,7 +30,7 @@ async fn send_fs(dir: &str, msg: &Message) -> Result<String, EmailError> {
     let path = std::path::Path::new(dir).join(&filename);
     tokio::fs::write(&path, pretty).await.map_err(|e| EmailError::Send(format!("write {}: {e}", path.display())))?;
     // The subject carries the sign-in code, so `just logs` is enough to sign in locally.
-    println!("email to {}: {} ({})", msg.to.join(", "), msg.subject, path.display());
+    tracing::info!("email to {}: {} ({})", msg.to.join(", "), msg.subject, path.display());
     Ok(filename)
 }
 

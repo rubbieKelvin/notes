@@ -1,0 +1,106 @@
+# Production: `docker compose -f docker-compose.prod.yml up -d --build` on a host whose DNS points DOMAIN at it.
+# Caddy gets and renews the TLS certificate; nginx serves the app and proxies /v1 and /mcp to the server.
+services:
+  caddy:
+    image: caddy:2-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      DOMAIN: ${DOMAIN:?set DOMAIN in .env}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on: [web]
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    depends_on: [server]
+    restart: unless-stopped
+
+  server:
+    build: ./server
+    # time to save open documents on deploy (the server waits up to ~5s after saving)
+    stop_grace_period: 20s
+    volumes:
+      - files:/data/files
+    environment:
+      DATABASE_URL: postgres://opennotes:${POSTGRES_PASSWORD}@db:5432/opennotes
+      OPENNOTES_SECRET: ${OPENNOTES_SECRET:?set OPENNOTES_SECRET in .env}
+      BIND: 0.0.0.0:8080
+      COOKIE_SECURE: "true"
+      PUBLIC_URL: https://${DOMAIN}
+      OPENNOTES_HOSTS: ${DOMAIN}
+      ALLOW_SIGNUP: ${ALLOW_SIGNUP:-false}
+      ALLOW_PRIVATE_AI_URLS: "false"
+      LOG_FORMAT: json
+      RUST_LOG: ${RUST_LOG:-info}
+      STORAGE_DRIVER: ${STORAGE_DRIVER:-fs}
+      AWS_BUCKET: ${AWS_BUCKET:-}
+      AWS_REGION: ${AWS_REGION:-}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
+      AWS_ENDPOINT: ${AWS_ENDPOINT:-}
+      AWS_ALLOW_HTTP: ${AWS_ALLOW_HTTP:-}
+      EMAIL_DRIVER: resend
+      EMAIL_FROM: ${EMAIL_FROM:?set EMAIL_FROM in .env}
+      EMAIL_REPLY_TO: ${EMAIL_REPLY_TO:-}
+      EMAIL_RESEND_API_KEY: ${EMAIL_RESEND_API_KEY:?set EMAIL_RESEND_API_KEY in .env}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: opennotes
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: opennotes
+    volumes:
+      - db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U opennotes"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  # Nightly database dump (kept 14 days) and a mirror of uploaded files, both into ./backups.
+  # shortcut: backups stay on this host; sync ./backups off-site (restic, rclone, provider snapshots) for real disaster recovery.
+  backup:
+    image: postgres:17-alpine
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ./backups:/backups
+      - files:/data/files:ro
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        while true; do
+          ts=$$(date -u +%Y%m%dT%H%M%SZ)
+          if pg_dump -h db -U opennotes -Fc opennotes > /backups/db-$$ts.dump.tmp; then
+            mv /backups/db-$$ts.dump.tmp /backups/db-$$ts.dump && echo "backup: db-$$ts.dump"
+          else
+            rm -f /backups/db-$$ts.dump.tmp; echo "backup: pg_dump FAILED" >&2
+          fi
+          mkdir -p /backups/files && cp -a /data/files/. /backups/files/
+          find /backups -maxdepth 1 -name 'db-*.dump' -mtime +14 -delete
+          sleep 86400
+        done
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  db:
+  files:
+  caddy-data:
+  caddy-config:

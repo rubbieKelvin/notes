@@ -12,6 +12,7 @@ import Canvas from './canvas/Canvas.vue'
 import { download, toSvg } from './canvas/export'
 import { contains, union } from './canvas/geometry'
 import { canvasesOf, cloneCanvas, type ShapeMap } from './canvas/store'
+import { track } from '../telemetry'
 
 const props = defineProps(nodeViewProps)
 const opts = props.extension.options as CanvasBlockOptions
@@ -83,6 +84,7 @@ const onRoot = (e: Y.YMapEvent<Y.Map<Y.Map<unknown>>>) => {
 root.observe(onRoot)
 
 function setExpanded(v: boolean) {
+  if (v && !expanded.value) track('canvas_expand', {}, opts.docId)
   const apply = async () => {
     expanded.value = v
     if (!v) pure.value = false

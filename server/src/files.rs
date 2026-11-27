@@ -98,7 +98,7 @@ pub fn store_from_env(env: fn(&str) -> Option<String>) -> Arc<dyn ObjectStore> {
 }
 
 fn store_err(e: object_store::Error) -> AppError {
-    eprintln!("file storage error: {e}");
+    tracing::error!(error = %e, "file storage error");
     AppError::new(StatusCode::INTERNAL_SERVER_ERROR, "couldn't reach file storage")
 }
 
@@ -358,7 +358,7 @@ pub async fn delete(State(s): State<AppState>, user: User, Path(id): Path<Uuid>)
 pub async fn remove(s: &AppState, ids: &[Uuid]) {
     for id in ids {
         if let Err(e) = s.store.delete(&key(*id)).await {
-            eprintln!("couldn't remove file {id}: {e}");
+            tracing::warn!(file = %id, error = %e, "couldn't remove file");
         }
     }
 }
@@ -382,7 +382,7 @@ pub async fn move_legacy(db: &PgPool, store: &dyn ObjectStore) {
         let row: Result<Option<(Uuid, Vec<u8>)>, _> = sqlx::query_as("SELECT id, bytes FROM files WHERE bytes IS NOT NULL LIMIT 1").fetch_optional(db).await;
         let Ok(Some((id, bytes))) = row else { return };
         if let Err(e) = store.put(&key(id), bytes.into()).await {
-            return eprintln!("couldn't move file {id} to storage: {e}");
+            return tracing::error!(file = %id, error = %e, "couldn't move file to storage");
         }
         if sqlx::query("UPDATE files SET bytes = NULL WHERE id = $1").bind(id).execute(db).await.is_err() {
             return;

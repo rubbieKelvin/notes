@@ -162,7 +162,7 @@ pub async fn request_link(State(state): State<AppState>, Json(r): Json<LinkReque
     let link = format!("{}{}#signin={token}", state.cfg.public_url, safe_next(r.next.trim()));
     let ctx = serde_json::json!({ "code": code, "link": link, "minutes": LINK_MINUTES, "preheader": format!("Your sign-in code is {code}") });
     state.email.send(email::kinds::SIGN_IN, &email, ctx).await.map_err(|e| {
-        eprintln!("sign-in mail to {email} failed: {e}");
+        tracing::error!(error = %e, "sign-in mail failed");
         AppError::new(StatusCode::BAD_GATEWAY, "couldn't send the email; try again in a minute")
     })?;
     Ok(StatusCode::NO_CONTENT)

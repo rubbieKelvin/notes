@@ -54,7 +54,7 @@ impl EmailService {
             Some(other) => panic!("EMAIL_DRIVER must be fs or resend, not {other}"),
         };
         if let Driver::Fs { dir } = &driver {
-            eprintln!("EMAIL_DRIVER=fs: emails are written to {dir}/ and logged here, not sent");
+            tracing::info!("EMAIL_DRIVER=fs: emails are written to {dir}/ and logged here, not sent");
         }
         EmailService { templates: Templates::new(), driver, from: get("EMAIL_FROM").unwrap_or_else(|| "opennotes <notes@localhost>".into()), reply_to: get("EMAIL_REPLY_TO") }
     }

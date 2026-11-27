@@ -4,6 +4,7 @@ mod auth;
 mod crypto;
 mod docs;
 mod email;
+mod events;
 mod files;
 mod inbox;
 mod mcp;
@@ -16,10 +17,17 @@ use axum::{
     extract::DefaultBodyLimit,
     http::StatusCode,
     response::{IntoResponse, Response},
+    middleware,
     routing::{delete, get, post, put},
     Router,
 };
+use axum::extract::Request;
 use sqlx::PgPool;
+use tower_http::{
+    catch_panic::CatchPanicLayer,
+    request_id::{MakeRequestUuid, PropagateRequestIdLayer, SetRequestIdLayer},
+    trace::{DefaultOnResponse, TraceLayer},
+};
 use std::{sync::Arc, time::Duration};
 
 #[derive(Clone)]
@@ -62,7 +70,7 @@ impl IntoResponse for AppError {
 
 impl From<sqlx::Error> for AppError {
     fn from(e: sqlx::Error) -> Self {
-        eprintln!("db error: {e}");
+        tracing::error!(error = %e, "db error");
         Self(StatusCode::INTERNAL_SERVER_ERROR, "internal error".into())
     }
 }
@@ -108,11 +116,23 @@ pub fn app(state: AppState) -> Router {
         .route("/v1/notes/ingest", post(inbox::ingest))
         .route("/v1/inbox", get(inbox::list))
         .route("/v1/inbox/{id}/{action}", post(inbox::resolve))
+        .route("/v1/events", post(events::post))
         .merge(mcp::router(state.clone()))
+        // a panic becomes a 500 (and a server_error event) instead of a dropped connection
+        .layer(CatchPanicLayer::new())
+        .layer(middleware::from_fn_with_state(state.clone(), events::track_errors))
         .with_state(state)
+        // last added runs first: assign the request id, then log under it, then echo it on the response
+        .layer(PropagateRequestIdLayer::x_request_id())
+        .layer(TraceLayer::new_for_http().make_span_with(|req: &Request<_>| {
+            let id = req.headers().get("x-request-id").and_then(|v| v.to_str().ok()).unwrap_or("");
+            // path only: query strings can carry tokens
+            tracing::info_span!("http", method = %req.method(), path = req.uri().path(), request_id = id)
+        }).on_response(DefaultOnResponse::new().level(tracing::Level::INFO)))
+        .layer(SetRequestIdLayer::x_request_id(MakeRequestUuid))
 }
 
-/// FR-3.3 Knowledge Half-Life: archive unreviewed inbox items after 14 days; drop dead sessions and sign-in links.
+/// FR-3.3 Knowledge Half-Life: archive unreviewed inbox items after 14 days; drop dead sessions, sign-in links and old telemetry.
 async fn cleanup(db: PgPool) {
     let mut tick = tokio::time::interval(Duration::from_secs(3600));
     loop {
@@ -121,14 +141,20 @@ async fn cleanup(db: PgPool) {
             .execute(&db).await;
         let _ = sqlx::query("DELETE FROM sessions WHERE expires_at < NOW()").execute(&db).await;
         let _ = sqlx::query("DELETE FROM magic_links WHERE expires_at < NOW()").execute(&db).await;
+        let _ = sqlx::query("DELETE FROM events WHERE created_at < NOW() - INTERVAL '90 days'").execute(&db).await;
         if let Err(e) = archived {
-            eprintln!("cleanup failed: {e}");
+            tracing::error!(error = %e, "cleanup failed");
         }
     }
 }
 
 #[tokio::main]
 async fn main() {
+    // RUST_LOG picks levels (default info); LOG_FORMAT=json for log shippers.
+    let filter = tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| "info,tower_http=info".into());
+    let logs = tracing_subscriber::fmt().with_env_filter(filter);
+    if env("LOG_FORMAT").is_some_and(|v| v == "json") { logs.json().init() } else { logs.init() }
+
     let db_url = env("DATABASE_URL").expect("DATABASE_URL is required");
     let secret = env("OPENNOTES_SECRET").expect("OPENNOTES_SECRET is required (32 bytes, base64: `openssl rand -base64 32`)");
     let db = PgPool::connect(&db_url).await.expect("cannot connect to Postgres");
@@ -158,6 +184,26 @@ async fn main() {
 
     let bind = env("BIND").unwrap_or_else(|| "127.0.0.1:8080".into());
     let listener = tokio::net::TcpListener::bind(&bind).await.unwrap();
-    println!("opennotes server on http://{bind}");
-    axum::serve(listener, app(state)).await.unwrap();
+    tracing::info!("opennotes server on http://{bind}");
+    let (stop_tx, mut stop_rx) = tokio::sync::watch::channel(());
+    let server = tokio::spawn(
+        axum::serve(listener, app(state.clone()))
+            .with_graceful_shutdown(async move { let _ = stop_rx.changed().await; })
+            .into_future(),
+    );
+    shutdown_signal().await;
+    tracing::info!("shutting down: saving open documents");
+    let _ = stop_tx.send(());
+    sync::flush_all(&state).await;
+    // Sync WebSockets never close on their own, so in-flight requests get a few seconds, not forever.
+    let _ = tokio::time::timeout(Duration::from_secs(5), server).await;
+}
+
+async fn shutdown_signal() {
+    let ctrl_c = async { tokio::signal::ctrl_c().await.expect("ctrl-c handler") };
+    #[cfg(unix)]
+    let term = async { tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate()).expect("SIGTERM handler").recv().await };
+    #[cfg(not(unix))]
+    let term = std::future::pending::<Option<()>>();
+    tokio::select! { _ = ctrl_c => {}, _ = term => {} }
 }

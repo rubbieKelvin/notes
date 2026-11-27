@@ -25,9 +25,39 @@ server log (`just logs`). To actually deliver mail, set `EMAIL_DRIVER=resend`, `
 and `EMAIL_FROM` (see `.env.example`). Then open **avatar → Settings** to pick an AI provider (needed for margin notes and canvas annotations) and create
 API tokens for scripts or agents.
 
-For production, build the images directly: `docker build server` (its default target is the slim
-release image) and `docker build -f apps/web/Dockerfile .` (static app behind nginx, proxying to a host
-named `server`).
+### Production
+
+On a host with DNS for your domain pointing at it, set `DOMAIN`, `POSTGRES_PASSWORD`, `OPENNOTES_SECRET`,
+`EMAIL_FROM` and `EMAIL_RESEND_API_KEY` in `.env`, then:
+
+```sh
+docker compose -f docker-compose.prod.yml up -d --build
+```
+
+Caddy terminates TLS (certificates are automatic), nginx serves the app, and the server runs with secure
+cookies, sign-ups off (`ALLOW_SIGNUP=true` to open them; sign up first, then turn it off), and JSON logs.
+A `backup` service writes a Postgres dump to `./backups` nightly (kept 14 days) and mirrors uploaded files
+there. Copy `./backups` off the host (restic, rclone, …), or use `STORAGE_DRIVER=s3` with bucket
+versioning for files. Restore: `pg_restore -h … -U opennotes -d opennotes --clean backups/db-….dump`.
+
+On `docker compose stop`/deploy the server saves every open document before exiting.
+
+**Brimble:** `brimble.toml` defines the web app, the private API (one instance, files on a volume) and
+managed Postgres. Set the secrets it lists in the dashboard, and add your domain to the web service.
+
+### Logs
+
+The server logs one line per request with its `x-request-id` (also sent back as a response header, so a
+user's failing request can be found in the logs). `LOG_FORMAT=json` for log shippers; `RUST_LOG` sets levels
+(default `info`, e.g. `RUST_LOG=info,sqlx=warn`).
+
+### Telemetry
+
+Self-hosted only: nothing leaves your server, and no note content is recorded. The `events` table holds
+browser errors, every 5xx response (with its request id), how long a sheet takes to become editable, and
+canvas expands; each saved note also records its human vs AI-Source character counts and number of canvases.
+Events are kept 90 days and deleted with the account. `just kpis` prints the PRD §7 north-star numbers for
+the last 7 days and `just errors` the latest errors (add `prod` on the production host).
 
 ### AI providers
 
