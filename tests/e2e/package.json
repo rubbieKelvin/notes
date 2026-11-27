@@ -1,5 +1,5 @@
 {
-  "name": "e2e",
+  "name": "@opennotes/e2e",
   "private": true,
   "type": "module",
   "scripts": {

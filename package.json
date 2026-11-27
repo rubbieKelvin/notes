@@ -3,8 +3,9 @@
   "private": true,
   "packageManager": "pnpm@9.15.4",
   "scripts": {
-    "dev": "pnpm --filter web dev",
-    "build": "pnpm --filter web build",
-    "test:e2e": "pnpm --filter e2e test"
+    "dev": "pnpm --filter @opennotes/web dev",
+    "landing": "pnpm --filter @opennotes/landing dev",
+    "build": "pnpm --filter @opennotes/web build",
+    "test:e2e": "pnpm --filter @opennotes/e2e test"
   }
 }

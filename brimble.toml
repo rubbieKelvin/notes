@@ -57,7 +57,7 @@ public = false
 DATABASE_URL = "{{@db.PRIVATE_CONNECTION_STRING}}"
 BIND = "0.0.0.0:8080"
 COOKIE_SECURE = "true"
-ALLOW_SIGNUP = "false"
+ALLOW_SIGNUP = "true"
 ALLOW_PRIVATE_AI_URLS = "false"
 LOG_FORMAT = "json"
 RUST_LOG = "info"
@@ -72,6 +72,6 @@ required = ["OPENNOTES_SECRET", "EMAIL_RESEND_API_KEY", "EMAIL_FROM", "PUBLIC_UR
 
 [databases.db]
 engine = "postgresql"
-version = "17"
+version = "18"
 disk = "10gb"
 backups = { schedule = "0 2 * * *", timezone = "UTC", keep = "14d" }
