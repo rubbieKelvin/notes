@@ -1,38 +1,16 @@
 #:schema https://brimble.io/schema/brimble.json
-# Brimble deploy: nginx web app (public) → Rust API (private) → managed Postgres.
+# Brimble deploy: one Rust service (API + web app) → managed Postgres.
 # Reference: https://paper.brimble.io/config-as-code/reference
 
-# Static app + nginx proxy for /v1 (API, sync WebSocket) and /mcp, so the browser sees one origin
-# (cookies and the sync origin check need that).
-[services.opennotes-web]
-type = "web"
-region = "eu-central"
-
-[services.opennotes-web.build]
-dockerfile = "web.Dockerfile" # build context is the repo root (pnpm workspace)
-watch = ["apps/web/**", "web.Dockerfile", "package.json", "pnpm-lock.yaml", "pnpm-workspace.yaml"]
-
-[services.opennotes-web.deploy]
-port = 80
-health = "/"
-
-[services.opennotes-web.env]
-# <project-slug>.service.brimble.internal, plain http. Must match the API project's slug.
-API_UPSTREAM = "opennotes.service.brimble.internal:8080"
-
-[services.opennotes-web.network]
-domains = ["notes.rubbietheone.com"]
-headers = { frame = "DENY", nosniff = true, hsts = true }
-
-# Rust server. Private: only the web service reaches it, so X-Real-IP always comes from our nginx.
+# Rust server: serves the API, the sync WebSocket, /mcp and the built web app from one origin
+# (cookies and the sync origin check need that). Image built from the root Dockerfile.
 [services.opennotes]
 type = "web"
 region = "eu-central"
-root = "server"
 
 [services.opennotes.build]
-dockerfile = "Dockerfile" # final stage is the slim release image
-watch = ["server/**"]
+dockerfile = "Dockerfile" # repo root: builds apps/web, then the server, into one slim image
+watch = ["server/**", "apps/web/**", "Dockerfile", "package.json", "pnpm-lock.yaml", "pnpm-workspace.yaml"]
 cache = true
 
 [services.opennotes.deploy]
@@ -46,6 +24,8 @@ memory = "512mb"
 
 [services.opennotes.network]
 public = true
+domains = ["notes.rubbietheone.com"]
+headers = { frame = "DENY", nosniff = true, hsts = true }
 
 [services.opennotes.env]
 BIND = "0.0.0.0:8080"
@@ -56,13 +36,14 @@ LOG_FORMAT = "json"
 RUST_LOG = "info"
 STORAGE_DRIVER = "s3"
 EMAIL_DRIVER = "resend"
+# Brimble sits behind Cloudflare, which overwrites this header with the visitor's address (guest-comment rate limit).
+CLIENT_IP_HEADER = "cf-connecting-ip"
 
 # Set in the dashboard; deploys are blocked until each exists.
 PUBLIC_URL = "https://notes.rubbietheone.com"
 OPENNOTES_HOSTS = "notes.rubbietheone.com"
 EMAIL_FROM = "OpenNotes <no-reply@notes.rubbietheone.com>"
 DATABASE_URL = "{{@opennotes-db.PRIVATE_CONNECTION_STRING}}"
-
 
 [services.opennotes.secrets]
 required = ["OPENNOTES_SECRET", "EMAIL_RESEND_API_KEY", "AWS_BUCKET", "AWS_REGION", "AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY"]

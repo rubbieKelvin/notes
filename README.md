@@ -42,8 +42,8 @@ versioning for files. Restore: `pg_restore -h … -U opennotes -d opennotes --cl
 
 On `docker compose stop`/deploy the server saves every open document before exiting.
 
-**Brimble:** `brimble.toml` defines the web app, the private API (one instance, files in an S3-compatible bucket) and
-managed Postgres. Set the secrets it lists in the dashboard, and add your domain to the web service.
+**Brimble:** `brimble.toml` defines one service built from the root `Dockerfile` (the Rust server, which also serves the web app; files in an S3-compatible bucket) and
+managed Postgres. Set the secrets it lists in the dashboard, and add your domain to it.
 
 ### Logs
 

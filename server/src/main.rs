@@ -29,6 +29,7 @@ use std::{sync::Arc, time::Duration};
 use tower_http::{
     catch_panic::CatchPanicLayer,
     request_id::{MakeRequestUuid, PropagateRequestIdLayer, SetRequestIdLayer},
+    services::{ServeDir, ServeFile},
     trace::{DefaultOnResponse, TraceLayer},
 };
 
@@ -52,6 +53,8 @@ pub struct Config {
     pub hosts: Vec<String>,
     /// Origin the browser uses, for links in emails. Never taken from the request's Host header.
     pub public_url: String,
+    /// Header holding the visitor's address, set by the proxy in front of us (which must overwrite it).
+    pub client_ip_header: String,
 }
 
 #[derive(Debug)]
@@ -144,6 +147,16 @@ pub fn app(state: AppState) -> Router {
         .layer(SetRequestIdLayer::x_request_id(MakeRequestUuid));
 }
 
+/// With WEB_DIR set (the built web app), serves it for every path the API doesn't own; unknown paths get
+/// index.html so the app's own routes (/d/…, /notes, …) load. Unset in dev, where Vite serves the app.
+fn with_web(router: Router) -> Router {
+    let Some(dir) = env("WEB_DIR") else {
+        return router;
+    };
+    let index = std::path::Path::new(&dir).join("index.html");
+    return router.fallback_service(ServeDir::new(&dir).fallback(ServeFile::new(index)));
+}
+
 /// FR-3.3 Knowledge Half-Life: archive unreviewed inbox items after 14 days; drop dead sessions, sign-in links and old telemetry.
 async fn cleanup(db: PgPool) {
     let mut tick = tokio::time::interval(Duration::from_secs(3600));
@@ -192,6 +205,9 @@ async fn main() -> anyhow::Result<()> {
         anthropic_base: env("ANTHROPIC_BASE_URL")
             .unwrap_or_else(|| "https://api.anthropic.com".into()),
         allow_private_ai_urls: env("ALLOW_PRIVATE_AI_URLS").is_some_and(|v| v == "true"),
+        client_ip_header: env("CLIENT_IP_HEADER")
+            .unwrap_or_else(|| "x-real-ip".into())
+            .to_lowercase(),
         public_url: env("PUBLIC_URL")
             .unwrap_or_else(|| "http://localhost:3000".into())
             .trim_end_matches('/')
@@ -227,7 +243,7 @@ async fn main() -> anyhow::Result<()> {
     let (stop_tx, mut stop_rx) = tokio::sync::watch::channel(());
 
     let server = tokio::spawn(
-        axum::serve(listener, app(state.clone()))
+        axum::serve(listener, with_web(app(state.clone())))
             .with_graceful_shutdown(async move {
                 let _ = stop_rx.changed().await;
             })
