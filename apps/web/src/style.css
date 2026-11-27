@@ -1,0 +1,139 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@plugin "@tailwindcss/typography";
+
+@custom-variant dark (&:is(.dark *));
+
+/* shadcn-vue tokens: neutral greys, deep green for primary actions, purple marks AI. */
+:root {
+  --radius: 0.5rem;
+  --background: #ffffff;
+  --foreground: #171717;
+  --card: #ffffff;
+  --card-foreground: #171717;
+  --popover: #ffffff;
+  --popover-foreground: #171717;
+  --primary: #14532d;
+  --primary-foreground: #ffffff;
+  --secondary: #f5f5f4;
+  --secondary-foreground: #171717;
+  --muted: #f5f5f4;
+  --muted-foreground: #6b6b6b;
+  --accent: #f5f5f4;
+  --accent-foreground: #171717;
+  --destructive: #be0000;
+  --border: #e7e7e5;
+  --input: #e7e7e5;
+  --ring: #a3a3a1;
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+}
+
+@theme {
+  /* Flat UI: no shadow utilities exist, so neither our code nor shadcn components can add one. */
+  --shadow-*: initial;
+  --drop-shadow-*: initial;
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --color-stone-50: #fafaf9;
+  --color-stone-100: #f5f5f4;
+  --color-stone-200: #e7e7e5;
+  --color-stone-300: #d4d4d2;
+  --color-stone-400: #a3a3a1;
+  --color-stone-500: #737371;
+  --color-stone-600: #57574f;
+  --color-stone-700: #44443f;
+  --color-stone-800: #292927;
+  --color-stone-900: #171717;
+  --color-stone-950: #0a0a0a;
+  --color-ai-50: #fdefff;
+  --color-ai-100: #f5dff9;
+  --color-ai-300: #e5adef;
+  --color-ai-500: #9c27b0;
+  --color-ai-700: #7b1fa2;
+}
+
+@layer base {
+  * { @apply border-border outline-ring/50; }
+  html, body { @apply bg-background font-sans text-foreground antialiased; }
+}
+::selection { @apply bg-ai-100; }
+
+.ProseMirror { @apply outline-none min-h-[60vh] pb-[40vh]; }
+.ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  @apply text-stone-300 float-left h-0 pointer-events-none;
+}
+/* Task lists: rows sit tight like a list, and the checkbox centres on the first line of text whatever its size. */
+.ProseMirror ul[data-type="taskList"] { @apply my-3 list-none pl-0; }
+.ProseMirror ul[data-type="taskList"] ul[data-type="taskList"] { @apply my-0 pl-6; }
+.ProseMirror ul[data-type="taskList"] > li { @apply my-0 flex items-start gap-2.5 pl-0; }
+.ProseMirror ul[data-type="taskList"] > li > label { @apply flex h-[1.75em] shrink-0 cursor-pointer items-center select-none; }
+.ProseMirror ul[data-type="taskList"] > li > div { @apply min-w-0 flex-1; }
+.ProseMirror ul[data-type="taskList"] > li > div > p { @apply my-0; }
+.ProseMirror ul[data-type="taskList"] > li input[type="checkbox"] {
+  @apply m-0 grid size-4 cursor-pointer appearance-none place-content-center rounded-[4px] border border-stone-300 bg-background transition-colors;
+  @apply hover:border-primary focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none;
+}
+.ProseMirror ul[data-type="taskList"] > li input[type="checkbox"]::after {
+  content: ""; @apply size-2.5 scale-0 bg-primary-foreground transition-transform;
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+}
+.ProseMirror ul[data-type="taskList"] > li input[type="checkbox"]:checked { @apply border-primary bg-primary; }
+.ProseMirror ul[data-type="taskList"] > li input[type="checkbox"]:checked::after { @apply scale-100; }
+.ProseMirror ul[data-type="taskList"] > li input[type="checkbox"]:disabled { @apply cursor-default hover:border-stone-300; }
+.ProseMirror ul[data-type="taskList"] > li[data-checked="true"] > div > p { @apply text-muted-foreground line-through decoration-stone-300; }
+/* "Hide done" on a list (TaskListView) */
+.ProseMirror [data-hide-done="true"] ul[data-type="taskList"] > li[data-checked="true"] { @apply hidden; }
+.ProseMirror pre { @apply rounded-lg bg-stone-50 text-stone-800 border border-stone-200; }
+.ProseMirror [data-type="inline-math"], .ProseMirror [data-type="block-math"] { @apply cursor-pointer; }
+.ProseMirror a.note-ref { @apply rounded-sm bg-primary/10 px-1 py-px text-primary no-underline decoration-primary/40 hover:underline; }
+.ProseMirror a.note-ref::before { content: "↗ "; @apply text-xs opacity-60; }
+.ProseMirror a.note-ref.ProseMirror-selectednode { @apply ring-2 ring-primary/40; }
+
+.ai-margin { @apply rounded-sm bg-ai-50 decoration-ai-300 underline decoration-dotted underline-offset-4; }
+.ProseMirror div[data-type="ai-source"] { @apply my-4 border-l-2 border-ai-300 pl-4 text-stone-600; }
+.ProseMirror div[data-type="ai-source"]::before {
+  content: "AI-Source · " attr(data-agent);
+  @apply block text-[11px] font-medium uppercase tracking-wide text-ai-500;
+}
+.ProseMirror div[data-type="ai-source"][data-provenance="human_edited"]::before { content: "Rewritten from " attr(data-agent); }
+
+.ProseMirror div[data-type="callout"] { @apply my-4 rounded-none border-l-4 px-4 py-1; }
+.ProseMirror div[data-type="callout"]::before { @apply mt-2 block text-[11px] font-medium uppercase tracking-wide; }
+.ProseMirror div[data-type="callout"][data-kind="hypothesis"] { @apply border-sky-400 bg-sky-50/60; }
+.ProseMirror div[data-type="callout"][data-kind="hypothesis"]::before { content: "Hypothesis"; @apply text-sky-700; }
+.ProseMirror div[data-type="callout"][data-kind="fact"] { @apply border-emerald-400 bg-emerald-50/60; }
+.ProseMirror div[data-type="callout"][data-kind="fact"]::before { content: "Verified fact"; @apply text-emerald-700; }
+.ProseMirror div[data-type="callout"][data-kind="contradicts"] { @apply border-rose-400 bg-rose-50/60; }
+.ProseMirror div[data-type="callout"][data-kind="contradicts"]::before { content: "Contradicts"; @apply text-rose-700; }
+
+/* Note typography: hierarchy comes from size, never bold. Medium (500) is the heaviest weight in a note. */
+.prose :is(h1, h2, h3, h4, h5, h6, strong, b, th, dt, blockquote, code, a) { font-weight: 400; }
+.prose :is(h3, h4, h5, h6, strong, b, th, dt) { font-weight: 500; }
+.prose h1 { font-size: 2.25em; line-height: 1.15; letter-spacing: -0.025em; }
+.prose h2 { font-size: 1.625em; line-height: 1.25; letter-spacing: -0.015em; }
+.prose h3 { font-size: 1.25em; line-height: 1.4; letter-spacing: -0.01em; }
+.prose h4 { font-size: 1.0625em; }

@@ -1,0 +1,64 @@
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: opennotes
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: opennotes
+    volumes:
+      - db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U opennotes"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  # Dev server: rebuilds and restarts on changes under server/. Run the web app on the host: `pnpm dev`.
+  server:
+    build:
+      context: ./server
+      target: dev
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./server:/app
+      # Linux build output and crate downloads stay in volumes: fast rebuilds, and the host's target/ is left alone.
+      - server-target:/app/target
+      - cargo-registry:/usr/local/cargo/registry
+      - files:/data/files
+    environment:
+      DATABASE_URL: postgres://opennotes:${POSTGRES_PASSWORD}@db:5432/opennotes
+      OPENNOTES_SECRET: ${OPENNOTES_SECRET:?set OPENNOTES_SECRET in .env}
+      BIND: 0.0.0.0:8080
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      ALLOW_SIGNUP: ${ALLOW_SIGNUP:-true}
+      OPENNOTES_HOSTS: ${OPENNOTES_HOSTS:-localhost,127.0.0.1}
+      ALLOW_PRIVATE_AI_URLS: ${ALLOW_PRIVATE_AI_URLS:-false}
+      RUST_LOG: ${RUST_LOG:-info}
+      LOG_FORMAT: ${LOG_FORMAT:-}
+      PUBLIC_URL: ${PUBLIC_URL:-http://localhost:5173}
+      STORAGE_DRIVER: ${STORAGE_DRIVER:-fs}
+      FILES_DIR: /data/files
+      AWS_BUCKET: ${AWS_BUCKET:-}
+      AWS_REGION: ${AWS_REGION:-}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
+      AWS_ENDPOINT: ${AWS_ENDPOINT:-}
+      AWS_ALLOW_HTTP: ${AWS_ALLOW_HTTP:-}
+      # fs writes emails to EMAIL_FS_DIR and logs their subjects (with the sign-in code); resend delivers them.
+      EMAIL_DRIVER: ${EMAIL_DRIVER:-fs}
+      EMAIL_FS_DIR: /tmp/emails
+      EMAIL_FROM: ${EMAIL_FROM:-}
+      EMAIL_REPLY_TO: ${EMAIL_REPLY_TO:-}
+      EMAIL_RESEND_API_KEY: ${EMAIL_RESEND_API_KEY:-}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  db:
+  files:
+  server-target:
+  cargo-registry:

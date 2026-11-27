@@ -1,0 +1,6 @@
+{{ owner_name }} ({{ owner_email }}) shared "{{ title }}" with you on opennotes. You can {{ "edit" if role == "edit" else "view" }} it.
+
+Open it: {{ link }}
+
+New to opennotes? Open the link and enter this email address; we'll send
+you a sign-in code. No password needed.

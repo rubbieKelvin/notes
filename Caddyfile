@@ -1,0 +1,6 @@
+{$DOMAIN} {
+	encode zstd gzip
+	header Strict-Transport-Security "max-age=31536000"
+	# Caddy sets X-Forwarded-For and keeps Host; WebSockets and MCP's SSE stream pass through as-is.
+	reverse_proxy web:80
+}
