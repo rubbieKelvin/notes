@@ -3,7 +3,7 @@ import { Bold, Code, Italic, Pencil, Sparkles, Strikethrough, Trash2 } from '@lu
 import { EditorContent } from '@tiptap/vue-3'
 import { BubbleMenu } from '@tiptap/vue-3/menus'
 import { TextSelection } from '@tiptap/pm/state'
-import { computed, onBeforeUnmount, ref } from 'vue'
+import { computed, onBeforeUnmount, ref, watchEffect } from 'vue'
 import { WebsocketProvider } from 'y-websocket'
 import * as Y from 'yjs'
 import { api, displayName, errorText, type DocInfo, type Me } from './api'
@@ -44,7 +44,8 @@ provider.on('status', (e: { status: 'connecting' | 'connected' | 'disconnected' 
 if (!readOnly) provider.once('sync', () => sheetReady(props.doc.id))
 
 const meta = ydoc.getMap<string>('meta')
-const title = ref(meta.get('title') ?? '')
+// Until the Y.Doc syncs, show the title the server already gave us.
+const title = ref(meta.get('title') ?? props.doc.title)
 meta.observe(() => (title.value = meta.get('title') ?? ''))
 const details = ref<InstanceType<typeof NoteDetailsDialog>>()
 
@@ -57,9 +58,7 @@ async function deletePage() {
     toast(errorText(e), 'error')
   }
 }
-const syncTabTitle = () => (document.title = title.value ? `${title.value} · opennotes` : 'opennotes')
-meta.observe(syncTabTitle)
-syncTabTitle()
+watchEffect(() => (document.title = `${title.value || 'Untitled'} · opennotes`))
 
 const column = ref<HTMLElement>()
 

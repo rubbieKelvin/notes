@@ -1,7 +1,6 @@
 {
   "name": "opennotes",
   "private": true,
-  "packageManager": "pnpm@9.15.4",
   "scripts": {
     "dev": "pnpm --filter @opennotes/web dev",
     "landing": "pnpm --filter @opennotes/landing dev",
