@@ -44,7 +44,7 @@ cpu = 0.5
 memory = "512mb"
 
 [services.opennotes.network]
-public = false
+public = true
 
 [services.opennotes.env]
 DATABASE_URL = "{{@db.PRIVATE_CONNECTION_STRING}}"
