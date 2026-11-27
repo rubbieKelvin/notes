@@ -1,6 +1,7 @@
 import { expect, openEditor, signUp, slash, test } from '../support/fixtures'
 
 type Stored = { id: string; name: string; notes: { id: string; title: string }[] }
+// 2×2 PNG
 const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAEElEQVR4nGP4z8AARAwQCgAf7gP9i18U1AAAAABJRU5ErkJggg==', 'base64')
 const MB = 1024 * 1024
 
@@ -94,4 +95,23 @@ test('files dropped or pasted into a note upload as file blocks', async ({ page,
   await send('paste', 'pasted.md', '# from the clipboard')
   await expect(page.locator('[data-file-block]').filter({ hasText: 'pasted.md' }).locator('pre')).toContainText('from the clipboard')
   await expect.poll(async () => (await (await page.request.get('/v1/files')).json()).files.length).toBe(2)
+})
+
+test('a previewed file keeps its name and controls inside the preview, shown on hover', async ({ page, user: _ }) => {
+  await openEditor(page)
+  await page.locator('.ProseMirror').click()
+  await slash(page, 'image')
+  await page.locator('[data-file-input]').setInputFiles({ name: 'dot.png', mimeType: 'image/png', buffer: PNG })
+  const block = page.locator('[data-file-block]')
+  await expect(block.locator('img')).toBeVisible()
+  await page.mouse.move(0, 0)
+  await expect(block.locator('[data-file-name]')).toHaveCSS('opacity', '0')
+  await expect(block.locator('[data-file-controls]')).toHaveCSS('opacity', '0')
+  await page.screenshot({ path: 'test-results/file-idle.png', clip: { x: 300, y: 60, width: 840, height: 220 } })
+  await block.hover()
+  await expect(block.locator('[data-file-name]')).toHaveCSS('opacity', '1')
+  await expect(block.locator('[data-file-name]')).toContainText('dot.png')
+  await page.screenshot({ path: 'test-results/file-hover.png', clip: { x: 300, y: 60, width: 840, height: 220 } })
+  await block.getByRole('button', { name: 'Open preview' }).click()
+  await expect(page.getByRole('dialog')).toContainText('dot.png')
 })

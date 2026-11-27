@@ -2,6 +2,7 @@
 import { Bold, Code, Italic, Pencil, Sparkles, Strikethrough, Trash2 } from '@lucide/vue'
 import { EditorContent } from '@tiptap/vue-3'
 import { BubbleMenu } from '@tiptap/vue-3/menus'
+import { TextSelection } from '@tiptap/pm/state'
 import { computed, onBeforeUnmount, ref } from 'vue'
 import { WebsocketProvider } from 'y-websocket'
 import * as Y from 'yjs'
@@ -77,6 +78,10 @@ onBeforeUnmount(() => {
   ydoc.destroy()
 })
 
+// Formatting is for selected text: not for a selected file, canvas or equation.
+const onlyText = ({ view, state, from, to }: { view: { hasFocus: () => boolean }; state: { selection: unknown; doc: { textBetween: (a: number, b: number) => string } }; from: number; to: number }) =>
+  view.hasFocus() && state.selection instanceof TextSelection && state.doc.textBetween(from, to).trim().length > 0
+
 const marks = [
   { name: 'bold', icon: Bold, key: '⌘B' },
   { name: 'italic', icon: Italic, key: '⌘I' },
@@ -112,7 +117,7 @@ const marks = [
       <NoteTabs v-model="activeTab" :ydoc="ydoc" :tabs="tabs" :read-only="readOnly" />
       <!-- one editor per tab: everything bound to it remounts with it -->
       <div :key="activeTab">
-        <BubbleMenu v-if="editor && !readOnly" :editor="editor" class="flex items-center gap-0.5 rounded-md border bg-popover p-0.5">
+        <BubbleMenu v-if="editor && !readOnly" :editor="editor" :should-show="onlyText" class="flex items-center gap-0.5 rounded-md border bg-popover p-0.5">
           <Button
             v-for="m in marks" :key="m.name" variant="ghost" size="icon-sm" :aria-label="m.name" :title="`${m.name} (${m.key})`" :aria-pressed="editor.isActive(m.name)"
             :class="editor.isActive(m.name) && 'bg-accent'" @click="editor.chain().focus().toggleMark(m.name).run()"

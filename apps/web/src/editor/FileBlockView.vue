@@ -62,6 +62,14 @@ async function loadStored(open: boolean) {
 
 // ── placed file ──
 const missing = ref(false)
+const showing = computed(() => a.value.open && !missing.value && kind.value !== 'file')
+// Images, video, PDFs and text fill a box and float the name and controls inside it on hover. Audio keeps its
+// name visible above the player (a bare player doesn't say what it is); other files are a compact row.
+const boxed = computed(() => showing.value && kind.value !== 'audio')
+const audio = computed(() => showing.value && kind.value === 'audio')
+const hugs = computed(() => kind.value === 'image' || kind.value === 'video')
+const overlay = 'absolute top-2 z-10 flex items-center gap-2 rounded-md bg-background/90 text-sm shadow-sm backdrop-blur transition-opacity '
+  + 'opacity-0 group-hover/file:opacity-100 group-focus-within/file:opacity-100 [@media(hover:none)]:opacity-100'
 const fullscreen = ref(false)
 // A watch, not onMounted: ProseMirror may reuse this view for a newly inserted block.
 watch(() => a.value.upload, (key) => {
@@ -124,13 +132,19 @@ watch(() => file.value?.url, async (url) => {
       </template>
     </div>
 
-    <!-- placed file -->
-    <div v-else-if="file" contenteditable="false" class="overflow-hidden rounded-md border" data-file-block>
-      <div class="flex items-center gap-2 px-3 py-1.5 text-sm">
+    <!-- placed file: a preview box with the name and controls floating inside it on hover, or a compact row -->
+    <div
+      v-else-if="file" contenteditable="false" data-file-block
+      class="group/file relative overflow-hidden rounded-md border"
+      :class="boxed ? (hugs ? 'mx-auto grid min-h-12 w-fit max-w-full min-w-80 place-items-center' : '') : 'flex flex-wrap items-center gap-x-2 px-3 py-1.5 text-sm'"
+    >
+      <div :class="boxed ? `${overlay} left-2 max-w-[calc(100%-10rem)] px-2 py-1` : 'flex min-w-0 flex-1 items-center gap-2'" data-file-name>
         <component :is="KIND_ICON[kind]" class="size-4 shrink-0 text-muted-foreground" />
-        <span class="min-w-0 flex-1 truncate" :title="file.name">{{ file.name }}</span>
+        <span class="min-w-0 truncate" :title="file.name">{{ file.name }}</span>
         <span v-if="missing" class="text-xs text-destructive">Deleted</span>
-        <span v-else class="font-mono text-xs text-muted-foreground">{{ formatSize(file.size) }}</span>
+        <span v-else class="shrink-0 font-mono text-xs text-muted-foreground">{{ formatSize(file.size) }}</span>
+      </div>
+      <div :class="boxed ? `${overlay} right-2 p-0.5` : 'flex items-center'" data-file-controls>
         <template v-if="!missing">
           <Button variant="ghost" size="icon-sm" aria-label="Open preview" title="Open" @click="fullscreen = true"><Maximize2 /></Button>
           <Button as="a" :href="file.url" :download="file.name" variant="ghost" size="icon-sm" aria-label="Download" title="Download"><Download /></Button>
@@ -140,9 +154,7 @@ watch(() => file.value?.url, async (url) => {
         </template>
         <Button v-if="!opts.readOnly" variant="ghost" size="icon-sm" aria-label="Remove from note" title="Remove from note (stays in your files)" @click="deleteNode()"><Trash2 /></Button>
       </div>
-      <div v-if="kind !== 'file' && a.open && !missing" class="border-t">
-        <FilePreview v-bind="file" />
-      </div>
+      <FilePreview v-if="boxed || audio" v-bind="file" :class="audio && 'mt-1 mb-0.5 basis-full'" />
     </div>
     <FilePreviewDialog :file="fullscreen ? file : null" @close="fullscreen = false" />
   </NodeViewWrapper>
