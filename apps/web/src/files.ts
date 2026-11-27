@@ -56,3 +56,27 @@ export const KIND_ICON: Record<FileKind, LucideIcon> = { image: Image, video: Fi
 
 /** Files dropped or pasted into a note, keyed by the `upload` attr of the block that uploads them. Local to this tab. */
 export const pendingUploads = new Map<string, File>()
+
+/** CSV/TSV rows (RFC 4180 quoting: "a, b" and "" for a quote). Blank lines are skipped. */
+export function parseCsv(text: string, delim = ','): string[][] {
+  const rows: string[][] = []
+  let row: string[] = [], cell = '', quoted = false
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i]
+    if (quoted) {
+      if (c === '"' && text[i + 1] === '"') { cell += '"'; i++ }
+      else if (c === '"') quoted = false
+      else cell += c
+    } else if (c === '"' && cell === '') quoted = true
+    else if (c === delim) { row.push(cell); cell = '' }
+    else if (c === '\n' || c === '\r') {
+      if (c === '\r' && text[i + 1] === '\n') i++
+      row.push(cell); cell = ''
+      if (row.length > 1 || row[0] !== '') rows.push(row)
+      row = []
+    } else cell += c
+  }
+  row.push(cell)
+  if (row.length > 1 || row[0] !== '') rows.push(row)
+  return rows
+}
