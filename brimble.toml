@@ -47,8 +47,7 @@ memory = "512mb"
 public = false
 
 [services.opennotes.env]
-# Plaintext inside Brimble's private network
-DATABASE_URL = "{{@db.PRIVATE_CONNECTION_STRING}}?sslmode=disable"
+DATABASE_URL = "{{@db.PRIVATE_CONNECTION_STRING}}"
 BIND = "0.0.0.0:8080"
 COOKIE_SECURE = "true"
 ALLOW_SIGNUP = "true"
@@ -71,4 +70,6 @@ engine = "postgresql"
 region = "eu-central"
 version = "18"
 disk = "10gb"
+public = false
+tls = true
 backups = { schedule = "0 2 * * *", timezone = "UTC", keep = "14d" }
