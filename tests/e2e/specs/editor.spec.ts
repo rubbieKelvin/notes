@@ -37,10 +37,15 @@ test('epistemic callouts, clips and runbooks', async ({ page, user: _ }) => {
 
   await slash(page, 'runbook')
   await page.keyboard.type('psql -c "select 1"')
-  const status = page.locator('[data-type=runbook]').getByTitle('Click to change status')
-  await expect(status).toHaveText('untested')
+  const runbook = page.locator('[data-type=runbook]')
+  const status = runbook.locator('[data-runbook-status]')
+  await expect(status).toHaveText('Untested')
   await status.click()
-  await expect(status).toHaveText('works')
+  await page.getByRole('menuitem', { name: 'Works' }).click()
+  await expect(status).toHaveText('Works')
+  // one box: the code area has no border of its own
+  await expect(runbook.locator('pre')).toHaveCSS('border-top-width', '0px')
+  await runbook.screenshot({ path: 'test-results/runbook.png' })
 })
 
 test('writing and title persist on the server and sync live across tabs', async ({ page, context, user: _ }) => {
