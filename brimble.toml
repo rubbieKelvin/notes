@@ -43,10 +43,6 @@ health = "/health"
 cpu = 0.5
 memory = "512mb"
 
-# Live sync rooms are held in memory: exactly one instance.
-[services.opennotes.scale]
-replicas = 1
-
 [services.opennotes.network]
 public = false
 
