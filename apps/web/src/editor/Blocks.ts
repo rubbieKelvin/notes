@@ -4,6 +4,7 @@ import { VueNodeViewRenderer } from '@tiptap/vue-3'
 import TaskListView from './TaskListView.vue'
 import ClipView from './ClipView.vue'
 import RunbookView from './RunbookView.vue'
+import MermaidView from './MermaidView.vue'
 
 const attr = (name: string, fallback: string) => ({
   default: fallback,
@@ -71,6 +72,19 @@ export const Runbook = Node.create({
   parseHTML: () => [{ tag: 'div[data-type="runbook"]', preserveWhitespace: 'full' }],
   renderHTML: ({ HTMLAttributes }) => ['div', mergeAttributes(HTMLAttributes, { 'data-type': 'runbook' }), ['pre', ['code', 0]]],
   addNodeView: () => VueNodeViewRenderer(RunbookView),
+})
+
+/** /diagram: mermaid source, rendered below it. */
+export const Mermaid = Node.create({
+  name: 'mermaid',
+  group: 'block',
+  content: 'text*',
+  marks: '',
+  code: true,
+  defining: true,
+  parseHTML: () => [{ tag: 'div[data-type="mermaid"]', preserveWhitespace: 'full' }],
+  renderHTML: ({ HTMLAttributes }) => ['div', mergeAttributes(HTMLAttributes, { 'data-type': 'mermaid' }), ['pre', ['code', 0]]],
+  addNodeView: () => VueNodeViewRenderer(MermaidView),
 })
 
 /** "14:22" / "1:02:03" → seconds; null if malformed. */

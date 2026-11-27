@@ -12,7 +12,7 @@ import type * as Y from 'yjs'
 import { askLatex } from '../ui/feedback'
 import { AiMargin } from './AiMargin'
 import { AiSource } from './AiSource'
-import { Callout, Checklist, ChecklistItem, Clip, Runbook } from './Blocks'
+import { Callout, Checklist, ChecklistItem, Clip, Mermaid, Runbook } from './Blocks'
 import { CanvasBlock } from './CanvasBlock'
 import { FileBlock } from './FileBlock'
 import { NoteRef } from './NoteRef'
@@ -47,6 +47,7 @@ export function noteExtensions(o: { ydoc: Y.Doc; provider: WebsocketProvider | n
     Callout,
     Clip,
     Runbook,
+    Mermaid,
     SlashCommand,
   ]
 }

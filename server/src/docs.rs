@@ -1,4 +1,4 @@
-use crate::{auth::User, crypto, AppError, AppState, Res};
+use crate::{auth::User, crypto, sync, text, AppError, AppState, Res};
 use axum::{
     extract::{Path, State},
     http::StatusCode,
@@ -44,6 +44,17 @@ pub async fn list(State(s): State<AppState>, user: User) -> Res<Json<Vec<DocInfo
     .fetch_all(&s.db)
     .await?;
     Ok(Json(rows))
+}
+
+/// The note's tabs as [{id, title}], for linking to one tab ([[ picker). Empty for a note without tabs.
+pub async fn tabs(State(s): State<AppState>, user: User, Path(id): Path<Uuid>) -> Res<Json<Value>> {
+    if access(&s, user.id, id).await?.is_none() {
+        return Err(AppError::new(StatusCode::NOT_FOUND, "no such document"));
+    }
+    let doc = yrs::Doc::new();
+    let update = <yrs::Update as yrs::updates::decoder::Decode>::decode_v1(&sync::snapshot(&s, id).await?).map_err(|_| AppError::new(StatusCode::INTERNAL_SERVER_ERROR, "corrupt document"))?;
+    doc.transact_mut().apply_update(update).map_err(|_| AppError::new(StatusCode::INTERNAL_SERVER_ERROR, "corrupt document"))?;
+    Ok(Json(json!(text::tab_list(&doc).into_iter().map(|(id, title)| json!({ "id": id, "title": title })).collect::<Vec<_>>())))
 }
 
 /// "owner", "edit" or "view" for a note the user may open; None otherwise.

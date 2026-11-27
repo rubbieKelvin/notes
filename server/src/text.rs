@@ -6,9 +6,8 @@ use yrs::{
     Any, Array, Doc, Map, MapRef, Out, ReadTxn, Text, Transact, Xml,
 };
 
-/// The note's tabs in order, as (title, content). The first tab of a note keeps the original "default" fragment;
-/// others live in "tab:<id>". A note that never had tabs is one untitled tab.
-fn tabs(doc: &Doc) -> Vec<(String, XmlFragmentRef)> {
+/// The note's tabs in order, as (id, title). A note that never had tabs is empty.
+pub fn tab_list(doc: &Doc) -> Vec<(String, String)> {
     let list: Vec<(String, String)> = {
         let arr = doc.get_or_insert_array("tabs");
         let txn = doc.transact();
@@ -25,12 +24,20 @@ fn tabs(doc: &Doc) -> Vec<(String, XmlFragmentRef)> {
             })
             .collect()
     };
-    if list.is_empty() {
-        return vec![(String::new(), doc.get_or_insert_xml_fragment("default"))];
-    }
     let mut seen = Vec::new();
     list.into_iter()
         .filter(|(id, _)| !id.is_empty() && !seen.contains(id) && { seen.push(id.clone()); true }) // two clients may add the same tab
+        .collect()
+}
+
+/// The note's tabs in order, as (title, content). The first tab of a note keeps the original "default" fragment;
+/// others live in "tab:<id>". A note that never had tabs is one untitled tab.
+fn tabs(doc: &Doc) -> Vec<(String, XmlFragmentRef)> {
+    let list = tab_list(doc);
+    if list.is_empty() {
+        return vec![(String::new(), doc.get_or_insert_xml_fragment("default"))];
+    }
+    list.into_iter()
         .map(|(id, title)| (title, doc.get_or_insert_xml_fragment(if id == "default" { "default".to_string() } else { format!("tab:{id}") })))
         .collect()
 }
@@ -218,6 +225,11 @@ fn node<T: ReadTxn>(txn: &T, canvases: &MapRef, n: XmlOut, out: &mut String) {
                     out.push_str(&format!("{} ", "#".repeat(level)));
                     children(out);
                     out.push_str("\n\n");
+                }
+                "mermaid" => {
+                    out.push_str("```mermaid\n");
+                    children(out);
+                    out.push_str("\n```\n\n");
                 }
                 "codeBlock" => {
                     out.push_str("```\n");

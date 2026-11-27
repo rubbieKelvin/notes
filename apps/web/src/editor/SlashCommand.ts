@@ -1,6 +1,6 @@
 import {
   BadgeCheck, Braces, FileText, Link2, Film, Image, Music, Paperclip, Heading1, Heading2, Heading3, Lightbulb, List, ListChecks, ListOrdered, Minus, PenTool,
-  Quote, Radical, Scale, Sigma, SquarePlay, SquareTerminal, type LucideIcon,
+  Quote, Radical, Scale, Sigma, SquarePlay, SquareTerminal, Workflow, type LucideIcon,
 } from '@lucide/vue'
 import { Extension, type Editor, type Range } from '@tiptap/core'
 import Suggestion, { exitSuggestion } from '@tiptap/suggestion'
@@ -53,6 +53,7 @@ export const slashItems: SlashItem[] = ([
   { group: 'Thinking', title: 'Runbook', description: 'Shell, SQL or HTTP snippet with a status', icon: SquareTerminal, keywords: ['command', 'sql', 'http', 'shell', 'ops'], run: (e, r) => e.chain().focus().deleteRange(r).setNode('runbook', { lang: 'cmd' }).run() },
 
   { group: 'Media & math', title: 'Canvas', description: 'Inline whiteboard you can expand', icon: PenTool, keywords: ['draw', 'sketch', 'diagram', 'whiteboard', 'pen'], run: (e, r) => e.chain().focus().deleteRange(r).insertCanvas().run() },
+  { group: 'Media & math', title: 'Diagram', description: 'Mermaid flowchart, sequence, gantt…', icon: Workflow, keywords: ['mermaid', 'flowchart', 'graph', 'sequence', 'chart', 'uml'], run: (e, r) => e.chain().focus().deleteRange(r).setNode('mermaid').run() },
   { group: 'Media & math', title: 'Math', description: 'Block LaTeX equation', icon: Sigma, keywords: ['latex', 'equation', 'katex', '$$'], run: (e, r) => insertMath(e, r, true) },
   { group: 'Media & math', title: 'Inline math', description: 'LaTeX inside a sentence', icon: Radical, keywords: ['latex', 'equation', 'formula', '$'], run: (e, r) => insertMath(e, r, false) },
   {

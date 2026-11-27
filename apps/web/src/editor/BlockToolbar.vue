@@ -12,7 +12,7 @@ import { clipPrompt } from './SlashCommand'
 
 /** Per-block actions for our note elements, pinned to the block the cursor is in. */
 const props = defineProps<{ editor: Editor; column: HTMLElement }>()
-const BLOCKS: Record<string, string> = { callout: 'Callout', aiSource: 'AI source', clip: 'Clip', runbook: 'Runbook' }
+const BLOCKS: Record<string, string> = { callout: 'Callout', aiSource: 'AI source', clip: 'Clip', runbook: 'Runbook', mermaid: 'Diagram' }
 const kinds = [
   { kind: 'hypothesis', label: 'Hypothesis', icon: Lightbulb },
   { kind: 'fact', label: 'Evidence', icon: BadgeCheck },

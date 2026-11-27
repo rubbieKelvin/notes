@@ -1,6 +1,6 @@
 mod ai;
-mod comments;
 mod auth;
+mod comments;
 mod crypto;
 mod docs;
 mod email;
@@ -13,22 +13,22 @@ mod sync;
 mod text;
 mod tokens;
 
+use axum::extract::Request;
 use axum::{
+    Router,
     extract::DefaultBodyLimit,
     http::StatusCode,
-    response::{IntoResponse, Response},
     middleware,
+    response::{IntoResponse, Response},
     routing::{delete, get, post, put},
-    Router,
 };
-use axum::extract::Request;
 use sqlx::PgPool;
+use std::{sync::Arc, time::Duration};
 use tower_http::{
     catch_panic::CatchPanicLayer,
     request_id::{MakeRequestUuid, PropagateRequestIdLayer, SetRequestIdLayer},
     trace::{DefaultOnResponse, TraceLayer},
 };
-use std::{sync::Arc, time::Duration};
 
 #[derive(Clone)]
 pub struct AppState {
@@ -58,25 +58,25 @@ pub type Res<T> = Result<T, AppError>;
 
 impl AppError {
     pub fn new(code: StatusCode, msg: impl Into<String>) -> Self {
-        Self(code, msg.into())
+        return Self(code, msg.into());
     }
 }
 
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
-        (self.0, self.1).into_response()
+        return (self.0, self.1).into_response();
     }
 }
 
 impl From<sqlx::Error> for AppError {
     fn from(e: sqlx::Error) -> Self {
         tracing::error!(error = %e, "db error");
-        Self(StatusCode::INTERNAL_SERVER_ERROR, "internal error".into())
+        return Self(StatusCode::INTERNAL_SERVER_ERROR, "internal error".into());
     }
 }
 
 fn env(name: &str) -> Option<String> {
-    std::env::var(name).ok().filter(|v| !v.is_empty())
+    return std::env::var(name).ok().filter(|v| !v.is_empty());
 }
 
 pub fn app(state: AppState) -> Router {
@@ -102,6 +102,7 @@ pub fn app(state: AppState) -> Router {
         .route("/v1/docs/{id}", delete(docs::remove))
         .route("/v1/docs/{id}/mcp", put(docs::set_mcp))
         .route("/v1/docs/{id}/tags", put(docs::set_tags))
+        .route("/v1/docs/{id}/tabs", get(docs::tabs))
         .route("/v1/docs/{id}/shares", get(share::list).post(share::invite))
         .route("/v1/docs/{id}/shares/{email}", delete(share::revoke))
         .route("/v1/docs/{id}/public", put(share::set_public))
@@ -139,9 +140,15 @@ async fn cleanup(db: PgPool) {
         tick.tick().await;
         let archived = sqlx::query("UPDATE agent_inbox_items SET status = 'archived' WHERE status = 'pending' AND expires_at < NOW()")
             .execute(&db).await;
-        let _ = sqlx::query("DELETE FROM sessions WHERE expires_at < NOW()").execute(&db).await;
-        let _ = sqlx::query("DELETE FROM magic_links WHERE expires_at < NOW()").execute(&db).await;
-        let _ = sqlx::query("DELETE FROM events WHERE created_at < NOW() - INTERVAL '90 days'").execute(&db).await;
+        let _ = sqlx::query("DELETE FROM sessions WHERE expires_at < NOW()")
+            .execute(&db)
+            .await;
+        let _ = sqlx::query("DELETE FROM magic_links WHERE expires_at < NOW()")
+            .execute(&db)
+            .await;
+        let _ = sqlx::query("DELETE FROM events WHERE created_at < NOW() - INTERVAL '90 days'")
+            .execute(&db)
+            .await;
         if let Err(e) = archived {
             tracing::error!(error = %e, "cleanup failed");
         }
@@ -151,29 +158,51 @@ async fn cleanup(db: PgPool) {
 #[tokio::main]
 async fn main() {
     // RUST_LOG picks levels (default info); LOG_FORMAT=json for log shippers.
-    let filter = tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| "info,tower_http=info".into());
+    let filter = tracing_subscriber::EnvFilter::try_from_default_env()
+        .unwrap_or_else(|_| "info,tower_http=info".into());
     let logs = tracing_subscriber::fmt().with_env_filter(filter);
-    if env("LOG_FORMAT").is_some_and(|v| v == "json") { logs.json().init() } else { logs.init() }
+    if env("LOG_FORMAT").is_some_and(|v| v == "json") {
+        logs.json().init()
+    } else {
+        logs.init()
+    }
 
     let db_url = env("DATABASE_URL").expect("DATABASE_URL is required");
-    let secret = env("OPENNOTES_SECRET").expect("OPENNOTES_SECRET is required (32 bytes, base64: `openssl rand -base64 32`)");
-    let db = PgPool::connect(&db_url).await.expect("cannot connect to Postgres");
-    sqlx::migrate!("./migrations").run(&db).await.expect("migrations failed");
+    let secret = env("OPENNOTES_SECRET")
+        .expect("OPENNOTES_SECRET is required (32 bytes, base64: `openssl rand -base64 32`)");
+    let db = PgPool::connect(&db_url)
+        .await
+        .expect("cannot connect to Postgres");
+    sqlx::migrate!("./migrations")
+        .run(&db)
+        .await
+        .expect("migrations failed");
 
     let cfg = Config {
         cookie_secure: env("COOKIE_SECURE").map_or(true, |v| v != "false"),
         allow_signup: env("ALLOW_SIGNUP").map_or(true, |v| v != "false"),
-        anthropic_base: env("ANTHROPIC_BASE_URL").unwrap_or_else(|| "https://api.anthropic.com".into()),
+        anthropic_base: env("ANTHROPIC_BASE_URL")
+            .unwrap_or_else(|| "https://api.anthropic.com".into()),
         allow_private_ai_urls: env("ALLOW_PRIVATE_AI_URLS").is_some_and(|v| v == "true"),
-        public_url: env("PUBLIC_URL").unwrap_or_else(|| "http://localhost:3000".into()).trim_end_matches('/').to_string(),
-        hosts: env("OPENNOTES_HOSTS").unwrap_or_else(|| "localhost,127.0.0.1".into()).split(',').map(|h| h.trim().to_string()).collect(),
+        public_url: env("PUBLIC_URL")
+            .unwrap_or_else(|| "http://localhost:3000".into())
+            .trim_end_matches('/')
+            .to_string(),
+        hosts: env("OPENNOTES_HOSTS")
+            .unwrap_or_else(|| "localhost,127.0.0.1".into())
+            .split(',')
+            .map(|h| h.trim().to_string())
+            .collect(),
     };
     let store = files::store_from_env(env);
     files::move_legacy(&db, store.as_ref()).await;
     let state = AppState {
         db: db.clone(),
         http: reqwest::Client::new(),
-        cipher: Arc::new(crypto::Cipher::from_base64(&secret).expect("OPENNOTES_SECRET must be 32 bytes, base64")),
+        cipher: Arc::new(
+            crypto::Cipher::from_base64(&secret)
+                .expect("OPENNOTES_SECRET must be 32 bytes, base64"),
+        ),
         rooms: Default::default(),
         cfg: Arc::new(cfg),
         login_limiter: Default::default(),
@@ -188,7 +217,9 @@ async fn main() {
     let (stop_tx, mut stop_rx) = tokio::sync::watch::channel(());
     let server = tokio::spawn(
         axum::serve(listener, app(state.clone()))
-            .with_graceful_shutdown(async move { let _ = stop_rx.changed().await; })
+            .with_graceful_shutdown(async move {
+                let _ = stop_rx.changed().await;
+            })
             .into_future(),
     );
     shutdown_signal().await;
@@ -202,7 +233,12 @@ async fn main() {
 async fn shutdown_signal() {
     let ctrl_c = async { tokio::signal::ctrl_c().await.expect("ctrl-c handler") };
     #[cfg(unix)]
-    let term = async { tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate()).expect("SIGTERM handler").recv().await };
+    let term = async {
+        tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())
+            .expect("SIGTERM handler")
+            .recv()
+            .await
+    };
     #[cfg(not(unix))]
     let term = std::future::pending::<Option<()>>();
     tokio::select! { _ = ctrl_c => {}, _ = term => {} }
