@@ -1,5 +1,5 @@
 //! Sharing a note with people by email, and publishing notes at /public/@username/<id>.
-use crate::{auth::User, docs, sync, AppError, AppState, Res};
+use crate::{auth::User, docs, email, sync, AppError, AppState, Res};
 use axum::{
     extract::{Path, State},
     http::StatusCode,
@@ -7,7 +7,6 @@ use axum::{
 };
 use base64::{engine::general_purpose::STANDARD, Engine};
 use chrono::{DateTime, Utc};
-use lettre::message::Mailbox;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use uuid::Uuid;
@@ -53,7 +52,7 @@ pub struct Invite {
 pub async fn invite(State(s): State<AppState>, user: User, Path(id): Path<Uuid>, Json(b): Json<Invite>) -> Res<Json<Value>> {
     owned(&s, &user, id).await?;
     let email = b.email.trim().to_lowercase();
-    if !email.contains('@') || email.len() > 254 || email.parse::<Mailbox>().is_err() {
+    if !email::valid_address(&email) {
         return Err(AppError::new(StatusCode::BAD_REQUEST, "enter a valid email"));
     }
     if b.role != "view" && b.role != "edit" {
@@ -65,6 +64,7 @@ pub async fn invite(State(s): State<AppState>, user: User, Path(id): Path<Uuid>,
     .bind(id)
     .fetch_one(&s.db)
     .await?;
+    let title = sync::live_title(&s, id).await.unwrap_or(title);
     if email == owner_email {
         return Err(AppError::new(StatusCode::BAD_REQUEST, "that's you; you already own this note"));
     }
@@ -84,13 +84,14 @@ pub async fn invite(State(s): State<AppState>, user: User, Path(id): Path<Uuid>,
 
     // Only new invites send mail, and at most a few per recipient, so sharing can't be used to spam an address.
     if inserted && s.login_limiter.hit(&format!("invite:{email}")).is_none() {
-        let verb = if b.role == "edit" { "edit" } else { "view" };
-        let link = format!("{}/d/{id}", s.cfg.public_url);
-        let body = format!(
-            "{owner_name} ({owner_email}) shared “{title}” with you on opennotes. You can {verb} it.\n\nOpen it: {link}\n\nNew to opennotes? Open the link and enter your email; we'll send a sign-in code. No password needed."
-        );
-        if let Err(e) = s.mailer.send(&email, &format!("{owner_name} shared “{title}” with you"), &body).await {
-            eprintln!("invite mail to {email} failed: {}", e.1); // the share itself stands; the owner can send the link
+        // One line each: titles come from the document and may hold anything.
+        let one_line = |v: &str| v.split_whitespace().collect::<Vec<_>>().join(" ");
+        let ctx = json!({
+            "owner_name": one_line(&owner_name), "owner_email": owner_email, "title": one_line(&title), "role": b.role,
+            "link": format!("{}/d/{id}", s.cfg.public_url), "preheader": format!("{} shared a note with you", one_line(&owner_name)),
+        });
+        if let Err(e) = s.email.send(email::kinds::SHARE_INVITE, &email, ctx).await {
+            eprintln!("invite mail to {email} failed: {e}"); // the share itself stands; the owner can send the link
         }
     }
     Ok(Json(json!({ "shares": shares(&s, id).await? })))

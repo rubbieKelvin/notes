@@ -35,9 +35,12 @@ services:
       OPENNOTES_HOSTS: ${OPENNOTES_HOSTS:-localhost,127.0.0.1}
       ALLOW_PRIVATE_AI_URLS: ${ALLOW_PRIVATE_AI_URLS:-false}
       PUBLIC_URL: ${PUBLIC_URL:-http://localhost:5173}
-      # Sign-in is by emailed link. Without SMTP_URL the links are printed to `docker compose logs server`.
-      SMTP_URL: ${SMTP_URL:-}
-      MAIL_FROM: ${MAIL_FROM:-}
+      # fs writes emails to EMAIL_FS_DIR and logs their subjects (with the sign-in code); resend delivers them.
+      EMAIL_DRIVER: ${EMAIL_DRIVER:-fs}
+      EMAIL_FS_DIR: /tmp/emails
+      EMAIL_FROM: ${EMAIL_FROM:-}
+      EMAIL_REPLY_TO: ${EMAIL_REPLY_TO:-}
+      EMAIL_RESEND_API_KEY: ${EMAIL_RESEND_API_KEY:-}
     depends_on:
       db:
         condition: service_healthy

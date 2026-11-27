@@ -4,6 +4,7 @@ mod assets;
 mod auth;
 mod crypto;
 mod docs;
+mod email;
 mod inbox;
 mod mcp;
 mod share;
@@ -29,7 +30,7 @@ pub struct AppState {
     pub rooms: Arc<sync::Rooms>,
     pub cfg: Arc<Config>,
     pub login_limiter: Arc<auth::LoginLimiter>,
-    pub mailer: Arc<auth::Mailer>,
+    pub email: Arc<email::EmailService>,
 }
 
 pub struct Config {
@@ -144,7 +145,7 @@ async fn main() {
         rooms: Default::default(),
         cfg: Arc::new(cfg),
         login_limiter: Default::default(),
-        mailer: Arc::new(auth::Mailer::from_env(env("SMTP_URL"), env("MAIL_FROM"))),
+        email: Arc::new(email::EmailService::from_env(env)),
     };
     tokio::spawn(cleanup(db));
 

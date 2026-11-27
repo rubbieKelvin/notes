@@ -1,0 +1,9 @@
+Your opennotes sign-in code is {{ code }}
+
+Or sign in with this link:
+
+{{ link }}
+
+The code and the link work once and expire in {{ minutes }} minutes.
+New here? Signing in creates your account. If you didn't ask for this,
+ignore this email.

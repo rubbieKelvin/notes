@@ -1,14 +1,14 @@
 // Starts the Rust server for e2e runs. Uses E2E_DATABASE_URL if set, otherwise a throwaway Postgres cluster.
 import { execFileSync, spawn } from 'node:child_process'
 import { randomBytes } from 'node:crypto'
-import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const repo = fileURLToPath(new URL('../../..', import.meta.url))
 const pgDir = join(tmpdir(), 'opennotes-e2e-pg')
-// No SMTP in e2e: the server prints sign-in links, and we drop each one in a file named after the address.
+// e2e email: the server's `fs` driver writes every message here as JSON; the fixtures read them.
 export const mailDir = join(tmpdir(), 'opennotes-e2e-mail')
 let ownPg = false
 
@@ -48,21 +48,11 @@ const server = spawn('cargo', ['run', '--quiet', '--manifest-path', join(repo, '
     ALLOW_PRIVATE_AI_URLS: 'true', // the mock provider lives on localhost
     COOKIE_SECURE: 'false',
     PUBLIC_URL: `http://localhost:${process.env.E2E_WEB_PORT ?? 14173}`,
-    SMTP_URL: '',
+    EMAIL_DRIVER: 'fs',
+    EMAIL_FS_DIR: mailDir,
   },
 })
-let pending = ''
-server.stdout.on('data', (chunk) => {
-  process.stdout.write(chunk)
-  const lines = (pending + chunk).split('\n')
-  pending = lines.pop()
-  for (const line of lines) {
-    const m = line.match(/^magic link for (\S+): (\S+)$/)
-    if (m) writeFileSync(join(mailDir, m[1]), m[2])
-    const c = line.match(/^sign-in code for (\S+): (\d{6})$/)
-    if (c) writeFileSync(join(mailDir, `${c[1]}.code`), c[2])
-  }
-})
+server.stdout.on('data', (chunk) => process.stdout.write(chunk))
 
 const shutdown = () => {
   server.kill('SIGTERM')

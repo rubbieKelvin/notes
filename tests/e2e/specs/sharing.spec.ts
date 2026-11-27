@@ -1,4 +1,4 @@
-import { expect, latestCode, openEditor, setNoteDetails, signUp, test, typeInEditor, uniqueEmail, type Page } from '../support/fixtures'
+import { expect, latestCode, nextMail, openEditor, setNoteDetails, signUp, test, typeInEditor, uniqueEmail, type Page } from '../support/fixtures'
 
 async function share(page: Page, email: string, role: 'Can view' | 'Can edit') {
   await page.getByRole('button', { name: 'Share' }).click()
@@ -21,6 +21,9 @@ test('a viewer without an account signs up with a code and reads the note live, 
   const dialog = await share(page, invitee, 'Can view')
   await expect(dialog).toContainText('Invite sent · no account yet')
   await page.keyboard.press('Escape')
+  const invite = await nextMail(invitee, /shared “Team plan” with you$/)
+  expect(invite.html).toContain(`/d/${docId}`)
+  expect(invite.text).toContain('You can view it.')
 
   const ctx = await browser.newContext()
   const guest = await ctx.newPage()

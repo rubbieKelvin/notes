@@ -1,22 +1,28 @@
 //! y-websocket compatible sync endpoint backed by yrs, persisted to `documents.yjs_state`.
-use crate::{auth::User, docs, text, AppError, AppState, Res};
+use crate::{AppError, AppState, Res, auth::User, docs, text};
 use axum::{
-    extract::{ws::{Message as Ws, WebSocket, WebSocketUpgrade}, Path, State},
-    http::{header, HeaderMap, StatusCode},
+    extract::{
+        Path, State,
+        ws::{Message as Ws, WebSocket, WebSocketUpgrade},
+    },
+    http::{HeaderMap, StatusCode, header},
     response::Response,
 };
 use futures_util::{SinkExt, StreamExt};
 use std::{
     collections::HashMap,
-    sync::{atomic::{AtomicBool, AtomicU64, Ordering}, Arc, Weak},
+    sync::{
+        Arc, Weak,
+        atomic::{AtomicBool, AtomicU64, Ordering},
+    },
     time::Duration,
 };
-use tokio::sync::{broadcast, Mutex};
+use tokio::sync::{Mutex, broadcast};
 use uuid::Uuid;
 use yrs::{
-    sync::{protocol::MSG_AWARENESS, Message, SyncMessage},
-    updates::{decoder::Decode, encoder::Encode},
     Doc, ReadTxn, StateVector, Transact, Update,
+    sync::{Message, SyncMessage, protocol::MSG_AWARENESS},
+    updates::{decoder::Decode, encoder::Encode},
 };
 
 pub struct Room {
@@ -33,7 +39,10 @@ pub struct Rooms {
 }
 
 async fn persist(s: &AppState, id: Uuid, room: &Room) -> Res<()> {
-    let state = room.doc.transact().encode_state_as_update_v1(&StateVector::default());
+    let state = room
+        .doc
+        .transact()
+        .encode_state_as_update_v1(&StateVector::default());
     let (title, plain) = text::serialize(&room.doc);
     sqlx::query(
         "UPDATE documents SET yjs_state = $2, plain_text_cache = $3, title = COALESCE(NULLIF($4, ''), 'Untitled'), description = $5, updated_at = NOW() WHERE id = $1",
@@ -45,7 +54,8 @@ async fn persist(s: &AppState, id: Uuid, room: &Room) -> Res<()> {
     .bind(text::meta(&room.doc, "description"))
     .execute(&s.db)
     .await?;
-    Ok(())
+
+    return Ok(());
 }
 
 async fn join(s: &AppState, id: Uuid) -> Res<Arc<Room>> {
@@ -54,13 +64,32 @@ async fn join(s: &AppState, id: Uuid) -> Res<Arc<Room>> {
         room.conns.fetch_add(1, Ordering::SeqCst);
         return Ok(room.clone());
     }
-    let saved: Option<Vec<u8>> = sqlx::query_scalar("SELECT yjs_state FROM documents WHERE id = $1").bind(id).fetch_one(&s.db).await?;
+    let saved: Option<Vec<u8>> =
+        sqlx::query_scalar("SELECT yjs_state FROM documents WHERE id = $1")
+            .bind(id)
+            .fetch_one(&s.db)
+            .await?;
     let doc = Doc::new();
     if let Some(bytes) = saved {
-        let update = Update::decode_v1(&bytes).map_err(|e| AppError::new(StatusCode::INTERNAL_SERVER_ERROR, format!("corrupt document state: {e}")))?;
-        doc.transact_mut().apply_update(update).map_err(|e| AppError::new(StatusCode::INTERNAL_SERVER_ERROR, format!("corrupt document state: {e}")))?;
+        let update = Update::decode_v1(&bytes).map_err(|e| {
+            AppError::new(
+                StatusCode::INTERNAL_SERVER_ERROR,
+                format!("corrupt document state: {e}"),
+            )
+        })?;
+        doc.transact_mut().apply_update(update).map_err(|e| {
+            AppError::new(
+                StatusCode::INTERNAL_SERVER_ERROR,
+                format!("corrupt document state: {e}"),
+            )
+        })?;
     }
-    let room = Arc::new(Room { doc, tx: broadcast::channel(256).0, dirty: AtomicBool::new(false), conns: 1.into() });
+    let room = Arc::new(Room {
+        doc,
+        tx: broadcast::channel(256).0,
+        dirty: AtomicBool::new(false),
+        conns: 1.into(),
+    });
     map.insert(id, room.clone());
 
     // Debounced persistence while the room is alive.
@@ -94,14 +123,28 @@ async fn leave(s: &AppState, id: Uuid, room: Arc<Room>) {
 
 /// Reject cross-origin browser connections (cookies ride along on WebSocket handshakes).
 fn same_origin(headers: &HeaderMap) -> bool {
-    let Some(origin) = headers.get(header::ORIGIN).and_then(|v| v.to_str().ok()) else { return true };
-    let host = headers.get(header::HOST).and_then(|v| v.to_str().ok()).unwrap_or("");
+    let Some(origin) = headers.get(header::ORIGIN).and_then(|v| v.to_str().ok()) else {
+        return true;
+    };
+    let host = headers
+        .get(header::HOST)
+        .and_then(|v| v.to_str().ok())
+        .unwrap_or("");
     origin.split("://").nth(1) == Some(host)
 }
 
-pub async fn connect(State(s): State<AppState>, user: User, Path(id): Path<Uuid>, headers: HeaderMap, ws: WebSocketUpgrade) -> Res<Response> {
+pub async fn connect(
+    State(s): State<AppState>,
+    user: User,
+    Path(id): Path<Uuid>,
+    headers: HeaderMap,
+    ws: WebSocketUpgrade,
+) -> Res<Response> {
     if !same_origin(&headers) {
-        return Err(AppError::new(StatusCode::FORBIDDEN, "cross-origin sync is not allowed"));
+        return Err(AppError::new(
+            StatusCode::FORBIDDEN,
+            "cross-origin sync is not allowed",
+        ));
     }
     let Some(role) = docs::access(&s, user.id, id).await? else {
         return Err(AppError::new(StatusCode::NOT_FOUND, "no such document"));
@@ -114,13 +157,32 @@ pub async fn connect(State(s): State<AppState>, user: User, Path(id): Path<Uuid>
     }))
 }
 
+/// The title as it is right now in an open room (the saved column lags by up to one persist).
+pub async fn live_title(s: &AppState, id: Uuid) -> Option<String> {
+    let map = s.rooms.map.lock().await;
+    map.get(&id)
+        .map(|room| text::meta(&room.doc, "title"))
+        .filter(|t| !t.is_empty())
+}
+
 /// The current state of a document as one Yjs update: the live room's if open, else the saved one.
 pub async fn snapshot(s: &AppState, id: Uuid) -> Res<Vec<u8>> {
     if let Some(room) = s.rooms.map.lock().await.get(&id) {
-        return Ok(room.doc.transact().encode_state_as_update_v1(&StateVector::default()));
+        return Ok(room
+            .doc
+            .transact()
+            .encode_state_as_update_v1(&StateVector::default()));
     }
-    let saved: Option<Vec<u8>> = sqlx::query_scalar("SELECT yjs_state FROM documents WHERE id = $1").bind(id).fetch_one(&s.db).await?;
-    Ok(saved.unwrap_or_else(|| Doc::new().transact().encode_state_as_update_v1(&StateVector::default())))
+    let saved: Option<Vec<u8>> =
+        sqlx::query_scalar("SELECT yjs_state FROM documents WHERE id = $1")
+            .bind(id)
+            .fetch_one(&s.db)
+            .await?;
+    Ok(saved.unwrap_or_else(|| {
+        Doc::new()
+            .transact()
+            .encode_state_as_update_v1(&StateVector::default())
+    }))
 }
 
 /// `read_only`: a viewer. They receive every change and share presence, but their updates are dropped.
@@ -128,7 +190,8 @@ async fn serve(s: &AppState, room: &Room, socket: WebSocket, read_only: bool) {
     let me = s.rooms.next_conn.fetch_add(1, Ordering::SeqCst);
     let (mut sink, mut stream) = socket.split();
     let mut rx = room.tx.subscribe();
-    let hello = Message::Sync(SyncMessage::SyncStep1(room.doc.transact().state_vector())).encode_v1();
+    let hello =
+        Message::Sync(SyncMessage::SyncStep1(room.doc.transact().state_vector())).encode_v1();
     if sink.send(Ws::Binary(hello.into())).await.is_err() {
         return;
     }
@@ -182,7 +245,7 @@ async fn serve(s: &AppState, room: &Room, socket: WebSocket, read_only: bool) {
 #[cfg(test)]
 mod tests {
     use super::same_origin;
-    use axum::http::{header, HeaderMap};
+    use axum::http::{HeaderMap, header};
 
     #[test]
     fn origin_check() {

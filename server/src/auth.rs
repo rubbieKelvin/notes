@@ -1,11 +1,10 @@
-use crate::{crypto, AppError, AppState, Res};
+use crate::{crypto, email, AppError, AppState, Res};
 use axum::{
     extract::{FromRequestParts, State},
     http::{header, request::Parts, StatusCode},
     Json,
 };
 use axum_extra::extract::cookie::{Cookie, CookieJar, SameSite};
-use lettre::{message::Mailbox, AsyncSmtpTransport, AsyncTransport, Message, Tokio1Executor};
 use serde::Deserialize;
 use serde_json::{json, Value};
 use std::{collections::HashMap, sync::Mutex, time::{Duration, Instant}};
@@ -38,57 +37,6 @@ impl LoginLimiter {
         }
         entry.0 += 1;
         None
-    }
-}
-
-/// Where sign-in emails go: SMTP in production, the server log in development.
-pub enum Mailer {
-    Smtp(AsyncSmtpTransport<Tokio1Executor>, Mailbox),
-    Log,
-}
-
-impl Mailer {
-    /// SMTP_URL like `smtps://user:pass@smtp.example.com` plus MAIL_FROM; without SMTP_URL links are printed.
-    pub fn from_env(smtp_url: Option<String>, from: Option<String>) -> Self {
-        let Some(url) = smtp_url else {
-            eprintln!("SMTP_URL not set: sign-in links are printed to this log instead of emailed");
-            return Self::Log;
-        };
-        let transport = AsyncSmtpTransport::<Tokio1Executor>::from_url(&url).expect("SMTP_URL is not a valid smtp:// or smtps:// URL").build();
-        let from = from.expect("MAIL_FROM is required with SMTP_URL").parse().expect("MAIL_FROM must be an address like `opennotes <notes@example.com>`");
-        Self::Smtp(transport, from)
-    }
-
-    async fn send_link(&self, to: &str, link: &str, code: &str) -> Res<()> {
-        // Printed in this exact form without SMTP; the e2e harness reads these lines.
-        if matches!(self, Self::Log) {
-            println!("magic link for {to}: {link}");
-            println!("sign-in code for {to}: {code}");
-            return Ok(());
-        }
-        let body = format!(
-            "Your opennotes sign-in code is {code}\n\nOr click to sign in:\n\n{link}\n\nBoth work once and expire in {LINK_MINUTES} minutes. If you didn't ask for this, ignore this email."
-        );
-        self.send(to, &format!("{code} is your opennotes sign-in code"), &body).await
-    }
-
-    pub async fn send(&self, to: &str, subject: &str, body: &str) -> Res<()> {
-        let Self::Smtp(transport, from) = self else {
-            println!("email to {to}: {subject}\n{body}");
-            return Ok(());
-        };
-        let failed = |e: &dyn std::fmt::Display| {
-            eprintln!("mail to {to} failed: {e}");
-            AppError::new(StatusCode::BAD_GATEWAY, "couldn't send the email; try again in a minute")
-        };
-        let msg = Message::builder()
-            .from(from.clone())
-            .to(to.parse().map_err(|_| AppError::new(StatusCode::BAD_REQUEST, "enter a valid email"))?)
-            .subject(subject)
-            .body(body.to_string())
-            .map_err(|e| failed(&e))?;
-        transport.send(msg).await.map_err(|e| failed(&e))?;
-        Ok(())
     }
 }
 
@@ -189,7 +137,7 @@ fn code_hash(email: &str, code: &str) -> Vec<u8> {
 /// Emails a single-use sign-in link. Answers the same whether or not the account exists.
 pub async fn request_link(State(state): State<AppState>, Json(r): Json<LinkRequest>) -> Res<StatusCode> {
     let email = r.email.trim().to_lowercase();
-    if !email.contains('@') || email.len() > 254 || email.parse::<Mailbox>().is_err() {
+    if !email::valid_address(&email) {
         return Err(AppError::new(StatusCode::BAD_REQUEST, "enter a valid email"));
     }
     if let Some(secs) = state.login_limiter.hit(&email) {
@@ -212,7 +160,11 @@ pub async fn request_link(State(state): State<AppState>, Json(r): Json<LinkReque
         .await?;
     // In the fragment, so the token never reaches server logs or Referer headers.
     let link = format!("{}{}#signin={token}", state.cfg.public_url, safe_next(r.next.trim()));
-    state.mailer.send_link(&email, &link, &code).await?;
+    let ctx = serde_json::json!({ "code": code, "link": link, "minutes": LINK_MINUTES, "preheader": format!("Your sign-in code is {code}") });
+    state.email.send(email::kinds::SIGN_IN, &email, ctx).await.map_err(|e| {
+        eprintln!("sign-in mail to {email} failed: {e}");
+        AppError::new(StatusCode::BAD_GATEWAY, "couldn't send the email; try again in a minute")
+    })?;
     Ok(StatusCode::NO_CONTENT)
 }
 

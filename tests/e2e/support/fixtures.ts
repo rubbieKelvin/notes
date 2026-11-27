@@ -1,5 +1,5 @@
 import { test as base, expect, type APIRequestContext, type BrowserContext, type Page } from '@playwright/test'
-import { readFileSync, rmSync } from 'node:fs'
+import { readdirSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
@@ -10,24 +10,42 @@ export const GOOD_KEY = 'sk-good-key-123456'
 
 export const uniqueEmail = (tag = 'u') => `${tag}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@example.com`
 
-/** Asks for a sign-in email and returns the link it would contain (support/server.mjs captures it). */
-export async function requestLink(request: APIRequestContext, email: string) {
-  const file = join(tmpdir(), 'opennotes-e2e-mail', email)
-  rmSync(file, { force: true })
-  const res = await request.post('/v1/auth/link', { data: { email } })
-  expect(res.status(), await res.text()).toBe(204)
-  let link = ''
-  await expect.poll(() => (link = (() => { try { return readFileSync(file, 'utf8') } catch { return '' } })())).not.toBe('')
-  return link
+type Mail = { file: string; to: string[]; subject: string; html: string; text: string | null }
+const mailDir = join(tmpdir(), 'opennotes-e2e-mail')
+
+/** Emails to `to` written by the server's `fs` driver, oldest first. */
+function inbox(to: string): Mail[] {
+  let files: string[] = []
+  try { files = readdirSync(mailDir).filter((f) => f.endsWith('.json')).sort() } catch { return [] }
+  return files.flatMap((file) => {
+    try {
+      const m = JSON.parse(readFileSync(join(mailDir, file), 'utf8'))
+      return m.to.includes(to) ? [{ ...m, file }] : []
+    } catch { return [] } // half-written
+  })
 }
 
-/** The 6-digit code from the latest sign-in email to `email` (support/server.mjs captures it). Call after the email is requested. */
+/** Waits for the next email to `to` whose subject matches, and removes it so later calls see only newer mail. */
+export async function nextMail(to: string, subject: RegExp): Promise<Mail> {
+  let mail: Mail | undefined
+  await expect.poll(() => (mail = inbox(to).find((m) => subject.test(m.subject))), { message: `email to ${to} matching ${subject}` }).toBeTruthy()
+  rmSync(join(mailDir, mail!.file), { force: true })
+  return mail!
+}
+
+const SIGN_IN = /sign-in code/
+
+/** Asks for a sign-in email and returns its link. */
+export async function requestLink(request: APIRequestContext, email: string) {
+  for (const m of inbox(email)) rmSync(join(mailDir, m.file), { force: true }) // only the email this call triggers
+  const res = await request.post('/v1/auth/link', { data: { email } })
+  expect(res.status(), await res.text()).toBe(204)
+  return (await nextMail(email, SIGN_IN)).text!.match(/https?:\/\/\S+#signin=\S+/)![0]
+}
+
+/** The 6-digit code from the next sign-in email to `email`. Call after the email is requested. */
 export async function latestCode(email: string) {
-  const file = join(tmpdir(), 'opennotes-e2e-mail', `${email}.code`)
-  let code = ''
-  await expect.poll(() => (code = (() => { try { return readFileSync(file, 'utf8') } catch { return '' } })())).not.toBe('')
-  rmSync(file, { force: true })
-  return code
+  return (await nextMail(email, SIGN_IN)).subject.match(/^(\d{6}) /)![1]
 }
 
 export const linkToken = (link: string) => new URLSearchParams(new URL(link).hash.slice(1)).get('signin')!

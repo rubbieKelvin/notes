@@ -10,7 +10,7 @@ up:
 down:
     docker compose down
 
-# Follow the server log (sign-in links show up here without SMTP)
+# Follow the server log (with EMAIL_DRIVER=fs, each email's subject, including sign-in codes, shows up here)
 logs:
     docker compose logs -f server
 

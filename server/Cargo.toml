@@ -10,7 +10,7 @@ axum-extra = { version = "0.12.6", features = ["cookie", "typed-header"] }
 base64 = "0.23.1"
 chrono = { version = "0.4.45", features = ["serde"] }
 futures-util = "0.3.34"
-lettre = { version = "0.11.24", default-features = false, features = ["smtp-transport", "tokio1", "tokio1-rustls", "rustls-platform-verifier", "aws-lc-rs", "builder", "hostname"] }
+minijinja = "2"
 rand = "0.10.4"
 reqwest = { version = "0.13.5", features = ["json"] }
 rmcp = { version = "3.11.0", features = ["server", "transport-streamable-http-server", "macros"] }

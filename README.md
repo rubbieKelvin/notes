@@ -16,9 +16,10 @@ pnpm dev                  # web app on http://localhost:5173 (hot reload), proxi
 takes a few minutes; after that, a change rebuilds incrementally. Build output and crates live in
 Docker volumes, so the container never touches your local `server/target`.
 
-Sign in with your email: you get a one-time link (no passwords). Until you set `SMTP_URL` and
-`MAIL_FROM`, the link is printed to the server log (`just logs`) instead of emailed. Then open
-**≡ → Settings** to pick an AI provider (needed for margin notes and canvas annotations) and create
+Sign in with your email: you get a 6-digit code and a one-time link (no passwords). With the default
+`EMAIL_DRIVER=fs`, emails are written to files and their subjects, which carry the code, appear in the
+server log (`just logs`). To actually deliver mail, set `EMAIL_DRIVER=resend`, `EMAIL_RESEND_API_KEY`
+and `EMAIL_FROM` (see `.env.example`). Then open **avatar → Settings** to pick an AI provider (needed for margin notes and canvas annotations) and create
 API tokens for scripts or agents.
 
 For production, build the images directly: `docker build server` (its default target is the slim

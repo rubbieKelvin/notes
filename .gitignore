@@ -12,3 +12,4 @@ dist
 target
 test-results
 playwright-report
+.emails/

@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+{% from "_macros.html" import button %}
+<p style="margin:0 0 16px;font-size:20px;color:#171717;">A note was shared with you</p>
+<p style="margin:0 0 8px;">{{ owner_name }} ({{ owner_email }}) shared <span style="color:#171717;font-weight:500;">{{ title }}</span> with you. You can {{ "edit" if role == "edit" else "view" }} it.</p>
+{{ button(link, "Open the note") }}
+<p style="margin:0 0 8px;color:#6b6b6b;font-size:13px;">New to opennotes? Open the link and enter this email address; we'll send you a sign-in code. No password needed.</p>
+<p style="margin:16px 0 0;color:#a3a3a1;font-size:12px;word-break:break-all;">Or paste this link: {{ link | safe }}</p>
+{% endblock %}
+{% block footer %}You're receiving this because {{ owner_name }} shared a note with this address on opennotes.{% endblock %}
