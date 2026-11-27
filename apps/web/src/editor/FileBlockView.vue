@@ -1,19 +1,19 @@
 <script setup lang="ts">
 import { ChevronDown, Download, FolderOpen, LoaderCircle, Maximize2, Search, Trash2 } from '@lucide/vue'
 import { NodeViewWrapper, nodeViewProps } from '@tiptap/vue-3'
-import { computed, onMounted, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { api, errorText } from '../api'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import FilePreview from '../FilePreview.vue'
 import FilePreviewDialog from '../FilePreviewDialog.vue'
-import { ACCEPT, KIND_ICON, fileKind, formatSize, uploadFile, type FileInfo, type Storage, type StoredFile } from '../files'
+import { ACCEPT, KIND_ICON, fileKind, formatSize, pendingUploads, uploadFile, type FileInfo, type Storage, type StoredFile } from '../files'
 import { toast } from '../ui/feedback'
 import type { FileBlockOptions } from './FileBlock'
 
 const props = defineProps(nodeViewProps)
 const opts = props.extension.options as FileBlockOptions
-const a = computed(() => props.node.attrs as { fileId: string | null; name: string; mime: string; size: number; accept: string; open: boolean })
+const a = computed(() => props.node.attrs as { fileId: string | null; name: string; mime: string; size: number; accept: string; open: boolean; upload: string | null })
 const file = computed(() => (a.value.fileId ? { url: `/v1/files/${a.value.fileId}`, name: a.value.name, mime: a.value.mime, size: Number(a.value.size) } : null))
 const kind = computed(() => fileKind(a.value.mime, a.value.name))
 const label = computed(() => ({ image: 'an image', video: 'a video', audio: 'an audio file', pdf: 'a PDF' })[a.value.accept] ?? 'a file')
@@ -23,7 +23,7 @@ const progress = ref<number | null>(null)
 const uploadingName = ref('')
 const dragging = ref(false)
 
-const place = (f: FileInfo) => props.updateAttributes({ fileId: f.id, name: f.name, mime: f.mime, size: f.size })
+const place = (f: FileInfo) => props.updateAttributes({ fileId: f.id, name: f.name, mime: f.mime, size: f.size, upload: null })
 
 async function upload(f: File | undefined) {
   if (!f || progress.value !== null) return
@@ -33,6 +33,7 @@ async function upload(f: File | undefined) {
     place(await uploadFile(f, { doc: opts.docId, onProgress: (p) => (progress.value = p) }))
   } catch (e) {
     toast(errorText(e), 'error')
+    if (a.value.upload) props.deleteNode() // a failed drop or paste leaves nothing behind
   } finally {
     progress.value = null
   }
@@ -62,12 +63,20 @@ async function loadStored(open: boolean) {
 // ── placed file ──
 const missing = ref(false)
 const fullscreen = ref(false)
-onMounted(async () => {
-  if (!file.value) return
+// A watch, not onMounted: ProseMirror may reuse this view for a newly inserted block.
+watch(() => a.value.upload, (key) => {
+  const dropped = key && pendingUploads.get(key)
+  if (!dropped) return
+  pendingUploads.delete(key)
+  upload(dropped)
+}, { immediate: true })
+watch(() => file.value?.url, async (url) => {
+  missing.value = false
+  if (!url) return
   // Deleted from storage, or the note's readers lost access: say so instead of a broken preview.
-  const res = await fetch(file.value.url, { method: 'HEAD' }).catch(() => null)
+  const res = await fetch(url, { method: 'HEAD' }).catch(() => null)
   missing.value = res?.status === 404
-})
+}, { immediate: true })
 </script>
 
 <template>

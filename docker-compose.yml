@@ -36,7 +36,14 @@ services:
       OPENNOTES_HOSTS: ${OPENNOTES_HOSTS:-localhost,127.0.0.1}
       ALLOW_PRIVATE_AI_URLS: ${ALLOW_PRIVATE_AI_URLS:-false}
       PUBLIC_URL: ${PUBLIC_URL:-http://localhost:5173}
+      STORAGE_DRIVER: ${STORAGE_DRIVER:-fs}
       FILES_DIR: /data/files
+      AWS_BUCKET: ${AWS_BUCKET:-}
+      AWS_REGION: ${AWS_REGION:-}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
+      AWS_ENDPOINT: ${AWS_ENDPOINT:-}
+      AWS_ALLOW_HTTP: ${AWS_ALLOW_HTTP:-}
       # fs writes emails to EMAIL_FS_DIR and logs their subjects (with the sign-in code); resend delivers them.
       EMAIL_DRIVER: ${EMAIL_DRIVER:-fs}
       EMAIL_FS_DIR: /tmp/emails

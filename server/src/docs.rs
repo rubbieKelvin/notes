@@ -22,6 +22,8 @@ pub struct DocInfo {
     role: String,
     owner_name: String,
     owner_username: Option<String>,
+    /// This user's own tags for the note.
+    tags: Vec<String>,
 }
 
 /// The user's own notes and the ones shared with them, newest first.
@@ -30,7 +32,8 @@ pub async fn list(State(s): State<AppState>, user: User) -> Res<Json<Vec<DocInfo
         "SELECT d.id, d.title, d.description, d.is_public, d.updated_at,
                 CASE WHEN d.user_id = $1 THEN d.mcp_exposed_slug END AS mcp_exposed_slug,
                 CASE WHEN d.user_id = $1 THEN 'owner' ELSE sh.role END AS role,
-                COALESCE(NULLIF(o.display_name, ''), split_part(o.email, '@', 1)) AS owner_name, o.username AS owner_username
+                COALESCE(NULLIF(o.display_name, ''), split_part(o.email, '@', 1)) AS owner_name, o.username AS owner_username,
+                COALESCE((SELECT array_agg(t.tag ORDER BY lower(t.tag)) FROM note_tags t WHERE t.doc_id = d.id AND t.user_id = $1), '{}') AS tags
          FROM documents d
          JOIN users o ON o.id = d.user_id
          LEFT JOIN doc_shares sh ON sh.doc_id = d.id AND sh.email = (SELECT email FROM users WHERE id = $1)
@@ -121,4 +124,46 @@ pub async fn set_mcp(State(s): State<AppState>, user: User, Path(id): Path<Uuid>
     };
     let slug = slug.ok_or_else(|| AppError::new(StatusCode::NOT_FOUND, "no such document"))?;
     Ok(Json(json!({ "mcp_exposed_slug": slug })))
+}
+
+#[derive(Deserialize)]
+pub struct Tags {
+    tags: Vec<String>,
+}
+
+/// Trimmed, at most 40 characters each and 20 in all, without case-insensitive duplicates.
+fn clean_tags(raw: Vec<String>) -> Vec<String> {
+    let mut out: Vec<String> = Vec::new();
+    for t in raw {
+        let t: String = t.trim().trim_start_matches('#').chars().filter(|c| !c.is_control()).take(40).collect();
+        let t = t.trim().to_string();
+        if !t.is_empty() && !out.iter().any(|o| o.to_lowercase() == t.to_lowercase()) {
+            out.push(t);
+        }
+    }
+    out.truncate(20);
+    out
+}
+
+/// Replaces your tags on a note you can open. Others who can open it never see them.
+pub async fn set_tags(State(s): State<AppState>, user: User, Path(id): Path<Uuid>, Json(b): Json<Tags>) -> Res<Json<Vec<String>>> {
+    if access(&s, user.id, id).await?.is_none() {
+        return Err(AppError::new(StatusCode::NOT_FOUND, "no such document"));
+    }
+    let tags = clean_tags(b.tags);
+    let mut tx = s.db.begin().await?;
+    sqlx::query("DELETE FROM note_tags WHERE user_id = $1 AND doc_id = $2").bind(user.id).bind(id).execute(&mut *tx).await?;
+    sqlx::query("INSERT INTO note_tags (user_id, doc_id, tag) SELECT $1, $2, unnest($3::TEXT[])").bind(user.id).bind(id).bind(&tags).execute(&mut *tx).await?;
+    tx.commit().await?;
+    Ok(Json(tags))
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn tags_are_cleaned() {
+        let raw = ["  Work ", "#ideas", "work", "", "a\nb", &"x".repeat(50)].map(String::from).to_vec();
+        assert_eq!(super::clean_tags(raw), ["Work", "ideas", "ab", &"x".repeat(40)]);
+        assert_eq!(super::clean_tags((0..30).map(|i| i.to_string()).collect()).len(), 20);
+    }
 }

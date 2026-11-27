@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Bold, Code, Italic, Pencil, Sparkles, Strikethrough, Trash2 } from '@lucide/vue'
-import { EditorContent, useEditor } from '@tiptap/vue-3'
+import { EditorContent } from '@tiptap/vue-3'
 import { BubbleMenu } from '@tiptap/vue-3/menus'
 import { computed, onBeforeUnmount, ref } from 'vue'
 import { WebsocketProvider } from 'y-websocket'
@@ -13,6 +13,9 @@ import InboxPill from './InboxPill.vue'
 import McpPill from './McpPill.vue'
 import { requestWhisper } from './editor/AiMargin'
 import { noteExtensions } from './editor/extensions'
+import { useTabEditor, useTabs } from './editor/tabs'
+import NoteTabs from './NoteTabs.vue'
+import TagsPopover from './TagsPopover.vue'
 import { canvasesOf } from './editor/canvas/store'
 import MarginWhispers from './editor/MarginWhispers.vue'
 import { Button } from '@/components/ui/button'
@@ -57,16 +60,19 @@ syncTabTitle()
 
 const column = ref<HTMLElement>()
 
-const editor = useEditor({
+const { tabs, active: activeTab } = useTabs(ydoc)
+const editor = useTabEditor(activeTab, (field) => ({
   autofocus: readOnly ? false : 'end',
   editable: !readOnly,
   editorProps: { attributes: { class: 'prose prose-stone max-w-none' } },
-  extensions: noteExtensions({ ydoc, provider, docId: props.doc.id, readOnly, editor: () => editor.value }),
-})
+  extensions: noteExtensions({
+    ydoc, provider, docId: props.doc.id, readOnly, field, editor: () => editor.value,
+    notes: () => props.docs.filter((d) => d.id !== props.doc.id),
+  }),
+}))
 const sharedBy = computed(() => (owner ? '' : `${props.doc.owner_name} shared this · ${readOnly ? 'Can view' : 'Can edit'}`))
 
 onBeforeUnmount(() => {
-  editor.value?.destroy()
   provider.destroy()
   ydoc.destroy()
 })
@@ -89,7 +95,8 @@ const marks = [
       <span v-if="status === 'disconnected'" class="mr-1 rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-700" title="Edits are kept and sync when the connection returns">Offline</span>
     </div>
     <div class="flex items-center gap-2">
-      <InboxPill v-if="editor && !readOnly" :editor="editor" />
+      <TagsPopover :doc="doc" :docs="docs" />
+      <InboxPill v-if="editor && !readOnly" :key="activeTab" :editor="editor" />
       <CommentsPanel :doc-id="doc.id" />
       <template v-if="owner">
       <ShareDialog :doc="doc" :me="me" :title="title" />
@@ -101,20 +108,24 @@ const marks = [
   </header>
 
   <main class="mx-auto max-w-[44rem] px-6 pt-28">
-    <div ref="column" class="relative">
-      <BubbleMenu v-if="editor && !readOnly" :editor="editor" class="flex items-center gap-0.5 rounded-md border bg-popover p-0.5">
-        <Button
-          v-for="m in marks" :key="m.name" variant="ghost" size="icon-sm" :aria-label="m.name" :title="`${m.name} (${m.key})`" :aria-pressed="editor.isActive(m.name)"
-          :class="editor.isActive(m.name) && 'bg-accent'" @click="editor.chain().focus().toggleMark(m.name).run()"
-        ><component :is="m.icon" /></Button>
-        <Separator orientation="vertical" class="mx-0.5 h-5!" />
-        <Button variant="ghost" size="sm" class="text-ai-500 hover:bg-ai-50 hover:text-ai-700" title="Add an AI margin note (⌘K)" @click="requestWhisper(editor)">
-          <Sparkles />Ask AI
-        </Button>
-      </BubbleMenu>
-      <BlockToolbar v-if="editor && column && !readOnly" :editor="editor" :column="column" />
-      <EditorContent :editor="editor" />
-      <MarginWhispers v-if="editor && column" :editor="editor" :column="column" />
+    <div ref="column" class="group/note relative">
+      <NoteTabs v-model="activeTab" :ydoc="ydoc" :tabs="tabs" :read-only="readOnly" />
+      <!-- one editor per tab: everything bound to it remounts with it -->
+      <div :key="activeTab">
+        <BubbleMenu v-if="editor && !readOnly" :editor="editor" class="flex items-center gap-0.5 rounded-md border bg-popover p-0.5">
+          <Button
+            v-for="m in marks" :key="m.name" variant="ghost" size="icon-sm" :aria-label="m.name" :title="`${m.name} (${m.key})`" :aria-pressed="editor.isActive(m.name)"
+            :class="editor.isActive(m.name) && 'bg-accent'" @click="editor.chain().focus().toggleMark(m.name).run()"
+          ><component :is="m.icon" /></Button>
+          <Separator orientation="vertical" class="mx-0.5 h-5!" />
+          <Button variant="ghost" size="sm" class="text-ai-500 hover:bg-ai-50 hover:text-ai-700" title="Add an AI margin note (⌘K)" @click="requestWhisper(editor)">
+            <Sparkles />Ask AI
+          </Button>
+        </BubbleMenu>
+        <BlockToolbar v-if="editor && column && !readOnly" :editor="editor" :column="column" />
+        <EditorContent :editor="editor" />
+        <MarginWhispers v-if="editor && column" :editor="editor" :column="column" />
+      </div>
     </div>
   </main>
 </template>

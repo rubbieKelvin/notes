@@ -2,9 +2,38 @@
 use serde_json::Value;
 use yrs::{
     types::text::YChange,
-    types::xml::{XmlFragment, XmlOut},
-    Any, Doc, Map, MapRef, Out, ReadTxn, Text, Transact, Xml,
+    types::xml::{XmlFragment, XmlFragmentRef, XmlOut},
+    Any, Array, Doc, Map, MapRef, Out, ReadTxn, Text, Transact, Xml,
 };
+
+/// The note's tabs in order, as (title, content). The first tab of a note keeps the original "default" fragment;
+/// others live in "tab:<id>". A note that never had tabs is one untitled tab.
+fn tabs(doc: &Doc) -> Vec<(String, XmlFragmentRef)> {
+    let list: Vec<(String, String)> = {
+        let arr = doc.get_or_insert_array("tabs");
+        let txn = doc.transact();
+        arr.iter(&txn)
+            .filter_map(|v| match v {
+                Out::YMap(m) => {
+                    let get = |k: &str| match m.get(&txn, k) {
+                        Some(Out::Any(Any::String(s))) => s.to_string(),
+                        _ => String::new(),
+                    };
+                    Some((get("id"), get("title")))
+                }
+                _ => None,
+            })
+            .collect()
+    };
+    if list.is_empty() {
+        return vec![(String::new(), doc.get_or_insert_xml_fragment("default"))];
+    }
+    let mut seen = Vec::new();
+    list.into_iter()
+        .filter(|(id, _)| !id.is_empty() && !seen.contains(id) && { seen.push(id.clone()); true }) // two clients may add the same tab
+        .map(|(id, title)| (title, doc.get_or_insert_xml_fragment(if id == "default" { "default".to_string() } else { format!("tab:{id}") })))
+        .collect()
+}
 
 /// A trimmed string from the document's `meta` map (title, description), or "".
 pub fn meta(doc: &Doc, key: &str) -> String {
@@ -19,12 +48,17 @@ pub fn meta(doc: &Doc, key: &str) -> String {
 /// Returns (title, text).
 pub fn serialize(doc: &Doc) -> (String, String) {
     let title = meta(doc, "title");
-    let frag = doc.get_or_insert_xml_fragment("default");
+    let tabs = tabs(doc);
     let canvases = doc.get_or_insert_map("canvases");
     let txn = doc.transact();
     let mut out = String::new();
-    for child in frag.children(&txn) {
-        node(&txn, &canvases, child, &mut out);
+    for (name, frag) in &tabs {
+        if tabs.len() > 1 {
+            out.push_str(&format!("[Tab: {}]\n\n", if name.trim().is_empty() { "Untitled" } else { name.trim() }));
+        }
+        for child in frag.children(&txn) {
+            node(&txn, &canvases, child, &mut out);
+        }
     }
     (title, out.trim().to_string())
 }
@@ -82,11 +116,13 @@ fn canvas_text<T: ReadTxn>(txn: &T, canvases: &MapRef, id: &str) -> Vec<String> 
 
 /// Ids of the uploaded files a note shows: file blocks, and images on canvases that are still in the note.
 pub fn file_ids(doc: &Doc) -> Vec<uuid::Uuid> {
-    let frag = doc.get_or_insert_xml_fragment("default");
+    let tabs = tabs(doc);
     let canvases = doc.get_or_insert_map("canvases");
     let txn = doc.transact();
     let mut ids = Vec::new();
-    frag.children(&txn).for_each(|c| collect_files(&txn, &canvases, c, &mut ids));
+    for (_, frag) in &tabs {
+        frag.children(&txn).for_each(|c| collect_files(&txn, &canvases, c, &mut ids));
+    }
     ids.sort();
     ids.dedup();
     ids
@@ -136,6 +172,7 @@ fn node<T: ReadTxn>(txn: &T, canvases: &MapRef, n: XmlOut, out: &mut String) {
                 "inlineMath" => out.push_str(&format!("${}$", str_attr(&attr("latex")))),
                 "blockMath" => out.push_str(&format!("$${}$$\n\n", str_attr(&attr("latex")))),
                 "hardBreak" => out.push('\n'),
+                "noteRef" => out.push_str(&format!("[[{}]]", str_attr(&attr("title")))),
                 "horizontalRule" => out.push_str("---\n\n"),
                 "canvasBlock" => {
                     let texts = canvas_text(txn, canvases, &str_attr(&attr("canvasId")));
@@ -273,5 +310,31 @@ mod tests {
         let ids: Vec<String> = file_ids(&doc).iter().map(|i| i.to_string()).collect();
         assert_eq!(ids, ["00000000-0000-0000-0000-000000000001", "00000000-0000-0000-0000-000000000002"]);
         assert_eq!(text, "## Boxes\n\nsame size in height [AI margin note: V = s³ for a cube].\n\n$$E=mc^2$$\n\n[Canvas \"Cube\": V=s³ · $A=6s^2$]\n\n[File \"data.csv\" (application/octet-stream)]\n\n[Contradicts] Boxes vary.");
+    }
+
+    #[test]
+    fn tabs_each_get_a_heading_and_their_files_count() {
+        let doc = Doc::new();
+        let tabs = doc.get_or_insert_array("tabs");
+        let first = doc.get_or_insert_xml_fragment("default");
+        let second = doc.get_or_insert_xml_fragment("tab:t2");
+        {
+            let mut txn = doc.transact_mut();
+            for (id, title) in [("default", "Overview"), ("t2", "Budget"), ("t2", "Budget")] {
+                let m = tabs.push_back(&mut txn, MapPrelim::default());
+                m.insert(&mut txn, "id", id);
+                m.insert(&mut txn, "title", title);
+            }
+            let p = first.push_back(&mut txn, XmlElementPrelim::empty("paragraph"));
+            p.push_back(&mut txn, XmlTextPrelim::new("See "));
+            let r = p.push_back(&mut txn, XmlElementPrelim::empty("noteRef"));
+            r.insert_attribute(&mut txn, "title", "Q3 plan");
+            let p = second.push_back(&mut txn, XmlElementPrelim::empty("paragraph"));
+            p.push_back(&mut txn, XmlTextPrelim::new("$40k"));
+            let f = second.push_back(&mut txn, XmlElementPrelim::empty("fileBlock"));
+            f.insert_attribute(&mut txn, "fileId", "00000000-0000-0000-0000-000000000009");
+        }
+        assert_eq!(serialize(&doc).1, "[Tab: Overview]\n\nSee [[Q3 plan]]\n\n[Tab: Budget]\n\n$40k\n\n[File \"\" ()]");
+        assert_eq!(file_ids(&doc).len(), 1);
     }
 }

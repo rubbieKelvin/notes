@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { EditorContent, useEditor } from '@tiptap/vue-3'
+import { EditorContent } from '@tiptap/vue-3'
 import { onBeforeUnmount, ref } from 'vue'
 import * as Y from 'yjs'
 import { api, ApiError, errorText } from './api'
 import { noteExtensions } from './editor/extensions'
+import { useTabEditor, useTabs } from './editor/tabs'
+import NoteTabs from './NoteTabs.vue'
 import { canvasesOf } from './editor/canvas/store'
 import { ago } from './noteArt'
 import { Button } from '@/components/ui/button'
@@ -19,7 +21,8 @@ const missing = ref(false)
 const error = ref('')
 const ydoc = new Y.Doc()
 canvasesOf(ydoc)
-const editor = useEditor({ editable: false, editorProps: { attributes: { class: 'prose prose-stone max-w-none' } }, extensions: noteExtensions({ ydoc, provider: null, docId: props.id, readOnly: true, editor: () => editor.value }) })
+const { tabs, active } = useTabs(ydoc)
+const editor = useTabEditor(active, (field) => ({ editable: false, editorProps: { attributes: { class: 'prose prose-stone max-w-none' } }, extensions: noteExtensions({ ydoc, provider: null, docId: props.id, readOnly: true, field, editor: () => editor.value }) }))
 
 api<PublicNote>(`/v1/public/@${props.username}/${props.id}`)
   .then((d) => {
@@ -29,7 +32,7 @@ api<PublicNote>(`/v1/public/@${props.username}/${props.id}`)
   })
   .catch((e) => (e instanceof ApiError && e.status === 404 ? (missing.value = true) : (error.value = errorText(e))))
 
-onBeforeUnmount(() => { editor.value?.destroy(); ydoc.destroy() })
+onBeforeUnmount(() => ydoc.destroy())
 </script>
 
 <template>
@@ -50,7 +53,8 @@ onBeforeUnmount(() => { editor.value?.destroy(); ydoc.destroy() })
     <p v-if="data.note.description" class="mt-3 text-lg text-muted-foreground">{{ data.note.description }}</p>
     <p class="mt-4 text-xs text-muted-foreground">Updated {{ ago(data.note.updated_at) }}</p>
     <NoteReactions class="mt-4 mb-10" :doc-id="id" />
-    <EditorContent :editor="editor" />
+    <NoteTabs v-model="active" :ydoc="ydoc" :tabs="tabs" read-only />
+    <EditorContent :key="active" :editor="editor" />
   </main>
   <main v-else-if="missing" class="grid min-h-[70vh] place-items-center px-6 text-center" role="alert">
     <div>

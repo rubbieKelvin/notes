@@ -75,3 +75,23 @@ test("a storage upload is private until a note you share shows it", async ({ pag
   expect(part.status()).toBe(206)
   await stranger.close()
 })
+
+test('files dropped or pasted into a note upload as file blocks', async ({ page, user: _ }) => {
+  await openEditor(page)
+  await page.locator('.ProseMirror').click()
+  // Build the File in the page: drag-and-drop and clipboard events can't carry files from Playwright directly.
+  const send = (type: 'drop' | 'paste', name: string, text: string) => page.locator('.ProseMirror').evaluate((el, [type, name, text]) => {
+    const dt = new DataTransfer()
+    dt.items.add(new File([text], name, { type: 'text/plain' }))
+    const box = el.getBoundingClientRect()
+    el.dispatchEvent(type === 'drop'
+      ? new DragEvent('drop', { dataTransfer: dt, bubbles: true, cancelable: true, clientX: box.left + 20, clientY: box.top + 10 })
+      : new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }))
+  }, [type, name, text] as const)
+
+  await send('drop', 'dropped.txt', 'from a drop')
+  await expect(page.locator('[data-file-block]').filter({ hasText: 'dropped.txt' }).locator('pre')).toContainText('from a drop')
+  await send('paste', 'pasted.md', '# from the clipboard')
+  await expect(page.locator('[data-file-block]').filter({ hasText: 'pasted.md' }).locator('pre')).toContainText('from the clipboard')
+  await expect.poll(async () => (await (await page.request.get('/v1/files')).json()).files.length).toBe(2)
+})

@@ -62,7 +62,7 @@ async function boot() {
   doc.value = docs.value.find((d) => d.role === 'owner')
   if (!doc.value) {
     const { id } = await api<{ id: string }>('/v1/docs', { body: {} })
-    doc.value = { id, title: 'Untitled', description: '', mcp_exposed_slug: null, is_public: false, updated_at: new Date().toISOString(), role: 'owner', owner_name: '', owner_username: null }
+    doc.value = { id, title: 'Untitled', description: '', mcp_exposed_slug: null, is_public: false, updated_at: new Date().toISOString(), role: 'owner', owner_name: '', owner_username: null, tags: [] }
     docs.value = [doc.value, ...docs.value]
   }
   history.replaceState(null, '', `/d/${doc.value.id}`)

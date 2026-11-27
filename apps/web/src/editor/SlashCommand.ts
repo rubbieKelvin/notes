@@ -1,5 +1,5 @@
 import {
-  BadgeCheck, Braces, FileText, Film, Image, Music, Paperclip, Heading1, Heading2, Heading3, Lightbulb, List, ListChecks, ListOrdered, Minus, PenTool,
+  BadgeCheck, Braces, FileText, Link2, Film, Image, Music, Paperclip, Heading1, Heading2, Heading3, Lightbulb, List, ListChecks, ListOrdered, Minus, PenTool,
   Quote, Radical, Scale, Sigma, SquarePlay, SquareTerminal, type LucideIcon,
 } from '@lucide/vue'
 import { Extension, type Editor, type Range } from '@tiptap/core'
@@ -13,7 +13,7 @@ import SlashMenu from './SlashMenu.vue'
 export type SlashItem = {
   title: string
   description: string
-  group: 'Basic' | 'Thinking' | 'Media & math' | 'Files'
+  group: 'Basic' | 'Thinking' | 'Media & math' | 'Files' | 'Notes'
   icon: LucideIcon
   keywords?: string[]
   run: (editor: Editor, range: Range) => void
@@ -44,6 +44,8 @@ export const slashItems: SlashItem[] = ([
   { group: 'Basic', title: 'Quote', description: 'Quoted text', icon: Quote, keywords: ['blockquote', '>'], run: (e, r) => e.chain().focus().deleteRange(r).toggleBlockquote().run() },
   { group: 'Basic', title: 'Code block', description: 'Syntax-highlighted code', icon: Braces, keywords: ['code', 'snippet', '```'], run: (e, r) => e.chain().focus().deleteRange(r).toggleCodeBlock().run() },
   { group: 'Basic', title: 'Divider', description: 'Separate sections', icon: Minus, keywords: ['hr', 'rule', 'line', '---'], run: (e, r) => e.chain().focus().deleteRange(r).setHorizontalRule().run() },
+
+  { group: 'Basic', title: 'Link to note', description: 'Reference another note (or type [[)', icon: Link2, keywords: ['reference', 'mention', 'page', '[['], run: (e, r) => e.chain().focus().deleteRange(r).insertContent('[[').run() },
 
   { group: 'Thinking', title: 'Hypothesis', description: 'An idea you still need to test', icon: Lightbulb, keywords: ['callout', 'idea', 'guess'], run: (e, r) => e.chain().focus().deleteRange(r).wrapIn('callout', { kind: 'hypothesis' }).run() },
   { group: 'Thinking', title: 'Evidence', description: 'A verified fact', icon: BadgeCheck, keywords: ['fact', 'verified', 'callout', 'proof'], run: (e, r) => e.chain().focus().deleteRange(r).wrapIn('callout', { kind: 'fact' }).run() },

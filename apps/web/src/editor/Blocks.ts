@@ -1,5 +1,7 @@
-import { Node, mergeAttributes } from '@tiptap/core'
+import { Node, findParentNode, mergeAttributes } from '@tiptap/core'
+import { TaskItem, TaskList } from '@tiptap/extension-list'
 import { VueNodeViewRenderer } from '@tiptap/vue-3'
+import TaskListView from './TaskListView.vue'
 import ClipView from './ClipView.vue'
 import RunbookView from './RunbookView.vue'
 
@@ -19,6 +21,31 @@ export const Callout = Node.create({
   parseHTML: () => [{ tag: 'div[data-type="callout"]' }],
   renderHTML: ({ HTMLAttributes }) => ['div', mergeAttributes(HTMLAttributes, { 'data-type': 'callout' }), 0],
 })
+
+/** Checklists show progress and can hide finished tasks (a list setting everyone sees). */
+export const Checklist = TaskList.extend({
+  addAttributes: () => ({
+    hideDone: { default: false, parseHTML: (el) => el.getAttribute('data-hide-done') === 'true', renderHTML: (a) => (a.hideDone ? { 'data-hide-done': 'true' } : {}) },
+  }),
+  addNodeView: () => VueNodeViewRenderer(TaskListView),
+})
+
+/** ⌘/Ctrl+Enter ticks or unticks the task the cursor is in. */
+export const ChecklistItem = TaskItem.extend({
+  addKeyboardShortcuts() {
+    return {
+      ...this.parent?.(),
+      'Mod-Enter': () => {
+        const item = findParentNode((n) => n.type.name === this.name)(this.editor.state.selection)
+        if (!item) return false
+        return this.editor.commands.command(({ tr }) => {
+          tr.setNodeMarkup(item.pos, undefined, { ...item.node.attrs, checked: !item.node.attrs.checked })
+          return true
+        })
+      },
+    }
+  },
+}).configure({ nested: true })
 
 /** /clip: a timestamped media reference with the transcript quote as editable content. */
 export const Clip = Node.create({

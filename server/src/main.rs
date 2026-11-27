@@ -31,6 +31,7 @@ pub struct AppState {
     pub cfg: Arc<Config>,
     pub login_limiter: Arc<auth::LoginLimiter>,
     pub email: Arc<email::EmailService>,
+    pub store: Arc<dyn object_store::ObjectStore>,
 }
 
 pub struct Config {
@@ -41,8 +42,6 @@ pub struct Config {
     pub hosts: Vec<String>,
     /// Origin the browser uses, for links in emails. Never taken from the request's Host header.
     pub public_url: String,
-    /// Uploaded files, one per id (FILES_DIR).
-    pub files_dir: std::path::PathBuf,
 }
 
 #[derive(Debug)]
@@ -94,6 +93,7 @@ pub fn app(state: AppState) -> Router {
         .route("/v1/docs", get(docs::list).post(docs::create))
         .route("/v1/docs/{id}", delete(docs::remove))
         .route("/v1/docs/{id}/mcp", put(docs::set_mcp))
+        .route("/v1/docs/{id}/tags", put(docs::set_tags))
         .route("/v1/docs/{id}/shares", get(share::list).post(share::invite))
         .route("/v1/docs/{id}/shares/{email}", delete(share::revoke))
         .route("/v1/docs/{id}/public", put(share::set_public))
@@ -140,11 +140,10 @@ async fn main() {
         anthropic_base: env("ANTHROPIC_BASE_URL").unwrap_or_else(|| "https://api.anthropic.com".into()),
         allow_private_ai_urls: env("ALLOW_PRIVATE_AI_URLS").is_some_and(|v| v == "true"),
         public_url: env("PUBLIC_URL").unwrap_or_else(|| "http://localhost:3000".into()).trim_end_matches('/').to_string(),
-        files_dir: env("FILES_DIR").unwrap_or_else(|| "data/files".into()).into(),
         hosts: env("OPENNOTES_HOSTS").unwrap_or_else(|| "localhost,127.0.0.1".into()).split(',').map(|h| h.trim().to_string()).collect(),
     };
-    std::fs::create_dir_all(&cfg.files_dir).expect("cannot create FILES_DIR");
-    files::move_legacy(&db, &cfg.files_dir).await;
+    let store = files::store_from_env(env);
+    files::move_legacy(&db, store.as_ref()).await;
     let state = AppState {
         db: db.clone(),
         http: reqwest::Client::new(),
@@ -153,6 +152,7 @@ async fn main() {
         cfg: Arc::new(cfg),
         login_limiter: Default::default(),
         email: Arc::new(email::EmailService::from_env(env)),
+        store,
     };
     tokio::spawn(cleanup(db));
 

@@ -86,12 +86,32 @@
   content: attr(data-placeholder);
   @apply text-stone-300 float-left h-0 pointer-events-none;
 }
-.ProseMirror ul[data-type="taskList"] { @apply list-none pl-0; }
-.ProseMirror ul[data-type="taskList"] li { @apply flex gap-2 items-start; }
-.ProseMirror ul[data-type="taskList"] li > label { @apply mt-1; }
-.ProseMirror ul[data-type="taskList"] li > div { @apply flex-1; }
+/* Task lists: rows sit tight like a list, and the checkbox centres on the first line of text whatever its size. */
+.ProseMirror ul[data-type="taskList"] { @apply my-3 list-none pl-0; }
+.ProseMirror ul[data-type="taskList"] ul[data-type="taskList"] { @apply my-0 pl-6; }
+.ProseMirror ul[data-type="taskList"] > li { @apply my-0 flex items-start gap-2.5 pl-0; }
+.ProseMirror ul[data-type="taskList"] > li > label { @apply flex h-[1.75em] shrink-0 cursor-pointer items-center select-none; }
+.ProseMirror ul[data-type="taskList"] > li > div { @apply min-w-0 flex-1; }
+.ProseMirror ul[data-type="taskList"] > li > div > p { @apply my-0; }
+.ProseMirror ul[data-type="taskList"] > li input[type="checkbox"] {
+  @apply m-0 grid size-4 cursor-pointer appearance-none place-content-center rounded-[4px] border border-stone-300 bg-background transition-colors;
+  @apply hover:border-primary focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none;
+}
+.ProseMirror ul[data-type="taskList"] > li input[type="checkbox"]::after {
+  content: ""; @apply size-2.5 scale-0 bg-primary-foreground transition-transform;
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+}
+.ProseMirror ul[data-type="taskList"] > li input[type="checkbox"]:checked { @apply border-primary bg-primary; }
+.ProseMirror ul[data-type="taskList"] > li input[type="checkbox"]:checked::after { @apply scale-100; }
+.ProseMirror ul[data-type="taskList"] > li input[type="checkbox"]:disabled { @apply cursor-default hover:border-stone-300; }
+.ProseMirror ul[data-type="taskList"] > li[data-checked="true"] > div > p { @apply text-muted-foreground line-through decoration-stone-300; }
+/* "Hide done" on a list (TaskListView) */
+.ProseMirror [data-hide-done="true"] ul[data-type="taskList"] > li[data-checked="true"] { @apply hidden; }
 .ProseMirror pre { @apply rounded-lg bg-stone-50 text-stone-800 border border-stone-200; }
 .ProseMirror [data-type="inline-math"], .ProseMirror [data-type="block-math"] { @apply cursor-pointer; }
+.ProseMirror a.note-ref { @apply rounded-sm bg-primary/10 px-1 py-px text-primary no-underline decoration-primary/40 hover:underline; }
+.ProseMirror a.note-ref::before { content: "↗ "; @apply text-xs opacity-60; }
+.ProseMirror a.note-ref.ProseMirror-selectednode { @apply ring-2 ring-primary/40; }
 
 .ai-margin { @apply rounded-sm bg-ai-50 decoration-ai-300 underline decoration-dotted underline-offset-4; }
 .ProseMirror div[data-type="ai-source"] { @apply my-4 border-l-2 border-ai-300 pl-4 text-stone-600; }

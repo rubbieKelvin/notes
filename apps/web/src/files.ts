@@ -53,3 +53,6 @@ export function uploadFile(file: File, o: { doc?: string; onProgress?: (fraction
 export const ACCEPT: Record<string, string> = { image: 'image/*', video: 'video/*', audio: 'audio/*', pdf: 'application/pdf,.pdf', file: '' }
 
 export const KIND_ICON: Record<FileKind, LucideIcon> = { image: Image, video: Film, audio: Music, pdf: FileText, text: FileText, file: FileIcon }
+
+/** Files dropped or pasted into a note, keyed by the `upload` attr of the block that uploads them. Local to this tab. */
+export const pendingUploads = new Map<string, File>()

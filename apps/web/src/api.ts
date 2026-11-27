@@ -14,6 +14,8 @@ export type Role = 'owner' | 'edit' | 'view'
 export type DocInfo = {
   id: string; title: string; description: string; mcp_exposed_slug: string | null; is_public: boolean; updated_at: string
   role: Role; owner_name: string; owner_username: string | null
+  /** The signed-in user's own tags for the note. */
+  tags: string[]
 }
 
 /** JSON fetch against our server; throws ApiError with the server's message. */

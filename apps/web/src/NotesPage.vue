@@ -12,9 +12,13 @@ const props = defineProps<{ me: Me; docs: DocInfo[] }>()
 document.title = 'All notes · opennotes'
 
 const query = ref('')
+const tag = ref<string | null>(null)
+const allTags = computed(() => [...new Set(props.docs.flatMap((d) => d.tags))].sort((a, b) => a.localeCompare(b)))
 const shown = computed(() => {
   const q = query.value.trim().toLowerCase()
-  return q ? props.docs.filter((d) => d.title.toLowerCase().includes(q) || d.description.toLowerCase().includes(q)) : props.docs
+  return props.docs.filter((d) =>
+    (!tag.value || d.tags.includes(tag.value))
+    && (!q || d.title.toLowerCase().includes(q) || d.description.toLowerCase().includes(q) || d.tags.some((t) => t.toLowerCase().includes(q))))
 })
 
 const sections = computed(() => [
@@ -46,8 +50,16 @@ async function create() {
   </header>
 
   <main class="mx-auto max-w-6xl p-6">
+    <div v-if="allTags.length" class="mb-6 flex flex-wrap gap-1.5" role="group" aria-label="Filter by tag">
+      <button
+        v-for="t in allTags" :key="t" type="button" :aria-pressed="tag === t"
+        class="rounded-full border px-2.5 py-0.5 text-xs transition-colors"
+        :class="tag === t ? 'border-primary bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'"
+        @click="tag = tag === t ? null : t"
+      >#{{ t }}</button>
+    </div>
     <p v-if="!shown.length" class="py-20 text-center text-sm text-muted-foreground">
-      {{ query.trim() ? `No notes match “${query.trim()}”.` : 'No notes yet.' }}
+      {{ query.trim() || tag ? 'No notes match.' : 'No notes yet.' }}
     </p>
     <section v-for="sec in sections" :key="sec.label" class="mb-10">
       <h2 v-if="sections.length > 1" class="mb-3 text-sm text-muted-foreground">{{ sec.label }}</h2>
@@ -64,6 +76,9 @@ async function create() {
                 <Badge v-if="d.mcp_exposed_slug" variant="secondary" class="text-emerald-700">MCP</Badge>
               </div>
               <p class="line-clamp-2 min-h-8 text-xs" :class="d.description ? 'text-muted-foreground' : 'text-muted-foreground/50 italic'">{{ d.description || 'No description' }}</p>
+              <ul v-if="d.tags.length" class="flex flex-wrap gap-1" aria-label="Tags">
+                <li v-for="t in d.tags" :key="t" class="rounded-full bg-secondary px-1.5 text-[11px] text-secondary-foreground">#{{ t }}</li>
+              </ul>
               <p class="text-[11px] text-muted-foreground">
                 <template v-if="d.role !== 'owner'">{{ d.owner_name }} · {{ d.role === 'edit' ? 'Can edit' : 'Can view' }} · </template>Edited {{ ago(d.updated_at) }}
               </p>

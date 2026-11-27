@@ -2,7 +2,7 @@
 import { computed, nextTick, ref, watch } from 'vue'
 import type { SlashItem } from './SlashCommand'
 
-const props = defineProps<{ items: SlashItem[]; query: string; command: (item: SlashItem) => void }>()
+const props = withDefaults(defineProps<{ items: SlashItem[]; query: string; command: (item: SlashItem) => void; label?: string }>(), { label: 'Insert block' })
 const active = ref(0)
 const list = ref<HTMLElement>()
 
@@ -35,12 +35,12 @@ defineExpose({ onKeyDown })
 
 <template>
   <div class="z-50 w-72 rounded-md border bg-popover text-sm text-popover-foreground select-none">
-    <div ref="list" role="listbox" aria-label="Insert block" class="max-h-[min(400px,50vh)] overflow-y-auto p-1">
-      <p v-if="!items.length" class="px-3 py-6 text-center text-sm text-muted-foreground">No results for “{{ query }}”</p>
+    <div ref="list" role="listbox" :aria-label="label" class="max-h-[min(400px,50vh)] overflow-y-auto p-1">
+      <p v-if="!items.length" class="px-3 py-6 text-center text-sm text-muted-foreground">No results{{ query ? ` for “${query}”` : '' }}</p>
       <section v-for="[name, rows] in groups" :key="name" class="pb-1">
         <h3 class="px-2 pt-2 pb-1 text-xs font-medium text-muted-foreground">{{ name }}</h3>
         <div
-          v-for="{ item, index } in rows" :key="item.title" role="option" :aria-selected="order[active] === index"
+          v-for="{ item, index } in rows" :key="index" role="option" :aria-selected="order[active] === index"
           class="flex cursor-pointer items-center gap-3 rounded-sm px-2 py-1.5"
           :class="order[active] === index ? 'bg-accent text-accent-foreground' : ''"
           @mousemove="active = order.indexOf(index)" @mousedown.prevent="command(item)"
