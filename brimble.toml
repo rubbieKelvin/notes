@@ -41,14 +41,9 @@ health = "/health"
 cpu = 0.5
 memory = "512mb"
 
-# Live sync rooms are held in memory and uploads sit on the volume: exactly one instance.
+# Live sync rooms are held in memory: exactly one instance.
 [services.opennotes-api.scale]
 replicas = 1
-
-# Uploaded files. Not snapshotted by Brimble: back it up, or move to STORAGE_DRIVER=s3.
-[services.opennotes-api.volume]
-path = "/data/files"
-size = "10gb"
 
 [services.opennotes-api.network]
 public = false
@@ -61,14 +56,15 @@ ALLOW_SIGNUP = "true"
 ALLOW_PRIVATE_AI_URLS = "false"
 LOG_FORMAT = "json"
 RUST_LOG = "info"
-STORAGE_DRIVER = "fs"
-FILES_DIR = "/data/files"
+STORAGE_DRIVER = "s3"
 EMAIL_DRIVER = "resend"
 
 # Set in the dashboard; deploys are blocked until each exists.
 # PUBLIC_URL = https://<your domain>, OPENNOTES_HOSTS = <your domain>, EMAIL_FROM = "opennotes <notes@your domain>"
+# Uploads go to an S3-compatible bucket via AWS_*. Also set AWS_ENDPOINT for non-AWS (e.g. R2; AWS_REGION = "auto").
 [services.opennotes-api.secrets]
-required = ["OPENNOTES_SECRET", "EMAIL_RESEND_API_KEY", "EMAIL_FROM", "PUBLIC_URL", "OPENNOTES_HOSTS"]
+required = ["OPENNOTES_SECRET", "EMAIL_RESEND_API_KEY", "EMAIL_FROM", "PUBLIC_URL", "OPENNOTES_HOSTS",
+  "AWS_BUCKET", "AWS_REGION", "AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY"]
 
 [databases.db]
 engine = "postgresql"
