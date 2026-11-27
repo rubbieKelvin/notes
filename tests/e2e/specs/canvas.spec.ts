@@ -46,9 +46,9 @@ test('two tabs drawing at once both keep their shapes, and math syncs live', asy
   await second.goto(page.url())
   const box2 = (await canvasEl(second).boundingBox())!
 
-  await page.mouse.click(box.x + 20, box.y + 20)
+  await page.mouse.click(box.x + 20, box.y + 300)
   await page.keyboard.press('r')
-  await second.mouse.click(box2.x + 20, box2.y + 20)
+  await second.mouse.click(box2.x + 20, box2.y + 300)
   await second.keyboard.press('o')
   // Interleave the two gestures so both edits are in flight together.
   await page.mouse.move(box.x + 60, box.y + 60); await page.mouse.down()
@@ -70,7 +70,7 @@ test('two tabs drawing at once both keep their shapes, and math syncs live', asy
 test('a pen stroke uses pressure and renders as a filled path', async ({ page, user: _ }) => {
   await openEditor(page)
   const box = await addCanvas(page)
-  await page.mouse.click(box.x + 20, box.y + 20)
+  await page.mouse.click(box.x + 20, box.y + 300)
   await page.keyboard.press('d')
   await page.evaluate(({ x, y }) => {
     const el = document.querySelector('[data-canvas]')!
@@ -87,7 +87,7 @@ test('a pen stroke uses pressure and renders as a filled path', async ({ page, u
 test('an arrow stays attached when its shape moves', async ({ page, user: _ }) => {
   await openEditor(page)
   const box = await addCanvas(page)
-  await page.mouse.click(box.x + 20, box.y + 20)
+  await page.mouse.click(box.x + 20, box.y + 300)
   await page.keyboard.press('r')
   await drag(page, { x: box.x + 300, y: box.y + 100 }, { x: box.x + 400, y: box.y + 200 })
   await page.keyboard.press('a')
@@ -105,7 +105,7 @@ test('an arrow stays attached when its shape moves', async ({ page, user: _ }) =
 test('the eraser removes strokes it passes over', async ({ page, user: _ }) => {
   await openEditor(page)
   const box = await addCanvas(page)
-  await page.mouse.click(box.x + 20, box.y + 20)
+  await page.mouse.click(box.x + 20, box.y + 300)
   await page.keyboard.press('d')
   await drag(page, { x: box.x + 100, y: box.y + 150 }, { x: box.x + 300, y: box.y + 150 })
   await expect(shapes(page, 'draw')).toHaveCount(1)
@@ -145,7 +145,7 @@ test('AI Annotate sends the selection as an image and pins a note beside it', as
   await page.getByRole('button', { name: 'Math' }).click()
   await answerPrompt(page, 'A = 6s^2')
   const annotate = page.getByRole('button', { name: 'AI Annotate' })
-  await page.mouse.click(box.x + 10, box.y + 10) // empty spot: clears the selection
+  await page.mouse.click(box.x + 10, box.y + 300) // empty spot: clears the selection
   await expect(annotate).toBeDisabled()
   await page.keyboard.press('Meta+a')
   await expect(annotate).toBeEnabled()
@@ -159,6 +159,7 @@ test('inline toolbar folds shapes, color and size into labelled popovers', async
   await openEditor(page)
   const box = await addCanvas(page)
   await expect(page.getByRole('button', { name: 'Rectangle' })).toHaveCount(0) // folded while inline
+  await page.mouse.move(box.x + 200, box.y + 200)
 
   await page.getByRole('button', { name: /^Color:/ }).click()
   await page.getByRole('button', { name: 'Red' }).click()
@@ -174,4 +175,34 @@ test('inline toolbar folds shapes, color and size into labelled popovers', async
 
   await page.keyboard.press('Meta+Shift+E')
   await expect(page.getByRole('button', { name: 'Rectangle' })).toBeVisible() // full toolbar when expanded
+})
+
+test('inline toolbar shows only while the mouse is over the canvas', async ({ page, user: _ }) => {
+  await openEditor(page)
+  const box = await addCanvas(page)
+  const toolbar = page.getByRole('toolbar', { name: 'Canvas tools' }).locator('..')
+  await page.mouse.move(box.x + 200, box.y + 200)
+  await expect(toolbar).toHaveCSS('opacity', '1')
+  await page.mouse.move(box.x + 200, box.y - 40)
+  await expect(toolbar).toHaveCSS('opacity', '0')
+})
+
+test('a canvas title shows top-left, syncs, and survives reload', async ({ page, context, user: _ }) => {
+  await openEditor(page)
+  await addCanvas(page)
+  const title = page.getByRole('textbox', { name: 'Canvas title' })
+  await expect(title).toHaveAttribute('placeholder', 'Untitled canvas')
+  await title.fill('Cube net')
+  await title.press('Enter')
+  const second = await context.newPage()
+  await second.goto(page.url())
+  await expect(second.getByRole('textbox', { name: 'Canvas title' })).toHaveValue('Cube net')
+
+  const [t, c] = await Promise.all([title.boundingBox(), canvasEl(page).boundingBox()])
+  expect(t!.x - c!.x).toBeLessThan(20)
+  expect(t!.y - c!.y).toBeLessThan(20)
+
+  await page.waitForTimeout(2500)
+  await page.reload()
+  await expect(page.getByRole('textbox', { name: 'Canvas title' })).toHaveValue('Cube net')
 })

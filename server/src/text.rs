@@ -102,7 +102,9 @@ fn node<T: ReadTxn>(txn: &T, canvases: &MapRef, n: XmlOut, out: &mut String) {
                 "horizontalRule" => out.push_str("---\n\n"),
                 "canvasBlock" => {
                     let texts = canvas_text(txn, canvases, &str_attr(&attr("canvasId")));
-                    out.push_str(&format!("[Canvas: {}]\n\n", if texts.is_empty() { "drawing".into() } else { texts.join(" · ") }));
+                    let title = str_attr(&attr("title"));
+                    let label = if title.trim().is_empty() { "Canvas".to_string() } else { format!("Canvas \"{}\"", title.trim()) };
+                    out.push_str(&format!("[{label}: {}]\n\n", if texts.is_empty() { "drawing".into() } else { texts.join(" · ") }));
                 }
                 "heading" => {
                     let level = attr("level").as_u64().unwrap_or(1).clamp(1, 6) as usize;
@@ -202,6 +204,7 @@ mod tests {
 
             let c = frag.push_back(&mut txn, XmlElementPrelim::empty("canvasBlock"));
             c.insert_attribute(&mut txn, "canvasId", "c1");
+            c.insert_attribute(&mut txn, "title", "Cube");
             let shapes = canvases.insert(&mut txn, "c1", MapPrelim::default());
             for (id, index, key, value) in [("b", 2.0, "latex", "A=6s^2"), ("a", 1.0, "text", "V=s³"), ("s", 0.5, "points", "")] {
                 let shape = shapes.insert(&mut txn, id, MapPrelim::default());
@@ -216,6 +219,6 @@ mod tests {
         }
         let (title, text) = serialize(&doc);
         assert_eq!(title, "Box Geometry");
-        assert_eq!(text, "## Boxes\n\nsame size in height [AI margin note: V = s³ for a cube].\n\n$$E=mc^2$$\n\n[Canvas: V=s³ · $A=6s^2$]\n\n[Contradicts] Boxes vary.");
+        assert_eq!(text, "## Boxes\n\nsame size in height [AI margin note: V = s³ for a cube].\n\n$$E=mc^2$$\n\n[Canvas \"Cube\": V=s³ · $A=6s^2$]\n\n[Contradicts] Boxes vary.");
     }
 }

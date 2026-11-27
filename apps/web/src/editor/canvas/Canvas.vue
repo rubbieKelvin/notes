@@ -131,12 +131,21 @@ const touches = new Map<number, Pt>()
 let pinch: { d: number; mid: Pt; cam: { x: number; y: number; z: number } } | null = null
 const spaceDown = ref(false)
 
+// Inline, the toolbar only shows while the mouse is over the canvas or one of its menus is open.
+// Touch and keyboard have no hover, so for them focus counts instead.
+const hovering = ref(false)
+const focused = ref(false)
+let lastPointer = 'mouse'
+const menuOpen = ref(false)
+const showToolbar = computed(() => props.expanded || hovering.value || focused.value || menuOpen.value)
+
 function startPinch() {
   const [a, b] = [...touches.values()]
   pinch = { d: Math.hypot(a.x - b.x, a.y - b.y), mid: { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }, cam: { ...cam } }
 }
 
 function onPointerDown(e: PointerEvent) {
+  lastPointer = e.pointerType
   if ((e.target as Element).closest('[data-chrome]')) return // toolbar, minimap
   if (!(e.target as Element).closest('[contenteditable=plaintext-only]')) root.value!.focus({ preventScroll: true }) // not while typing in a text shape
   if (e.pointerType === 'pen') penSeen = true
@@ -455,7 +464,8 @@ defineExpose({
     ref="root" tabindex="0" data-canvas class="relative h-full w-full touch-none overflow-hidden bg-background outline-none select-none"
     :style="{ cursor }" aria-label="Canvas" role="application"
     @pointerdown="onPointerDown" @pointermove="onPointerMove" @pointerup="onPointerUp" @pointercancel="onPointerCancel"
-    @pointerleave="shareCursor(null)" @dblclick="onDoubleClick" @keydown="onKeyDown" @keyup="onKeyUp"
+    @pointerenter="hovering = true" @pointerleave="hovering = false; shareCursor(null)"
+    @focusin="focused = lastPointer !== 'mouse' || root!.matches(':focus-visible')" @focusout="focused = root?.contains($event.relatedTarget as Node) ?? false" @dblclick="onDoubleClick" @keydown="onKeyDown" @keyup="onKeyUp"
     @copy="onCopy" @cut="onCopy($event, true)" @paste="onPaste" @dragover.prevent @drop="onDrop"
   >
     <svg class="absolute inset-0 h-full w-full">
@@ -488,9 +498,12 @@ defineExpose({
       </g>
     </svg>
 
-    <div v-if="!pure" data-chrome class="absolute bottom-3 left-1/2 -translate-x-1/2">
+    <div
+      v-if="!pure" data-chrome class="absolute bottom-3 left-1/2 -translate-x-1/2 transition-opacity duration-150"
+      :class="showToolbar ? 'opacity-100' : 'pointer-events-none opacity-0'" :inert="!showToolbar"
+    >
       <Toolbar
-        :tool="tool" :style="style" :compact="!expanded" @tool="tool = $event" @color="setStyle('color', $event)" @size="setStyle('size', $event)"
+        :tool="tool" :style="style" :compact="!expanded" @menu="menuOpen = $event" @tool="tool = $event" @color="setStyle('color', $event)" @size="setStyle('size', $event)"
         @fill="setStyle('fill', $event)" @image="fileInput?.click()" @undo="store.undo.undo()" @redo="store.undo.redo()"
       />
     </div>

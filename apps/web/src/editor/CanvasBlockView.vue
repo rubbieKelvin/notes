@@ -85,7 +85,7 @@ function setExpanded(v: boolean) {
     await nextTick()
     canvas.value?.focus()
   }
-  if (document.startViewTransition) document.startViewTransition(apply)
+  if (document.startViewTransition) document.startViewTransition(apply).ready.catch(() => {}) // skipped when toggled again mid-animation
   else apply()
 }
 
@@ -142,7 +142,13 @@ onBeforeUnmount(() => {
     :class="expanded ? 'fixed inset-0 z-50 bg-background' : 'relative my-6'"
     :style="{ viewTransitionName: vtName }"
   >
-    <div class="w-full" :class="expanded ? 'h-full' : 'h-96 overflow-hidden rounded-md border'">
+    <div class="relative w-full" :class="expanded ? 'h-full' : 'h-96 overflow-hidden rounded-md border'">
+      <input
+        :value="node.attrs.title" placeholder="Untitled canvas" aria-label="Canvas title" maxlength="120"
+        class="absolute top-2 left-3 z-10 max-w-[60%] min-w-28 rounded bg-transparent px-1 text-sm font-medium outline-none [field-sizing:content] placeholder:text-muted-foreground/70 hover:bg-accent/60 focus:bg-background focus:ring-2 focus:ring-ring/40"
+        @input="updateAttributes({ title: ($event.target as HTMLInputElement).value })"
+        @keydown.enter.prevent="($event.target as HTMLInputElement).blur()" @keydown.escape.prevent="($event.target as HTMLInputElement).blur()"
+      />
       <Canvas
         v-if="map" :key="mapVersion" ref="canvas" :ydoc="ydoc" :map="map" :canvas-id="canvasId"
         :awareness="opts.provider?.awareness" :expanded="expanded" :pure="pure"

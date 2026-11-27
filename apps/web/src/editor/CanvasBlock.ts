@@ -26,6 +26,11 @@ export const CanvasBlock = Node.create<CanvasBlockOptions>({
         parseHTML: (el) => el.getAttribute('data-canvas-id'),
         renderHTML: (attrs) => ({ 'data-canvas-id': attrs.canvasId }),
       },
+      title: {
+        default: '',
+        parseHTML: (el) => el.getAttribute('data-title') ?? '',
+        renderHTML: (attrs) => (attrs.title ? { 'data-title': attrs.title } : {}),
+      },
     }
   },
   addCommands() {

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ArrowUpRight, ChevronUp, Circle, Eraser, Frame, Hand, ImagePlus, Minus, MousePointer2, Pencil, Redo2, Square, Type, Undo2 } from '@lucide/vue'
 import { SliderRange, SliderRoot, SliderThumb, SliderTrack } from 'reka-ui'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -10,7 +10,7 @@ import { COLORS, SIZE_BANDS, SIZE_MAX, SIZE_MIN, sizeLabel, type Tool } from './
 
 /** compact: the inline (collapsed) canvas, where shapes fold into one popover. */
 const props = defineProps<{ tool: Tool; style: { color: string; size: number; fill: boolean }; compact?: boolean }>()
-const emit = defineEmits<{ tool: [Tool]; color: [string]; size: [number]; fill: [boolean]; image: []; undo: []; redo: [] }>()
+const emit = defineEmits<{ menu: [open: boolean]; tool: [Tool]; color: [string]; size: [number]; fill: [boolean]; image: []; undo: []; redo: [] }>()
 
 const BASIC = [
   { id: 'select', icon: MousePointer2, label: 'Select', key: 'V' },
@@ -40,6 +40,9 @@ function pickShape(s: (typeof SHAPES)[number]) {
 
 const colorLabel = computed(() => COLORS.find((c) => c.value === props.style.color)?.label ?? 'Custom')
 const colorOpen = ref(false)
+const sizeOpen = ref(false)
+// While a popover is open the toolbar must stay visible, even with the pointer over the popover outside the canvas.
+watch(() => shapesOpen.value || colorOpen.value || sizeOpen.value, (open) => emit('menu', open))
 const bandWidth = (b: (typeof SIZE_BANDS)[number]) => `${((b.to - b.from + 1) / (SIZE_MAX - SIZE_MIN + 1)) * 100}%`
 const pop = 'z-[1001] w-auto p-3'
 </script>
@@ -105,7 +108,7 @@ const pop = 'z-[1001] w-auto p-3'
       </PopoverContent>
     </Popover>
 
-    <Popover>
+    <Popover v-model:open="sizeOpen">
       <PopoverTrigger as-child>
         <Button variant="ghost" size="icon-sm" :aria-label="`Size: ${sizeLabel(style.size)} (${style.size})`" :title="`Size: ${sizeLabel(style.size)}`">
           <span class="rounded-full bg-foreground" :style="{ width: `${Math.min(16, style.size + 2)}px`, height: `${Math.min(16, style.size + 2)}px` }" />
