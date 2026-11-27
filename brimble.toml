@@ -21,7 +21,7 @@ health = "/"
 API_UPSTREAM = "opennotes.service.brimble.internal:8080"
 
 [services.opennotes-web.network]
-domains = ["opennotes.rubbietheone.com"]  # add yours; then set PUBLIC_URL and OPENNOTES_HOSTS on the API to match
+# domains = ["opennotes.rubbietheone.com"]  # re-enable once its DNS points at Brimble; then set PUBLIC_URL and OPENNOTES_HOSTS on the API to match
 headers = { frame = "DENY", nosniff = true, hsts = true }
 
 # Rust server. Private: only the web service reaches it, so X-Real-IP always comes from our nginx.
