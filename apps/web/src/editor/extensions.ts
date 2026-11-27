@@ -15,6 +15,7 @@ import { AiMargin } from './AiMargin'
 import { AiSource } from './AiSource'
 import { Callout, Clip, Runbook } from './Blocks'
 import { CanvasBlock } from './CanvasBlock'
+import { FileBlock } from './FileBlock'
 import { SlashCommand } from './SlashCommand'
 
 /** The note schema, shared by the editor and the read-only public page. */
@@ -35,6 +36,7 @@ export function noteExtensions(o: { ydoc: Y.Doc; provider: WebsocketProvider | n
     Mathematics.configure({ inlineOptions: { onClick: editMath('inline') }, blockOptions: { onClick: editMath('block') } }),
     // raw: Yjs compares types by identity, a Vue proxy breaks that
     CanvasBlock.configure({ ydoc: markRaw(o.ydoc), provider: o.provider && markRaw(o.provider), docId: o.docId, readOnly: o.readOnly }),
+    FileBlock.configure({ docId: o.docId, readOnly: o.readOnly }),
     AiMargin,
     AiSource,
     Callout,

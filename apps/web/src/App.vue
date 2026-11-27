@@ -4,12 +4,13 @@ import { api, ApiError, errorText, type DocInfo, type Me } from './api'
 import AuthView from './AuthView.vue'
 import DocPage from './DocPage.vue'
 import NotesPage from './NotesPage.vue'
+import FilesPage from './FilesPage.vue'
 import PublicNote from './PublicNote.vue'
 import PublicProfile from './PublicProfile.vue'
 import { Button } from '@/components/ui/button'
 import FeedbackHost from './ui/FeedbackHost.vue'
 
-type State = 'loading' | 'signed-out' | 'ready' | 'notes' | 'no-access' | 'public-note' | 'public-profile' | 'error'
+type State = 'loading' | 'signed-out' | 'ready' | 'notes' | 'files' | 'no-access' | 'public-note' | 'public-profile' | 'error'
 const state = ref<State>('loading')
 const me = ref<Me>()
 const docs = ref<DocInfo[]>([])
@@ -52,6 +53,7 @@ async function boot() {
   if (signinNext) return void location.assign(signinNext)
   docs.value = await api<DocInfo[]>('/v1/docs')
   if (location.pathname === '/notes') return void (state.value = 'notes')
+  if (location.pathname === '/files') return void (state.value = 'files')
   if (wanted) {
     doc.value = docs.value.find((d) => d.id === wanted)
     // Not yours and not shared with you (or deleted): say so instead of quietly opening another note.
@@ -83,6 +85,7 @@ onMounted(boot)
   <PublicProfile v-else-if="state === 'public-profile' && publicRoute" :username="publicRoute[1]" />
   <AuthView v-else-if="state === 'signed-out'" :link-error="linkError" :next="signinNext || here" :invited="!!wanted" @signed-in="boot" />
   <NotesPage v-else-if="state === 'notes' && me" :me="me" :docs="docs" />
+  <FilesPage v-else-if="state === 'files' && me" :me="me" />
   <DocPage v-else-if="state === 'ready' && me && doc" :key="doc.id" :me="me" :doc="doc" :docs="docs" />
   <main v-else-if="state === 'no-access' && me" class="grid min-h-screen place-items-center px-6">
     <div class="max-w-sm text-center" role="alert">

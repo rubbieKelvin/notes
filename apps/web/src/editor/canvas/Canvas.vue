@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, onMounted, reactive, ref, shallowRef, watch 
 import type { Awareness } from 'y-protocols/awareness'
 import type * as Y from 'yjs'
 import { askLatex, promptDialog, toast } from '../../ui/feedback'
+import { uploadFile } from '../../files'
 import { toSvg, rasterize } from './export'
 import { center, intersects, pageBounds, union } from './geometry'
 import Minimap from './Minimap.vue'
@@ -370,9 +371,7 @@ async function addImages(files: File[], at: Pt) {
       const bmp = await createImageBitmap(file)
       const k = Math.min(1, 600 / Math.max(bmp.width, bmp.height)), w = bmp.width * k, h = bmp.height * k
       bmp.close()
-      const res = await fetch(`/v1/assets?doc=${props.docId}`, { method: 'POST', body: file })
-      if (!res.ok) throw new Error((await res.text()) || res.statusText)
-      const { url } = (await res.json()) as { url: string }
+      const { url } = await uploadFile(file, { doc: props.docId })
       const id = newId()
       store.create([{ id, type: 'image', src: url, x: at.x - w / 2 + i * 24, y: at.y - h / 2 + i * 24, w, h, rotation: 0, index: store.topIndex() }])
       selected.value = new Set([id])

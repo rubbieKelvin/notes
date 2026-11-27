@@ -50,6 +50,7 @@ const server = spawn('cargo', ['run', '--quiet', '--manifest-path', join(repo, '
     PUBLIC_URL: `http://localhost:${process.env.E2E_WEB_PORT ?? 14173}`,
     EMAIL_DRIVER: 'fs',
     EMAIL_FS_DIR: mailDir,
+    FILES_DIR: join(tmpdir(), 'opennotes-e2e-files'),
   },
 })
 server.stdout.on('data', (chunk) => process.stdout.write(chunk))

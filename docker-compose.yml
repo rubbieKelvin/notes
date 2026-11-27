@@ -26,6 +26,7 @@ services:
       # Linux build output and crate downloads stay in volumes: fast rebuilds, and the host's target/ is left alone.
       - server-target:/app/target
       - cargo-registry:/usr/local/cargo/registry
+      - files:/data/files
     environment:
       DATABASE_URL: postgres://opennotes:${POSTGRES_PASSWORD}@db:5432/opennotes
       OPENNOTES_SECRET: ${OPENNOTES_SECRET:?set OPENNOTES_SECRET in .env}
@@ -35,6 +36,7 @@ services:
       OPENNOTES_HOSTS: ${OPENNOTES_HOSTS:-localhost,127.0.0.1}
       ALLOW_PRIVATE_AI_URLS: ${ALLOW_PRIVATE_AI_URLS:-false}
       PUBLIC_URL: ${PUBLIC_URL:-http://localhost:5173}
+      FILES_DIR: /data/files
       # fs writes emails to EMAIL_FS_DIR and logs their subjects (with the sign-in code); resend delivers them.
       EMAIL_DRIVER: ${EMAIL_DRIVER:-fs}
       EMAIL_FS_DIR: /tmp/emails
@@ -48,5 +50,6 @@ services:
 
 volumes:
   db:
+  files:
   server-target:
   cargo-registry:

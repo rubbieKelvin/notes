@@ -80,6 +80,37 @@ fn canvas_text<T: ReadTxn>(txn: &T, canvases: &MapRef, id: &str) -> Vec<String> 
     found.into_iter().map(|(_, t)| t).collect()
 }
 
+/// Ids of the uploaded files a note shows: file blocks, and images on canvases that are still in the note.
+pub fn file_ids(doc: &Doc) -> Vec<uuid::Uuid> {
+    let frag = doc.get_or_insert_xml_fragment("default");
+    let canvases = doc.get_or_insert_map("canvases");
+    let txn = doc.transact();
+    let mut ids = Vec::new();
+    frag.children(&txn).for_each(|c| collect_files(&txn, &canvases, c, &mut ids));
+    ids.sort();
+    ids.dedup();
+    ids
+}
+
+fn collect_files<T: ReadTxn>(txn: &T, canvases: &MapRef, n: XmlOut, ids: &mut Vec<uuid::Uuid>) {
+    let XmlOut::Element(e) = n else { return };
+    let attr = |k: &str| str_attr(&to_json(e.get_attribute(txn, k)));
+    match e.tag().as_ref() {
+        "fileBlock" => ids.extend(uuid::Uuid::parse_str(&attr("fileId")).ok()),
+        "canvasBlock" => {
+            if let Some(Out::YMap(shapes)) = canvases.get(txn, &attr("canvasId")) {
+                for (_, shape) in shapes.iter(txn) {
+                    let Out::YMap(shape) = shape else { continue };
+                    let Some(Out::Any(Any::String(src))) = shape.get(txn, "src") else { continue };
+                    let id = src.strip_prefix("/v1/files/").or_else(|| src.strip_prefix("/v1/assets/"));
+                    ids.extend(id.and_then(|i| uuid::Uuid::parse_str(i).ok()));
+                }
+            }
+        }
+        _ => e.children(txn).for_each(|c| collect_files(txn, canvases, c, ids)),
+    }
+}
+
 fn node<T: ReadTxn>(txn: &T, canvases: &MapRef, n: XmlOut, out: &mut String) {
     match n {
         XmlOut::Text(t) => {
@@ -111,6 +142,9 @@ fn node<T: ReadTxn>(txn: &T, canvases: &MapRef, n: XmlOut, out: &mut String) {
                     let title = str_attr(&attr("title"));
                     let label = if title.trim().is_empty() { "Canvas".to_string() } else { format!("Canvas \"{}\"", title.trim()) };
                     out.push_str(&format!("[{label}: {}]\n\n", if texts.is_empty() { "drawing".into() } else { texts.join(" · ") }));
+                }
+                "fileBlock" if !str_attr(&attr("fileId")).is_empty() => {
+                    out.push_str(&format!("[File \"{}\" ({})]\n\n", str_attr(&attr("name")), str_attr(&attr("mime"))));
                 }
                 "heading" => {
                     let level = attr("level").as_u64().unwrap_or(1).clamp(1, 6) as usize;
@@ -218,6 +252,17 @@ mod tests {
                 shape.insert(&mut txn, key, value);
             }
 
+            let shape = shapes.insert(&mut txn, "img", MapPrelim::default());
+            shape.insert(&mut txn, "src", "/v1/assets/00000000-0000-0000-0000-000000000001");
+            let f = frag.push_back(&mut txn, XmlElementPrelim::empty("fileBlock"));
+            f.insert_attribute(&mut txn, "fileId", "00000000-0000-0000-0000-000000000002");
+            f.insert_attribute(&mut txn, "name", "data.csv");
+            f.insert_attribute(&mut txn, "mime", "application/octet-stream");
+            // a canvas no longer in the note doesn't count
+            let gone = canvases.insert(&mut txn, "c2", MapPrelim::default());
+            let shape = gone.insert(&mut txn, "img", MapPrelim::default());
+            shape.insert(&mut txn, "src", "/v1/files/00000000-0000-0000-0000-000000000003");
+
             let k = frag.push_back(&mut txn, XmlElementPrelim::empty("callout"));
             k.insert_attribute(&mut txn, "kind", "contradicts");
             let kp = k.push_back(&mut txn, XmlElementPrelim::empty("paragraph"));
@@ -225,6 +270,8 @@ mod tests {
         }
         let (title, text) = serialize(&doc);
         assert_eq!(title, "Box Geometry");
-        assert_eq!(text, "## Boxes\n\nsame size in height [AI margin note: V = s³ for a cube].\n\n$$E=mc^2$$\n\n[Canvas \"Cube\": V=s³ · $A=6s^2$]\n\n[Contradicts] Boxes vary.");
+        let ids: Vec<String> = file_ids(&doc).iter().map(|i| i.to_string()).collect();
+        assert_eq!(ids, ["00000000-0000-0000-0000-000000000001", "00000000-0000-0000-0000-000000000002"]);
+        assert_eq!(text, "## Boxes\n\nsame size in height [AI margin note: V = s³ for a cube].\n\n$$E=mc^2$$\n\n[Canvas \"Cube\": V=s³ · $A=6s^2$]\n\n[File \"data.csv\" (application/octet-stream)]\n\n[Contradicts] Boxes vary.");
     }
 }

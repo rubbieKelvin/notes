@@ -319,10 +319,12 @@ pub struct DeleteAccount {
 
 /// Deletes the account and, by cascade, its pages, images, tokens and sessions.
 pub async fn delete_account(State(state): State<AppState>, user: User, jar: CookieJar, Json(b): Json<DeleteAccount>) -> Res<CookieJar> {
+    let files: Vec<Uuid> = sqlx::query_scalar("SELECT id FROM files WHERE user_id = $1").bind(user.id).fetch_all(&state.db).await?;
     let r = sqlx::query("DELETE FROM users WHERE id = $1 AND lower(email) = lower($2)").bind(user.id).bind(b.confirm_email.trim()).execute(&state.db).await?;
     if r.rows_affected() == 0 {
         return Err(AppError::new(StatusCode::BAD_REQUEST, "type your email address exactly to confirm"));
     }
+    crate::files::remove(&state, &files).await;
     Ok(jar.remove(Cookie::build(COOKIE).path("/")))
 }
 

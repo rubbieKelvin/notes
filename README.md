@@ -14,7 +14,9 @@ pnpm dev                  # web app on http://localhost:5173 (hot reload), proxi
 
 (`just up` and `just web` do the same.) The first `up` compiles the server and its dependencies, which
 takes a few minutes; after that, a change rebuilds incrementally. Build output and crates live in
-Docker volumes, so the container never touches your local `server/target`.
+Docker volumes, so the container never touches your local `server/target`. Uploaded files are stored
+on disk under `FILES_DIR` (the `files` volume in Compose; `/data/files` in the production image), so
+back that up along with Postgres. Each account gets 500 MB.
 
 Sign in with your email: you get a 6-digit code and a one-time link (no passwords). With the default
 `EMAIL_DRIVER=fs`, emails are written to files and their subjects, which carry the code, appear in the

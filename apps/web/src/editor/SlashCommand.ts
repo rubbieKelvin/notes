@@ -1,5 +1,5 @@
 import {
-  BadgeCheck, Braces, Heading1, Heading2, Heading3, Lightbulb, List, ListChecks, ListOrdered, Minus, PenTool,
+  BadgeCheck, Braces, FileText, Film, Image, Music, Paperclip, Heading1, Heading2, Heading3, Lightbulb, List, ListChecks, ListOrdered, Minus, PenTool,
   Quote, Radical, Scale, Sigma, SquarePlay, SquareTerminal, type LucideIcon,
 } from '@lucide/vue'
 import { Extension, type Editor, type Range } from '@tiptap/core'
@@ -13,7 +13,7 @@ import SlashMenu from './SlashMenu.vue'
 export type SlashItem = {
   title: string
   description: string
-  group: 'Basic' | 'Thinking' | 'Media & math'
+  group: 'Basic' | 'Thinking' | 'Media & math' | 'Files'
   icon: LucideIcon
   keywords?: string[]
   run: (editor: Editor, range: Range) => void
@@ -62,6 +62,12 @@ export const slashItems: SlashItem[] = ([
       else e.commands.focus()
     },
   },
+
+  { group: 'Files', title: 'File', description: 'Upload or attach any file', icon: Paperclip, keywords: ['upload', 'attachment', 'attach', 'storage'], run: (e, r) => e.chain().focus().deleteRange(r).insertFile('file').run() },
+  { group: 'Files', title: 'Image', description: 'Upload a picture', icon: Image, keywords: ['photo', 'picture', 'png', 'jpg', 'upload'], run: (e, r) => e.chain().focus().deleteRange(r).insertFile('image').run() },
+  { group: 'Files', title: 'Video', description: 'Upload a video, up to 100 MB', icon: Film, keywords: ['mp4', 'movie', 'recording', 'upload'], run: (e, r) => e.chain().focus().deleteRange(r).insertFile('video').run() },
+  { group: 'Files', title: 'Audio', description: 'Upload a recording or song', icon: Music, keywords: ['mp3', 'sound', 'voice', 'upload'], run: (e, r) => e.chain().focus().deleteRange(r).insertFile('audio').run() },
+  { group: 'Files', title: 'PDF', description: 'Upload a PDF to read inline', icon: FileText, keywords: ['document', 'paper', 'upload'], run: (e, r) => e.chain().focus().deleteRange(r).insertFile('pdf').run() },
 ] as SlashItem[]).map((i) => ({ ...i, icon: markRaw(i.icon) })) // components in reactive props must stay raw
 
 /** Ranks items for a query: title prefix, then word prefix, then substring in title or keywords. */

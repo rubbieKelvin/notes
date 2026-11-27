@@ -1,10 +1,10 @@
 mod ai;
 mod comments;
-mod assets;
 mod auth;
 mod crypto;
 mod docs;
 mod email;
+mod files;
 mod inbox;
 mod mcp;
 mod share;
@@ -41,6 +41,8 @@ pub struct Config {
     pub hosts: Vec<String>,
     /// Origin the browser uses, for links in emails. Never taken from the request's Host header.
     pub public_url: String,
+    /// Uploaded files, one per id (FILES_DIR).
+    pub files_dir: std::path::PathBuf,
 }
 
 #[derive(Debug)]
@@ -83,8 +85,10 @@ pub fn app(state: AppState) -> Router {
         .route("/v1/settings/ai/models", post(ai::models))
         .route("/v1/whisper", post(ai::whisper))
         .route("/v1/annotate", post(ai::annotate).layer(DefaultBodyLimit::max(ai::MAX_IMAGE_B64 + 4096)))
-        .route("/v1/assets", post(assets::upload).layer(DefaultBodyLimit::max(assets::MAX_BYTES)))
-        .route("/v1/assets/{id}", get(assets::get))
+        // files::upload streams the body and enforces its own limits
+        .route("/v1/files", get(files::list).post(files::upload).layer(DefaultBodyLimit::disable()))
+        .route("/v1/files/{id}", get(files::get).delete(files::delete))
+        .route("/v1/assets/{id}", get(files::get)) // canvas images placed before files existed
         .route("/v1/tokens", get(tokens::list).post(tokens::create))
         .route("/v1/tokens/{id}", delete(tokens::revoke))
         .route("/v1/docs", get(docs::list).post(docs::create))
@@ -136,8 +140,11 @@ async fn main() {
         anthropic_base: env("ANTHROPIC_BASE_URL").unwrap_or_else(|| "https://api.anthropic.com".into()),
         allow_private_ai_urls: env("ALLOW_PRIVATE_AI_URLS").is_some_and(|v| v == "true"),
         public_url: env("PUBLIC_URL").unwrap_or_else(|| "http://localhost:3000".into()).trim_end_matches('/').to_string(),
+        files_dir: env("FILES_DIR").unwrap_or_else(|| "data/files".into()).into(),
         hosts: env("OPENNOTES_HOSTS").unwrap_or_else(|| "localhost,127.0.0.1".into()).split(',').map(|h| h.trim().to_string()).collect(),
     };
+    std::fs::create_dir_all(&cfg.files_dir).expect("cannot create FILES_DIR");
+    files::move_legacy(&db, &cfg.files_dir).await;
     let state = AppState {
         db: db.clone(),
         http: reqwest::Client::new(),

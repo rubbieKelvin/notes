@@ -125,7 +125,7 @@ test('an uploaded image is still there after reload, and the canvas exports to P
   await page.locator('[data-canvas] input[type=file]').setInputFiles({ name: 'dot.png', mimeType: 'image/png', buffer: PNG })
   await expect(shapes(page, 'image')).toHaveCount(1)
   const src = await shapes(page, 'image').locator('image').getAttribute('href')
-  expect(src).toMatch(/^\/v1\/assets\//)
+  expect(src).toMatch(/^\/v1\/files\//)
   expect((await page.request.get(src!)).headers()['content-type']).toBe('image/png')
 
   await page.waitForTimeout(2500)

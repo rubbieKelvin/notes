@@ -46,8 +46,9 @@ test('a viewer without an account signs up with a code and reads the note live, 
   await expect(guest.locator('.ProseMirror')).toContainText('Live update.')
 
   // the owner's list shows the shared note in the invitee's notes
-  const list = await (await guest.request.get('/v1/docs')).json()
-  expect(list.find((d: { id: string }) => d.id === docId)).toMatchObject({ role: 'view', title: 'Team plan', mcp_exposed_slug: null })
+  // (the saved title lags the live one by up to one 2s save)
+  await expect.poll(async () => ((await (await guest.request.get('/v1/docs')).json()) as { id: string }[]).find((d) => d.id === docId))
+    .toMatchObject({ role: 'view', title: 'Team plan', mcp_exposed_slug: null })
   await ctx.close()
 })
 
@@ -116,7 +117,7 @@ const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR
 
 test('images follow their note: hidden from strangers until the note is public', async ({ page, browser, user: _ }) => {
   const docId = await openEditor(page)
-  const up = await page.request.post(`/v1/assets?doc=${docId}`, { data: PNG, headers: { 'content-type': 'image/png' } })
+  const up = await page.request.post(`/v1/files?doc=${docId}`, { data: PNG, headers: { 'content-type': 'image/png' } })
   expect(up.status(), await up.text()).toBe(201)
   const { url } = await up.json()
   const anon = await browser.newContext()
@@ -127,7 +128,7 @@ test('images follow their note: hidden from strangers until the note is public',
   // and nobody can upload into a note they can't edit
   const stranger = await browser.newContext()
   await signUp(stranger)
-  expect((await stranger.request.post(`/v1/assets?doc=${docId}`, { data: PNG, headers: { 'content-type': 'image/png' } })).status()).toBe(403)
+  expect((await stranger.request.post(`/v1/files?doc=${docId}`, { data: PNG, headers: { 'content-type': 'image/png' } })).status()).toBe(403)
   await anon.close()
   await stranger.close()
 })

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { LayoutGrid, LogOut, Settings } from '@lucide/vue'
+import { HardDrive, LayoutGrid, LogOut, Settings } from '@lucide/vue'
 import { onBeforeUnmount, ref } from 'vue'
 import { api, displayName, type Me } from './api'
 import SettingsDialog from './SettingsDialog.vue'
@@ -17,6 +17,7 @@ window.addEventListener('opennotes:settings', openSettings)
 onBeforeUnmount(() => window.removeEventListener('opennotes:settings', openSettings))
 
 const allNotes = () => location.assign('/notes')
+const files = () => location.assign('/files')
 
 async function signOut() {
   await api('/v1/auth/logout', { method: 'POST' })
@@ -41,6 +42,7 @@ async function signOut() {
       </DropdownMenuLabel>
       <DropdownMenuSeparator />
       <DropdownMenuItem @select="allNotes"><LayoutGrid />All notes</DropdownMenuItem>
+      <DropdownMenuItem @select="files"><HardDrive />Files</DropdownMenuItem>
       <DropdownMenuItem @select="openSettings()"><Settings />Settings</DropdownMenuItem>
       <DropdownMenuSeparator />
       <DropdownMenuItem @select="signOut"><LogOut />Sign out</DropdownMenuItem>

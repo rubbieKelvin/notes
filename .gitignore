@@ -13,3 +13,4 @@ target
 test-results
 playwright-report
 .emails/
+data/

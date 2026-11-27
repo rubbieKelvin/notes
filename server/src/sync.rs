@@ -54,6 +54,7 @@ async fn persist(s: &AppState, id: Uuid, room: &Room) -> Res<()> {
     .bind(text::meta(&room.doc, "description"))
     .execute(&s.db)
     .await?;
+    crate::files::sync_refs(&s.db, id, &text::file_ids(&room.doc)).await?;
 
     return Ok(());
 }
