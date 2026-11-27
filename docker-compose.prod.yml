@@ -19,7 +19,7 @@ services:
   web:
     build:
       context: .
-      dockerfile: apps/web/Dockerfile
+      dockerfile: web.Dockerfile
     depends_on: [server]
     restart: unless-stopped
 

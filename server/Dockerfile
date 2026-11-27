@@ -12,6 +12,8 @@ WORKDIR /app
 COPY Cargo.toml Cargo.lock ./
 COPY src src
 COPY migrations migrations
+# email templates are embedded at compile time (include_str!)
+COPY templates templates
 RUN cargo build --release --locked
 
 # Production (default target): `docker build server`

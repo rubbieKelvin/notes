@@ -9,8 +9,8 @@ type = "web"
 region = "eu-central"
 
 [services.opennotes-web.build]
-dockerfile = "apps/web/Dockerfile" # build context is the repo root (pnpm workspace)
-watch = ["apps/web/**", "package.json", "pnpm-lock.yaml", "pnpm-workspace.yaml"]
+dockerfile = "web.Dockerfile" # build context is the repo root (pnpm workspace)
+watch = ["apps/web/**", "web.Dockerfile", "package.json", "pnpm-lock.yaml", "pnpm-workspace.yaml"]
 
 [services.opennotes-web.deploy]
 port = 80
