@@ -43,7 +43,7 @@ CLIENT_IP_HEADER = "cf-connecting-ip"
 # Set in the dashboard; deploys are blocked until each exists.
 PUBLIC_URL = "https://notes.rubbietheone.com"
 OPENNOTES_HOSTS = "notes.rubbietheone.com"
-EMAIL_FROM = "OpenNotes <no-reply@notes.rubbietheone.com>"
+EMAIL_FROM = "OpenNotes <no-reply-opennotes@rubbietheone.com>"
 DATABASE_URL = "{{@opennotes-db.PRIVATE_CONNECTION_STRING}}"
 
 [services.opennotes.secrets]

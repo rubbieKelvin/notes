@@ -27,7 +27,11 @@ export async function api<T = void>(path: string, init: { method?: string; body?
     body: hasBody ? JSON.stringify(init.body) : undefined,
   })
   if (res.status === 401 && path !== '/v1/me' && !path.startsWith('/v1/auth')) window.dispatchEvent(new Event('opennotes:signed-out'))
-  if (!res.ok) throw new ApiError(res.status, (await res.text()) || res.statusText)
+  if (!res.ok) {
+    // Our server answers in plain text; an HTML body is a proxy's error page (e.g. Cloudflare's), not a message to show.
+    const html = res.headers.get('content-type')?.includes('html')
+    throw new ApiError(res.status, html ? `The server had a problem (${res.status}); try again in a minute` : (await res.text()) || res.statusText)
+  }
   if (res.status === 204) return undefined as T
   return (res.headers.get('content-type')?.includes('json') ? res.json() : res.text()) as Promise<T>
 }

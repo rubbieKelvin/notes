@@ -1,19 +1,21 @@
 //! FR-3.2: Streamable HTTP MCP server at `/mcp`. Bearer token with the `mcp` scope; only documents the
 //! owner explicitly exposed are readable.
-use crate::{auth, inbox, AppState};
+use crate::{AppState, auth, inbox};
 use axum::{
+    Router,
     extract::{Request, State},
     http::request::Parts,
     middleware::{self, Next},
     response::{IntoResponse, Response},
-    Router,
 };
 use rmcp::{
+    ErrorData, ServerHandler,
     handler::server::{common::Extension, wrapper::Parameters},
     model::{CallToolResult, ContentBlock, Implementation, ServerCapabilities, ServerConfig},
     schemars, tool, tool_handler, tool_router,
-    transport::streamable_http_server::{session::local::LocalSessionManager, StreamableHttpServerConfig, StreamableHttpService},
-    ErrorData, ServerHandler,
+    transport::streamable_http_server::{
+        StreamableHttpServerConfig, StreamableHttpService, session::local::LocalSessionManager,
+    },
 };
 use serde::Deserialize;
 use std::sync::Arc;
@@ -47,7 +49,11 @@ struct PushArgs {
 }
 
 fn user(parts: &Parts) -> Result<Uuid, ErrorData> {
-    parts.extensions.get::<McpUser>().map(|u| u.0).ok_or_else(|| ErrorData::invalid_request("unauthenticated", None))
+    parts
+        .extensions
+        .get::<McpUser>()
+        .map(|u| u.0)
+        .ok_or_else(|| ErrorData::invalid_request("unauthenticated", None))
 }
 
 fn db_err(e: sqlx::Error) -> ErrorData {
@@ -57,8 +63,13 @@ fn db_err(e: sqlx::Error) -> ErrorData {
 
 #[tool_router]
 impl Notes {
-    #[tool(description = "List the notes documents the user has exposed to agents, with slug, title and last update.")]
-    async fn list_documents(&self, Extension(parts): Extension<Parts>) -> Result<CallToolResult, ErrorData> {
+    #[tool(
+        description = "List the notes documents the user has exposed to agents, with slug, title and last update."
+    )]
+    async fn list_documents(
+        &self,
+        Extension(parts): Extension<Parts>,
+    ) -> Result<CallToolResult, ErrorData> {
         let rows: Vec<(String, String, chrono::DateTime<chrono::Utc>)> = sqlx::query_as(
             "SELECT mcp_exposed_slug, title, updated_at FROM documents WHERE user_id = $1 AND mcp_exposed_slug IS NOT NULL ORDER BY updated_at DESC",
         )
@@ -67,30 +78,66 @@ impl Notes {
         .await
         .map_err(db_err)?;
         let text = if rows.is_empty() {
-            "No documents are exposed. The user can expose one with the MCP button in opennotes.".to_string()
+            "No documents are exposed. The user can expose one with the MCP button in opennotes."
+                .to_string()
         } else {
-            rows.iter().map(|(slug, title, at)| format!("{slug}\t{title}\t(updated {})", at.format("%Y-%m-%d %H:%M UTC"))).collect::<Vec<_>>().join("\n")
+            rows.iter()
+                .map(|(slug, title, at)| {
+                    format!(
+                        "{slug}\t{title}\t(updated {})",
+                        at.format("%Y-%m-%d %H:%M UTC")
+                    )
+                })
+                .collect::<Vec<_>>()
+                .join("\n")
         };
         Ok(CallToolResult::success(vec![ContentBlock::text(text)]))
     }
 
-    #[tool(description = "Read an exposed document as text: the user's prose, their AI margin notes, math, and text from embedded canvases.")]
-    async fn read_document(&self, Extension(parts): Extension<Parts>, Parameters(a): Parameters<ReadArgs>) -> Result<CallToolResult, ErrorData> {
+    #[tool(
+        description = "Read an exposed document as text: the user's prose, their AI margin notes, math, and text from embedded canvases."
+    )]
+    async fn read_document(
+        &self,
+        Extension(parts): Extension<Parts>,
+        Parameters(a): Parameters<ReadArgs>,
+    ) -> Result<CallToolResult, ErrorData> {
         let row: Option<(String, String)> = sqlx::query_as("SELECT title, plain_text_cache FROM documents WHERE user_id = $1 AND mcp_exposed_slug = $2")
             .bind(user(&parts)?)
             .bind(&a.slug)
             .fetch_optional(&self.db)
             .await
             .map_err(db_err)?;
-        let (title, body) = row.ok_or_else(|| ErrorData::resource_not_found("no exposed document with that slug", None))?;
-        Ok(CallToolResult::success(vec![ContentBlock::text(format!("# {title}\n\n{body}"))]))
+        let (title, body) = row.ok_or_else(|| {
+            ErrorData::resource_not_found("no exposed document with that slug", None)
+        })?;
+
+        return Ok(CallToolResult::success(vec![ContentBlock::text(format!(
+            "# {title}\n\n{body}"
+        ))]));
     }
 
-    #[tool(description = "Send a note to the user's AI inbox. It never edits their documents; they choose whether to pull it in.")]
-    async fn push_note(&self, Extension(parts): Extension<Parts>, Parameters(a): Parameters<PushArgs>) -> Result<CallToolResult, ErrorData> {
-        let item = inbox::Ingest { content_md: a.content_md, title: a.title, agent_id: Some("mcp".into()), source_uri: a.source_uri };
-        inbox::push(&self.state, user(&parts)?, item).await.map_err(|e| ErrorData::invalid_params(e.1, None))?;
-        Ok(CallToolResult::success(vec![ContentBlock::text("Queued in the user's AI inbox.")]))
+    #[tool(
+        description = "Send a note to the user's AI inbox. It never edits their documents; they choose whether to pull it in."
+    )]
+    async fn push_note(
+        &self,
+        Extension(parts): Extension<Parts>,
+        Parameters(a): Parameters<PushArgs>,
+    ) -> Result<CallToolResult, ErrorData> {
+        let item = inbox::Ingest {
+            content_md: a.content_md,
+            title: a.title,
+            agent_id: Some("mcp".into()),
+            source_uri: a.source_uri,
+        };
+        inbox::push(&self.state, user(&parts)?, item)
+            .await
+            .map_err(|e| ErrorData::invalid_params(e.1, None))?;
+
+        return Ok(CallToolResult::success(vec![ContentBlock::text(
+            "Queued in the user's AI inbox.",
+        )]));
     }
 }
 
@@ -109,7 +156,11 @@ async fn require_token(State(s): State<AppState>, mut req: Request, next: Next) 
             req.extensions_mut().insert(McpUser(id));
             next.run(req).await
         }
-        Ok(None) => crate::AppError::new(axum::http::StatusCode::UNAUTHORIZED, "Bearer token with the 'mcp' scope required").into_response(),
+        Ok(None) => crate::AppError::new(
+            axum::http::StatusCode::UNAUTHORIZED,
+            "Bearer token with the 'mcp' scope required",
+        )
+        .into_response(),
         Err(e) => e.into_response(),
     }
 }
@@ -118,12 +169,16 @@ pub fn router(state: AppState) -> Router<AppState> {
     let (db, st) = (state.db.clone(), state.clone());
     let config = StreamableHttpServerConfig::default().with_allowed_hosts(state.cfg.hosts.clone());
     let service = StreamableHttpService::new(
-        move || Ok(Notes { db: db.clone(), state: st.clone() }),
+        move || {
+            Ok(Notes {
+                db: db.clone(),
+                state: st.clone(),
+            })
+        },
         Arc::new(LocalSessionManager::default()),
         config,
     );
-    Router::new()
+    return Router::new()
         .nest_service("/mcp", service)
-        // route_layer, not layer: layer also wraps the fallback, which would demand a token for every web page
-        .route_layer(middleware::from_fn_with_state(state, require_token))
+        .route_layer(middleware::from_fn_with_state(state, require_token));
 }
