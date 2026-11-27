@@ -17,38 +17,38 @@ health = "/"
 
 [services.opennotes-web.env]
 # <project-slug>.service.brimble.internal, plain http. Must match the API project's slug.
-API_UPSTREAM = "opennotes-api.service.brimble.internal:8080"
+API_UPSTREAM = "opennotes.service.brimble.internal:8080"
 
 [services.opennotes-web.network]
 domains = ["opennotes.rubbietheone.com"]  # add yours; then set PUBLIC_URL and OPENNOTES_HOSTS on the API to match
 headers = { frame = "DENY", nosniff = true, hsts = true }
 
 # Rust server. Private: only the web service reaches it, so X-Real-IP always comes from our nginx.
-[services.opennotes-api]
+[services.opennotes]
 type = "web"
 root = "server"
 
-[services.opennotes-api.build]
+[services.opennotes.build]
 dockerfile = "Dockerfile" # final stage is the slim release image
 watch = ["server/**"]
 
-[services.opennotes-api.deploy]
+[services.opennotes.deploy]
 port = 8080
 health = "/health"
 # migrations run inside the server on startup; no before_start needed
 
-[services.opennotes-api.resources]
+[services.opennotes.resources]
 cpu = 0.5
 memory = "512mb"
 
 # Live sync rooms are held in memory: exactly one instance.
-[services.opennotes-api.scale]
+[services.opennotes.scale]
 replicas = 1
 
-[services.opennotes-api.network]
+[services.opennotes.network]
 public = false
 
-[services.opennotes-api.env]
+[services.opennotes.env]
 DATABASE_URL = "{{@db.PRIVATE_CONNECTION_STRING}}"
 BIND = "0.0.0.0:8080"
 COOKIE_SECURE = "true"
@@ -64,7 +64,7 @@ PUBLIC_URL = "https://notes.rubbietheone.com"
 OPENNOTES_HOSTS = "notes.rubbietheone.com"
 EMAIL_FROM = "OpenNotes <no-reply@notes.rubbietheone.com>"
 # Uploads go to an S3-compatible bucket via AWS_*. Also set AWS_ENDPOINT for non-AWS (e.g. R2; AWS_REGION = "auto").
-[services.opennotes-api.secrets]
+[services.opennotes.secrets]
 required = ["OPENNOTES_SECRET", "EMAIL_RESEND_API_KEY", "EMAIL_FROM", "PUBLIC_URL", "OPENNOTES_HOSTS",
   "AWS_BUCKET", "AWS_REGION", "AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY"]
 
