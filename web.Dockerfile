@@ -12,4 +12,6 @@ FROM nginx:1.27-alpine
 # nginx's entrypoint fills ${API_UPSTREAM} (only defined variables, so $host etc. stay) into conf.d/default.conf
 COPY apps/web/nginx.conf.template /etc/nginx/templates/default.conf.template
 ENV API_UPSTREAM=server:8080
+# the entrypoint exports the container's DNS servers as NGINX_LOCAL_RESOLVERS for the template's `resolver`
+ENV NGINX_ENTRYPOINT_LOCAL_RESOLVERS=1
 COPY --from=build /repo/apps/web/dist /usr/share/nginx/html
