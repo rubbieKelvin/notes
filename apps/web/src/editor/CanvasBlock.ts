@@ -10,7 +10,8 @@ declare module '@tiptap/core' {
   }
 }
 
-export type CanvasBlockOptions = { ydoc: Y.Doc | null; provider: WebsocketProvider | null }
+/** readOnly: a viewer or the public page. Nothing is written to the doc; the canvas only pans, zooms and exports. */
+export type CanvasBlockOptions = { ydoc: Y.Doc | null; provider: WebsocketProvider | null; docId: string; readOnly: boolean }
 
 // FR-2.4: shapes live in the same Y.Doc (`canvases[canvasId]`), so prose and diagrams stay one document
 // while each shape syncs and merges on its own.
@@ -18,7 +19,7 @@ export const CanvasBlock = Node.create<CanvasBlockOptions>({
   name: 'canvasBlock',
   group: 'block',
   atom: true,
-  addOptions: () => ({ ydoc: null, provider: null }),
+  addOptions: () => ({ ydoc: null, provider: null, docId: '', readOnly: false }),
   addAttributes() {
     return {
       canvasId: {

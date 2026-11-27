@@ -5,6 +5,7 @@ mod crypto;
 mod docs;
 mod inbox;
 mod mcp;
+mod share;
 mod sync;
 mod text;
 mod tokens;
@@ -72,8 +73,10 @@ pub fn app(state: AppState) -> Router {
         .route("/health", get(|| async { "ok" }))
         .route("/v1/auth/link", post(auth::request_link))
         .route("/v1/auth/verify", post(auth::verify))
+        .route("/v1/auth/code", post(auth::verify_code))
         .route("/v1/auth/logout", post(auth::logout))
-        .route("/v1/me", get(auth::me))
+        .route("/v1/me", get(auth::me).put(auth::update_profile).delete(auth::delete_account))
+        .route("/v1/auth/logout-others", post(auth::logout_others))
         .route("/v1/settings/ai", put(ai::save).delete(ai::delete))
         .route("/v1/settings/ai/models", post(ai::models))
         .route("/v1/whisper", post(ai::whisper))
@@ -85,6 +88,11 @@ pub fn app(state: AppState) -> Router {
         .route("/v1/docs", get(docs::list).post(docs::create))
         .route("/v1/docs/{id}", delete(docs::remove))
         .route("/v1/docs/{id}/mcp", put(docs::set_mcp))
+        .route("/v1/docs/{id}/shares", get(share::list).post(share::invite))
+        .route("/v1/docs/{id}/shares/{email}", delete(share::revoke))
+        .route("/v1/docs/{id}/public", put(share::set_public))
+        .route("/v1/public/{handle}", get(share::profile))
+        .route("/v1/public/{handle}/{id}", get(share::note))
         .route("/v1/sync/{id}", get(sync::connect))
         .route("/v1/notes/ingest", post(inbox::ingest))
         .route("/v1/inbox", get(inbox::list))

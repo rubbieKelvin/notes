@@ -16,6 +16,7 @@ test('set up a custom OpenAI-compatible provider in Settings, then get margin no
   await openEditor(page)
   await page.getByRole('button', { name: 'Account' }).click()
   await page.getByRole('menuitem', { name: 'Settings' }).click()
+  await page.getByRole('tab', { name: 'AI provider' }).click()
   await page.getByRole('combobox', { name: 'Provider' }).click()
   await page.getByRole('option', { name: /^Custom/ }).click()
   await page.getByLabel('Base URL').fill(`${MOCK}/v1`)

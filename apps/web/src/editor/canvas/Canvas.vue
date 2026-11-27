@@ -12,7 +12,7 @@ import Toolbar from './Toolbar.vue'
 import { begin, createText, pan as panGesture, selectionBounds, topHit, transform, type Ctx, type Gesture } from './tools'
 import { COLORS, fontSizeFor, type Box, type Pt, type Shape, type Tool } from './types'
 
-const props = defineProps<{ ydoc: Y.Doc; map: ShapeMap; canvasId: string; awareness?: Awareness; expanded: boolean; pure: boolean }>()
+const props = defineProps<{ ydoc: Y.Doc; map: ShapeMap; canvasId: string; docId: string; readOnly?: boolean; awareness?: Awareness; expanded: boolean; pure: boolean }>()
 const emit = defineEmits<{ toggleExpand: []; togglePure: []; collapse: []; selection: [count: number] }>()
 
 const store = createStore(props.ydoc, props.map)
@@ -159,6 +159,7 @@ function onPointerDown(e: PointerEvent) {
   const handle = (e.target as Element).closest('[data-handle]')?.getAttribute('data-handle')
   if (e.button === 1 || spaceDown.value || (e.pointerType === 'touch' && penSeen)) gesture = panGesture(ctx, e)
   else if (e.button !== 0) return
+  else if (props.readOnly) gesture = panGesture(ctx, e) // viewers can look around, not change anything
   else if (handle) gesture = transform(ctx, p, handle)
   else gesture = begin(tool.value, ctx, p, e)
   if (!gesture) return
@@ -225,7 +226,7 @@ const onGestureChange = (e: Event) => {
 }
 
 function onDoubleClick(e: MouseEvent) {
-  if (tool.value !== 'select') return
+  if (props.readOnly || tool.value !== 'select') return
   const p = toPage(e.clientX, e.clientY), hit = topHit(ctx, p)
   if (!hit) return createText(ctx, p)
   if (hit.type === 'text' || hit.type === 'note') { selected.value = new Set([hit.id]); editingId.value = hit.id }
@@ -288,6 +289,7 @@ function onKeyDown(e: KeyboardEvent) {
   const nudge = { arrowleft: [-1, 0], arrowright: [1, 0], arrowup: [0, -1], arrowdown: [0, 1] }[k]
   if (mod && e.shiftKey && k === 'e') emit('toggleExpand')
   else if (mod && e.key === '\\') { if (props.expanded) emit('togglePure') }
+  else if (props.readOnly && !(mod && ['0', '=', '+', '-', '1'].includes(k)) && k !== 'escape' && !/^[1-9]$/.test(k)) return
   else if (mod && k === 'z') e.shiftKey ? store.undo.redo() : store.undo.undo()
   else if (mod && k === 'y') store.undo.redo()
   else if (mod && k === 'a') selected.value = new Set(store.sorted.value.map((s) => s.id))
@@ -324,14 +326,14 @@ const onKeyUp = (e: KeyboardEvent) => { if (e.key === ' ') spaceDown.value = fal
 // ── clipboard, drop, images ──
 const CLIP = 'opennotes/canvas'
 function onCopy(e: ClipboardEvent, cut = false) {
-  if (editingId.value || !selected.value.size) return
+  if (editingId.value || !selected.value.size || (cut && props.readOnly)) return
   e.clipboardData!.setData('text/plain', JSON.stringify({ [CLIP]: 1, shapes: selectedShapes() }))
   e.preventDefault()
   if (cut) store.remove(selected.value)
 }
 const viewCenter = (): Pt => ({ x: viewport.value.x + viewport.value.w / 2, y: viewport.value.y + viewport.value.h / 2 })
 function onPaste(e: ClipboardEvent) {
-  if (editingId.value) return
+  if (editingId.value || props.readOnly) return
   const files = [...(e.clipboardData?.files ?? [])].filter((f) => f.type.startsWith('image/'))
   const text = e.clipboardData?.getData('text/plain') ?? ''
   e.preventDefault()
@@ -350,6 +352,7 @@ function onPaste(e: ClipboardEvent) {
   selected.value = new Set([id])
 }
 function onDrop(e: DragEvent) {
+  if (props.readOnly) return
   const files = [...(e.dataTransfer?.files ?? [])].filter((f) => f.type.startsWith('image/'))
   if (!files.length) return
   e.preventDefault()
@@ -367,7 +370,7 @@ async function addImages(files: File[], at: Pt) {
       const bmp = await createImageBitmap(file)
       const k = Math.min(1, 600 / Math.max(bmp.width, bmp.height)), w = bmp.width * k, h = bmp.height * k
       bmp.close()
-      const res = await fetch('/v1/assets', { method: 'POST', body: file })
+      const res = await fetch(`/v1/assets?doc=${props.docId}`, { method: 'POST', body: file })
       if (!res.ok) throw new Error((await res.text()) || res.statusText)
       const { url } = (await res.json()) as { url: string }
       const id = newId()
@@ -473,7 +476,7 @@ defineExpose({
         <ShapeView
           v-for="s in visible" :key="s.id" :shape="s" :shapes="s.type === 'arrow' ? store.shapes.value : undefined"
           :editing="editingId === s.id" :erasing="erasing.has(s.id)"
-          @commit="commitText(s, $event)" @autosize="store.update({ [s.id]: $event }, QUIET)"
+          @commit="commitText(s, $event)" @autosize="readOnly || store.update({ [s.id]: $event }, QUIET)"
         />
         <ShapeView v-if="draft" :shape="draft" :shapes="store.shapes.value" />
         <g v-for="r in remotes" :key="r.id">
@@ -499,7 +502,7 @@ defineExpose({
     </svg>
 
     <div
-      v-if="!pure" data-chrome class="absolute bottom-3 left-1/2 -translate-x-1/2 transition-opacity duration-150"
+      v-if="!pure && !readOnly" data-chrome class="absolute bottom-3 left-1/2 -translate-x-1/2 transition-opacity duration-150"
       :class="showToolbar ? 'opacity-100' : 'pointer-events-none opacity-0'" :inert="!showToolbar"
     >
       <Toolbar

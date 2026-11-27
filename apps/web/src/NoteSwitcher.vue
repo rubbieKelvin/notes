@@ -91,6 +91,8 @@ function onKey(e: KeyboardEvent) {
             <span v-if="d.description" class="truncate text-xs text-muted-foreground">{{ d.description }}</span>
           </span>
           <span v-if="d.id === doc.id" class="text-[11px] text-muted-foreground">Open</span>
+          <Badge v-else-if="d.role !== 'owner'" variant="secondary" :title="`Shared by ${d.owner_name}`">Shared</Badge>
+          <Badge v-else-if="d.is_public" variant="secondary" class="text-emerald-700">Public</Badge>
           <Badge v-else-if="d.mcp_exposed_slug" variant="secondary" class="text-emerald-700">MCP</Badge>
         </li>
         <li v-if="!matches.length" class="px-2 py-6 text-center text-sm text-muted-foreground">No notes match “{{ query.trim() }}”</li>

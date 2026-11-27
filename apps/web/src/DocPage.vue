@@ -1,36 +1,29 @@
 <script setup lang="ts">
 import { Bold, Code, Italic, Pencil, Sparkles, Strikethrough, Trash2 } from '@lucide/vue'
-import { CodeBlockLowlight } from '@tiptap/extension-code-block-lowlight'
-import { Collaboration } from '@tiptap/extension-collaboration'
-import { TaskItem, TaskList } from '@tiptap/extension-list'
-import { Mathematics } from '@tiptap/extension-mathematics'
-import { Placeholder } from '@tiptap/extensions'
-import { StarterKit } from '@tiptap/starter-kit'
 import { EditorContent, useEditor } from '@tiptap/vue-3'
 import { BubbleMenu } from '@tiptap/vue-3/menus'
-import { common, createLowlight } from 'lowlight'
-import { markRaw, onBeforeUnmount, ref } from 'vue'
+import { computed, onBeforeUnmount, ref } from 'vue'
 import { WebsocketProvider } from 'y-websocket'
 import * as Y from 'yjs'
-import { api, errorText, type DocInfo, type Me } from './api'
+import { api, displayName, errorText, type DocInfo, type Me } from './api'
 import NoteDetailsDialog from './NoteDetailsDialog.vue'
 import NoteSwitcher from './NoteSwitcher.vue'
 import UserMenu from './UserMenu.vue'
 import InboxPill from './InboxPill.vue'
 import McpPill from './McpPill.vue'
-import { AiMargin, requestWhisper } from './editor/AiMargin'
-import { AiSource } from './editor/AiSource'
-import { Callout, Clip, Runbook } from './editor/Blocks'
-import { CanvasBlock } from './editor/CanvasBlock'
+import { requestWhisper } from './editor/AiMargin'
+import { noteExtensions } from './editor/extensions'
 import { canvasesOf } from './editor/canvas/store'
 import MarginWhispers from './editor/MarginWhispers.vue'
-import { SlashCommand } from './editor/SlashCommand'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import BlockToolbar from './editor/BlockToolbar.vue'
-import { askLatex, confirmDialog, toast } from './ui/feedback'
+import { confirmDialog, toast } from './ui/feedback'
+import ShareDialog from './ShareDialog.vue'
 
 const props = defineProps<{ me: Me; doc: DocInfo; docs: DocInfo[] }>()
+const owner = props.doc.role === 'owner'
+const readOnly = props.doc.role === 'view'
 
 // The yrs server owns the document; every tab of it stays in sync over this socket.
 const ydoc = new Y.Doc()
@@ -40,7 +33,7 @@ const provider = new WebsocketProvider(wsBase, props.doc.id, ydoc)
 const status = ref<'connecting' | 'connected' | 'disconnected'>('connecting')
 // Shown to others on shared canvases (cursor label and color).
 const hue = [...props.me.email].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 360, 0)
-provider.awareness.setLocalStateField('user', { name: props.me.email.split('@')[0], color: `hsl(${hue} 70% 45%)` })
+provider.awareness.setLocalStateField('user', { name: displayName(props.me), color: `hsl(${hue} 70% 45%)` })
 provider.on('status', (e: { status: 'connecting' | 'connected' | 'disconnected' }) => (status.value = e.status))
 
 const meta = ydoc.getMap<string>('meta')
@@ -64,28 +57,12 @@ syncTabTitle()
 const column = ref<HTMLElement>()
 
 const editor = useEditor({
-  autofocus: 'end',
+  autofocus: readOnly ? false : 'end',
+  editable: !readOnly,
   editorProps: { attributes: { class: 'prose prose-stone max-w-none' } },
-  extensions: [
-    StarterKit.configure({ codeBlock: false, undoRedo: false }), // Collaboration brings its own CRDT-aware undo
-    Collaboration.configure({ document: ydoc }),
-    CodeBlockLowlight.configure({ lowlight: createLowlight(common) }),
-    TaskList,
-    TaskItem.configure({ nested: true }),
-    Placeholder.configure({ placeholder: "Type '/' for commands…" }),
-    Mathematics.configure({
-      inlineOptions: { onClick: async (node, pos) => { const latex = await askLatex(node.attrs.latex); if (latex) editor.value?.chain().setNodeSelection(pos).updateInlineMath({ latex }).focus().run() } },
-      blockOptions: { onClick: async (node, pos) => { const latex = await askLatex(node.attrs.latex); if (latex) editor.value?.chain().setNodeSelection(pos).updateBlockMath({ latex }).focus().run() } },
-    }),
-    CanvasBlock.configure({ ydoc: markRaw(ydoc), provider: markRaw(provider) }), // raw: Yjs compares types by identity, a Vue proxy breaks that
-    AiMargin,
-    AiSource,
-    Callout,
-    Clip,
-    Runbook,
-    SlashCommand,
-  ],
+  extensions: noteExtensions({ ydoc, provider, docId: props.doc.id, readOnly, editor: () => editor.value }),
 })
+const sharedBy = computed(() => (owner ? '' : `${props.doc.owner_name} shared this · ${readOnly ? 'Can view' : 'Can edit'}`))
 
 onBeforeUnmount(() => {
   editor.value?.destroy()
@@ -106,20 +83,24 @@ const marks = [
     <div class="flex items-center gap-0.5 rounded-full bg-background/85 p-0.5 text-sm backdrop-blur">
       <UserMenu :me="me" />
       <NoteSwitcher :doc="doc" :docs="docs" :title="title" />
-      <Button variant="ghost" size="icon-sm" class="rounded-full text-muted-foreground" aria-label="Edit title and description" title="Edit title and description" @click="details?.show()"><Pencil /></Button>
+      <Button v-if="!readOnly" variant="ghost" size="icon-sm" class="rounded-full text-muted-foreground" aria-label="Edit title and description" title="Edit title and description" @click="details?.show()"><Pencil /></Button>
+      <span v-if="sharedBy" class="mx-1.5 rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground" data-shared-badge>{{ sharedBy }}</span>
       <span v-if="status === 'disconnected'" class="mr-1 rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-700" title="Edits are kept and sync when the connection returns">Offline</span>
     </div>
     <div class="flex items-center gap-2">
-      <InboxPill v-if="editor" :editor="editor" />
+      <InboxPill v-if="editor && !readOnly" :editor="editor" />
+      <template v-if="owner">
+      <ShareDialog :doc="doc" :me="me" :title="title" />
       <McpPill :doc="doc" />
       <Button variant="outline" size="icon-sm" class="rounded-full bg-background/85 text-muted-foreground backdrop-blur hover:bg-destructive/10 hover:text-destructive" aria-label="Delete this page" title="Delete this page" @click="deletePage"><Trash2 /></Button>
+      </template>
     </div>
     <NoteDetailsDialog ref="details" :meta="meta" />
   </header>
 
   <main class="mx-auto max-w-[44rem] px-6 pt-28">
     <div ref="column" class="relative">
-      <BubbleMenu v-if="editor" :editor="editor" class="flex items-center gap-0.5 rounded-md border bg-popover p-0.5">
+      <BubbleMenu v-if="editor && !readOnly" :editor="editor" class="flex items-center gap-0.5 rounded-md border bg-popover p-0.5">
         <Button
           v-for="m in marks" :key="m.name" variant="ghost" size="icon-sm" :aria-label="m.name" :title="`${m.name} (${m.key})`" :aria-pressed="editor.isActive(m.name)"
           :class="editor.isActive(m.name) && 'bg-accent'" @click="editor.chain().focus().toggleMark(m.name).run()"
@@ -129,7 +110,7 @@ const marks = [
           <Sparkles />Ask AI
         </Button>
       </BubbleMenu>
-      <BlockToolbar v-if="editor && column" :editor="editor" :column="column" />
+      <BlockToolbar v-if="editor && column && !readOnly" :editor="editor" :column="column" />
       <EditorContent :editor="editor" />
       <MarginWhispers v-if="editor && column" :editor="editor" :column="column" />
     </div>

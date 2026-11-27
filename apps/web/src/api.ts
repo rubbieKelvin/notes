@@ -7,8 +7,14 @@ export class ApiError extends Error {
 }
 
 export type AiSettings = { provider: string; base_url: string | null; model: string; key_hint: string | null }
-export type Me = { email: string; ai: AiSettings | null }
-export type DocInfo = { id: string; title: string; description: string; mcp_exposed_slug: string | null; updated_at: string }
+export type Me = { email: string; name: string; username: string; created_at: string; sessions: number; ai: AiSettings | null }
+/** What to call the user: their display name, else the part of their email before the @. */
+export const displayName = (me: Me) => me.name || me.email.split('@')[0]
+export type Role = 'owner' | 'edit' | 'view'
+export type DocInfo = {
+  id: string; title: string; description: string; mcp_exposed_slug: string | null; is_public: boolean; updated_at: string
+  role: Role; owner_name: string; owner_username: string | null
+}
 
 /** JSON fetch against our server; throws ApiError with the server's message. */
 export async function api<T = void>(path: string, init: { method?: string; body?: unknown } = {}): Promise<T> {

@@ -48,7 +48,7 @@ async function toggle() {
 
 function openSettings() {
   open.value = false
-  window.dispatchEvent(new Event('opennotes:settings'))
+  window.dispatchEvent(new CustomEvent('opennotes:settings', { detail: 'tokens' }))
 }
 </script>
 

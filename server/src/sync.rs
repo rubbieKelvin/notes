@@ -103,17 +103,28 @@ pub async fn connect(State(s): State<AppState>, user: User, Path(id): Path<Uuid>
     if !same_origin(&headers) {
         return Err(AppError::new(StatusCode::FORBIDDEN, "cross-origin sync is not allowed"));
     }
-    if !docs::owns(&s, user.id, id).await? {
+    let Some(role) = docs::access(&s, user.id, id).await? else {
         return Err(AppError::new(StatusCode::NOT_FOUND, "no such document"));
-    }
+    };
+    let read_only = role == "view";
     let room = join(&s, id).await?;
     Ok(ws.on_upgrade(move |socket| async move {
-        serve(&s, &room, socket).await;
+        serve(&s, &room, socket, read_only).await;
         leave(&s, id, room).await;
     }))
 }
 
-async fn serve(s: &AppState, room: &Room, socket: WebSocket) {
+/// The current state of a document as one Yjs update: the live room's if open, else the saved one.
+pub async fn snapshot(s: &AppState, id: Uuid) -> Res<Vec<u8>> {
+    if let Some(room) = s.rooms.map.lock().await.get(&id) {
+        return Ok(room.doc.transact().encode_state_as_update_v1(&StateVector::default()));
+    }
+    let saved: Option<Vec<u8>> = sqlx::query_scalar("SELECT yjs_state FROM documents WHERE id = $1").bind(id).fetch_one(&s.db).await?;
+    Ok(saved.unwrap_or_else(|| Doc::new().transact().encode_state_as_update_v1(&StateVector::default())))
+}
+
+/// `read_only`: a viewer. They receive every change and share presence, but their updates are dropped.
+async fn serve(s: &AppState, room: &Room, socket: WebSocket, read_only: bool) {
     let me = s.rooms.next_conn.fetch_add(1, Ordering::SeqCst);
     let (mut sink, mut stream) = socket.split();
     let mut rx = room.tx.subscribe();
@@ -137,6 +148,7 @@ async fn serve(s: &AppState, room: &Room, socket: WebSocket) {
                     Ok(Message::Sync(SyncMessage::SyncStep1(sv))) => {
                         Some(Message::Sync(SyncMessage::SyncStep2(room.doc.transact().encode_state_as_update_v1(&sv))).encode_v1())
                     }
+                    Ok(Message::Sync(SyncMessage::SyncStep2(_) | SyncMessage::Update(_))) if read_only => None,
                     Ok(Message::Sync(SyncMessage::SyncStep2(u) | SyncMessage::Update(u))) => {
                         let applied = Update::decode_v1(&u).map_err(|e| e.to_string())
                             .and_then(|up| room.doc.transact_mut().apply_update(up).map_err(|e| e.to_string()));

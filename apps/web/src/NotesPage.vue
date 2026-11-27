@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { BookOpen, Brain, FileText, Lightbulb, Notebook, PenTool, Plus, Search, Shapes, Sigma } from '@lucide/vue'
+import { Plus, Search } from '@lucide/vue'
+import { ago, noteArt as placeholder } from './noteArt'
 import { computed, ref } from 'vue'
 import { api, errorText, type DocInfo, type Me } from './api'
 import UserMenu from './UserMenu.vue'
@@ -16,22 +17,10 @@ const shown = computed(() => {
   return q ? props.docs.filter((d) => d.title.toLowerCase().includes(q) || d.description.toLowerCase().includes(q)) : props.docs
 })
 
-// shortcut: placeholder thumbnails (a stable color and icon per note) until thumbnails are generated from content.
-const ICONS = [FileText, Notebook, Lightbulb, BookOpen, PenTool, Shapes, Sigma, Brain]
-function placeholder(id: string) {
-  const h = [...id].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7)
-  const hue = h % 360
-  return { icon: ICONS[(h >>> 9) % ICONS.length], bg: `hsl(${hue} 70% 93%)`, fg: `hsl(${hue} 45% 38%)` }
-}
-
-const rtf = new Intl.RelativeTimeFormat(undefined, { numeric: 'auto' })
-function ago(iso: string) {
-  const s = (new Date(iso).getTime() - Date.now()) / 1000
-  for (const [unit, n] of [['year', 31536000], ['month', 2592000], ['week', 604800], ['day', 86400], ['hour', 3600], ['minute', 60]] as const) {
-    if (Math.abs(s) >= n) return rtf.format(Math.round(s / n), unit)
-  }
-  return 'just now'
-}
+const sections = computed(() => [
+  { label: 'Your notes', notes: shown.value.filter((d) => d.role === 'owner') },
+  { label: 'Shared with you', notes: shown.value.filter((d) => d.role !== 'owner') },
+].filter((sec) => sec.notes.length))
 
 async function create() {
   try {
@@ -60,22 +49,28 @@ async function create() {
     <p v-if="!shown.length" class="py-20 text-center text-sm text-muted-foreground">
       {{ query.trim() ? `No notes match “${query.trim()}”.` : 'No notes yet.' }}
     </p>
-    <ul class="grid grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] gap-4" aria-label="Notes">
-      <li v-for="d in shown" :key="d.id">
-        <a :href="`/d/${d.id}`" class="group block overflow-hidden rounded-lg border bg-card transition-shadow hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none" data-note-card>
-          <div class="grid h-32 place-items-center" :style="{ background: placeholder(d.id).bg }" aria-hidden="true">
-            <component :is="placeholder(d.id).icon" class="size-10 transition-transform group-hover:scale-110" :style="{ color: placeholder(d.id).fg }" :stroke-width="1.5" />
-          </div>
-          <div class="grid gap-1 p-3">
-            <div class="flex items-center gap-2">
-              <h2 class="flex-1 truncate text-sm font-medium">{{ d.title || 'Untitled' }}</h2>
-              <Badge v-if="d.mcp_exposed_slug" variant="secondary" class="text-emerald-700">MCP</Badge>
+    <section v-for="sec in sections" :key="sec.label" class="mb-10">
+      <h2 v-if="sections.length > 1" class="mb-3 text-sm text-muted-foreground">{{ sec.label }}</h2>
+      <ul class="grid grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] gap-4" :aria-label="sec.label">
+        <li v-for="d in sec.notes" :key="d.id">
+          <a :href="`/d/${d.id}`" class="group block overflow-hidden rounded-lg border bg-card transition-shadow hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none" data-note-card>
+            <div class="grid h-32 place-items-center" :style="{ background: placeholder(d.id).bg }" aria-hidden="true">
+              <component :is="placeholder(d.id).icon" class="size-10 transition-transform group-hover:scale-110" :style="{ color: placeholder(d.id).fg }" :stroke-width="1.5" />
             </div>
-            <p class="line-clamp-2 min-h-8 text-xs" :class="d.description ? 'text-muted-foreground' : 'text-muted-foreground/50 italic'">{{ d.description || 'No description' }}</p>
-            <p class="text-[11px] text-muted-foreground">Edited {{ ago(d.updated_at) }}</p>
-          </div>
-        </a>
-      </li>
-    </ul>
+            <div class="grid gap-1 p-3">
+              <div class="flex items-center gap-2">
+                <h3 class="flex-1 truncate text-sm font-medium">{{ d.title || 'Untitled' }}</h3>
+                <Badge v-if="d.is_public" variant="secondary" class="text-emerald-700">Public</Badge>
+                <Badge v-if="d.mcp_exposed_slug" variant="secondary" class="text-emerald-700">MCP</Badge>
+              </div>
+              <p class="line-clamp-2 min-h-8 text-xs" :class="d.description ? 'text-muted-foreground' : 'text-muted-foreground/50 italic'">{{ d.description || 'No description' }}</p>
+              <p class="text-[11px] text-muted-foreground">
+                <template v-if="d.role !== 'owner'">{{ d.owner_name }} · {{ d.role === 'edit' ? 'Can edit' : 'Can view' }} · </template>Edited {{ ago(d.updated_at) }}
+              </p>
+            </div>
+          </a>
+        </li>
+      </ul>
+    </section>
   </main>
 </template>

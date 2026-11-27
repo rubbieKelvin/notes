@@ -16,15 +16,45 @@ pub struct DocInfo {
     title: String,
     description: String,
     mcp_exposed_slug: Option<String>,
+    is_public: bool,
     updated_at: DateTime<Utc>,
+    /// owner, edit or view
+    role: String,
+    owner_name: String,
+    owner_username: Option<String>,
 }
 
+/// The user's own notes and the ones shared with them, newest first.
 pub async fn list(State(s): State<AppState>, user: User) -> Res<Json<Vec<DocInfo>>> {
-    let rows = sqlx::query_as("SELECT id, title, description, mcp_exposed_slug, updated_at FROM documents WHERE user_id = $1 ORDER BY updated_at DESC")
-        .bind(user.id)
-        .fetch_all(&s.db)
-        .await?;
+    let rows = sqlx::query_as(
+        "SELECT d.id, d.title, d.description, d.is_public, d.updated_at,
+                CASE WHEN d.user_id = $1 THEN d.mcp_exposed_slug END AS mcp_exposed_slug,
+                CASE WHEN d.user_id = $1 THEN 'owner' ELSE sh.role END AS role,
+                COALESCE(NULLIF(o.display_name, ''), split_part(o.email, '@', 1)) AS owner_name, o.username AS owner_username
+         FROM documents d
+         JOIN users o ON o.id = d.user_id
+         LEFT JOIN doc_shares sh ON sh.doc_id = d.id AND sh.email = (SELECT email FROM users WHERE id = $1)
+         WHERE d.user_id = $1 OR sh.email IS NOT NULL
+         ORDER BY d.updated_at DESC",
+    )
+    .bind(user.id)
+    .fetch_all(&s.db)
+    .await?;
     Ok(Json(rows))
+}
+
+/// "owner", "edit" or "view" for a note the user may open; None otherwise.
+pub async fn access(s: &AppState, user: Uuid, doc: Uuid) -> Res<Option<String>> {
+    Ok(sqlx::query_scalar(
+        "SELECT CASE WHEN d.user_id = $2 THEN 'owner' ELSE sh.role END
+         FROM documents d LEFT JOIN doc_shares sh ON sh.doc_id = d.id AND sh.email = (SELECT email FROM users WHERE id = $2)
+         WHERE d.id = $1",
+    )
+    .bind(doc)
+    .bind(user)
+    .fetch_optional(&s.db)
+    .await?
+    .flatten())
 }
 
 #[derive(Deserialize, Default)]

@@ -48,6 +48,11 @@ function isCopy(id: string) {
 
 async function resolve() {
   let id: string | null = props.node.attrs.canvasId
+  if (opts.readOnly) {
+    canvasId.value = id ?? ''
+    map.value = (id && root.get(id)) || null // nothing to show yet; never create one here
+    return
+  }
   if (id && isCopy(id)) {
     const fresh = crypto.randomUUID()
     cloneCanvas(ydoc, id, fresh)
@@ -144,16 +149,17 @@ onBeforeUnmount(() => {
   >
     <div class="relative w-full" :class="expanded ? 'h-full' : 'h-96 overflow-hidden rounded-md border'">
       <input
-        :value="node.attrs.title" placeholder="Untitled canvas" aria-label="Canvas title" maxlength="120"
+        :value="node.attrs.title" :placeholder="opts.readOnly ? '' : 'Untitled canvas'" :readonly="opts.readOnly" aria-label="Canvas title" maxlength="120"
         class="absolute top-2 left-3 z-10 max-w-[60%] min-w-28 rounded bg-transparent px-1 text-sm font-medium outline-none [field-sizing:content] placeholder:text-muted-foreground/70 hover:bg-accent/60 focus:bg-background focus:ring-2 focus:ring-ring/40"
         @input="updateAttributes({ title: ($event.target as HTMLInputElement).value })"
         @keydown.enter.prevent="($event.target as HTMLInputElement).blur()" @keydown.escape.prevent="($event.target as HTMLInputElement).blur()"
       />
       <Canvas
         v-if="map" :key="mapVersion" ref="canvas" :ydoc="ydoc" :map="map" :canvas-id="canvasId"
-        :awareness="opts.provider?.awareness" :expanded="expanded" :pure="pure"
+        :awareness="opts.provider?.awareness" :doc-id="opts.docId" :read-only="opts.readOnly" :expanded="expanded" :pure="pure"
         @toggle-expand="setExpanded(!expanded)" @toggle-pure="pure = !pure" @collapse="setExpanded(false)" @selection="selectionCount = $event"
       />
+      <p v-else class="grid h-full place-items-center text-sm text-muted-foreground">Empty canvas</p>
     </div>
     <div
       v-if="!pure"
@@ -163,9 +169,9 @@ onBeforeUnmount(() => {
       <Button variant="outline" size="xs" class="justify-start bg-background" :title="expanded ? 'Collapse (Esc)' : 'Expand (⌘⇧E)'" @click="setExpanded(!expanded)">
         <Minimize2 v-if="expanded" /><Maximize2 v-else />{{ expanded ? 'Collapse' : 'Expand' }}
       </Button>
-      <Button variant="outline" size="xs" class="justify-start bg-background" title="Add a LaTeX equation" @click="canvas?.insertMath()"><Sigma />Math</Button>
+      <Button v-if="!opts.readOnly" variant="outline" size="xs" class="justify-start bg-background" title="Add a LaTeX equation" @click="canvas?.insertMath()"><Sigma />Math</Button>
       <Button
-        variant="outline" size="xs" class="justify-start bg-background text-ai-500 hover:text-ai-700" :disabled="!selectionCount || annotating"
+        v-if="!opts.readOnly" variant="outline" size="xs" class="justify-start bg-background text-ai-500 hover:text-ai-700" :disabled="!selectionCount || annotating"
         :title="selectionCount ? 'Ask AI to annotate the selected drawing' : 'Select or lasso (⌥-drag) part of the drawing first'"
         @click="annotate"
       ><Sparkles />{{ annotating ? 'Annotating…' : 'AI Annotate' }}</Button>
@@ -178,7 +184,7 @@ onBeforeUnmount(() => {
           <DropdownMenuItem @select="exportAs('svg')">SVG vector</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-      <Button variant="outline" size="xs" class="justify-start bg-background hover:bg-destructive/10 hover:text-destructive" title="Delete this canvas" @click="remove"><Trash2 />Delete</Button>
+      <Button v-if="!opts.readOnly" variant="outline" size="xs" class="justify-start bg-background hover:bg-destructive/10 hover:text-destructive" title="Delete this canvas" @click="remove"><Trash2 />Delete</Button>
       <p v-if="annotateError" role="alert" class="max-w-56 rounded-md border bg-background px-2 py-1 text-xs text-amber-700">{{ annotateError }}</p>
     </div>
   </NodeViewWrapper>

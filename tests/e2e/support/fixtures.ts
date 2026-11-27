@@ -21,6 +21,15 @@ export async function requestLink(request: APIRequestContext, email: string) {
   return link
 }
 
+/** The 6-digit code from the latest sign-in email to `email` (support/server.mjs captures it). Call after the email is requested. */
+export async function latestCode(email: string) {
+  const file = join(tmpdir(), 'opennotes-e2e-mail', `${email}.code`)
+  let code = ''
+  await expect.poll(() => (code = (() => { try { return readFileSync(file, 'utf8') } catch { return '' } })())).not.toBe('')
+  rmSync(file, { force: true })
+  return code
+}
+
 export const linkToken = (link: string) => new URLSearchParams(new URL(link).hash.slice(1)).get('signin')!
 
 /** Signs `context` in through a magic link, creating the account on first use. */

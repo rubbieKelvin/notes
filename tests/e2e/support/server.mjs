@@ -59,6 +59,8 @@ server.stdout.on('data', (chunk) => {
   for (const line of lines) {
     const m = line.match(/^magic link for (\S+): (\S+)$/)
     if (m) writeFileSync(join(mailDir, m[1]), m[2])
+    const c = line.match(/^sign-in code for (\S+): (\d{6})$/)
+    if (c) writeFileSync(join(mailDir, `${c[1]}.code`), c[2])
   }
 })
 
