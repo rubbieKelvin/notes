@@ -48,7 +48,7 @@ const remove = (t: string) => save(props.doc.tags.filter((x) => x !== t))
         </li>
       </ul>
       <form @submit.prevent="add()">
-        <input v-model="draft" maxlength="40" placeholder="Add a tag…" aria-label="Add a tag" class="h-8 w-full rounded-md border bg-background px-2 text-sm outline-none focus:ring-2 focus:ring-ring/40" />
+        <input v-model="draft" maxlength="40" placeholder="Add a tag…" aria-label="Add a tag" class="h-8 w-full rounded-md border bg-background px-2 text-sm outline-none focus:border-ring transition-colors" />
       </form>
       <div v-if="suggestions.length" class="mt-2 flex flex-wrap gap-1">
         <button v-for="t in suggestions" :key="t" type="button" class="rounded-full border px-2 py-0.5 text-xs text-muted-foreground hover:bg-accent hover:text-foreground" @click="add(t)">+ {{ t }}</button>
