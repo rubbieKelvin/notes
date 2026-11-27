@@ -21,7 +21,7 @@ health = "/"
 API_UPSTREAM = "opennotes.service.brimble.internal:8080"
 
 [services.opennotes-web.network]
-# domains = ["opennotes.rubbietheone.com"]  # re-enable once its DNS points at Brimble; then set PUBLIC_URL and OPENNOTES_HOSTS on the API to match
+domains = ["notes.rubbietheone.com"]
 headers = { frame = "DENY", nosniff = true, hsts = true }
 
 # Rust server. Private: only the web service reaches it, so X-Real-IP always comes from our nginx.
@@ -47,7 +47,6 @@ memory = "512mb"
 public = true
 
 [services.opennotes.env]
-DATABASE_URL = "{{@db.PRIVATE_CONNECTION_STRING}}"
 BIND = "0.0.0.0:8080"
 COOKIE_SECURE = "true"
 ALLOW_SIGNUP = "true"
@@ -61,15 +60,6 @@ EMAIL_DRIVER = "resend"
 PUBLIC_URL = "https://notes.rubbietheone.com"
 OPENNOTES_HOSTS = "notes.rubbietheone.com"
 EMAIL_FROM = "OpenNotes <no-reply@notes.rubbietheone.com>"
-# Uploads go to an S3-compatible bucket via AWS_*. Also set AWS_ENDPOINT for non-AWS (e.g. R2; AWS_REGION = "auto").
-[services.opennotes.secrets]
-required = ["OPENNOTES_SECRET", "EMAIL_RESEND_API_KEY", "AWS_BUCKET", "AWS_REGION", "AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY"]
 
-[databases.db]
-engine = "postgresql"
-region = "eu-central"
-version = "18"
-disk = "10gb"
-public = false
-tls = true
-backups = { schedule = "0 2 * * *", timezone = "UTC", keep = "14d" }
+[services.opennotes.secrets]
+required = ["OPENNOTES_SECRET", "EMAIL_RESEND_API_KEY", "AWS_BUCKET", "AWS_REGION", "AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "DATABASE_URL"]
