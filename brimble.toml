@@ -7,6 +7,7 @@
 [services.opennotes]
 type = "web"
 region = "eu-central"
+root = "." # repo root, so the root Dockerfile builds; removing the line would keep the old "server"
 
 [services.opennotes.build]
 dockerfile = "Dockerfile" # repo root: builds apps/web, then the server, into one slim image

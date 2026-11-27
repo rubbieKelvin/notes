@@ -124,5 +124,6 @@ pub fn router(state: AppState) -> Router<AppState> {
     );
     Router::new()
         .nest_service("/mcp", service)
-        .layer(middleware::from_fn_with_state(state, require_token))
+        // route_layer, not layer: layer also wraps the fallback, which would demand a token for every web page
+        .route_layer(middleware::from_fn_with_state(state, require_token))
 }
