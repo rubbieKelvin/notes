@@ -47,7 +47,8 @@ memory = "512mb"
 public = false
 
 [services.opennotes.env]
-DATABASE_URL = "{{@db.PRIVATE_CONNECTION_STRING}}"
+# Plaintext inside Brimble's private network
+DATABASE_URL = "{{@db.PRIVATE_CONNECTION_STRING}}?sslmode=disable"
 BIND = "0.0.0.0:8080"
 COOKIE_SECURE = "true"
 ALLOW_SIGNUP = "true"
