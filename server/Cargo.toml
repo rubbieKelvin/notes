@@ -26,3 +26,5 @@ tracing = "0.1.44"
 tracing-subscriber = { version = "0.3.23", features = ["env-filter", "json"] }
 uuid = { version = "1.29.3", features = ["v4", "serde"] }
 yrs = { version = "0.28.2", features = ["sync"] }
+thiserror = "2.0.21"
+anyhow = "1.0.104"

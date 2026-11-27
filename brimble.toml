@@ -33,6 +33,7 @@ root = "server"
 [services.opennotes.build]
 dockerfile = "Dockerfile" # final stage is the slim release image
 watch = ["server/**"]
+cache = true
 
 [services.opennotes.deploy]
 port = 8080
@@ -60,6 +61,19 @@ EMAIL_DRIVER = "resend"
 PUBLIC_URL = "https://notes.rubbietheone.com"
 OPENNOTES_HOSTS = "notes.rubbietheone.com"
 EMAIL_FROM = "OpenNotes <no-reply@notes.rubbietheone.com>"
+DATABASE_URL = "{{@opennotes-db.PRIVATE_CONNECTION_STRING}}"
+
 
 [services.opennotes.secrets]
-required = ["OPENNOTES_SECRET", "EMAIL_RESEND_API_KEY", "AWS_BUCKET", "AWS_REGION", "AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "DATABASE_URL"]
+required = ["OPENNOTES_SECRET", "EMAIL_RESEND_API_KEY", "AWS_BUCKET", "AWS_REGION", "AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY"]
+
+[databases.opennotes-db]
+engine = "postgresql"
+version = "18"
+region = "eu-central"
+cpu = 0.5
+memory = "1gb"
+disk = "10gb"
+public = false
+tls = true
+backups = { schedule = "0 2 * * *", timezone = "UTC", keep = "14d" }

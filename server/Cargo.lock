@@ -62,6 +62,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "anyhow"
+version = "1.0.105"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2cb931c189b85683d69a5cfad41d4d418671e1ac413dd209f3f2fc31e3cfd902"
+
+[[package]]
 name = "arc-swap"
 version = "1.9.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2277,6 +2283,7 @@ name = "server"
 version = "0.1.0"
 dependencies = [
  "aes-gcm",
+ "anyhow",
  "axum",
  "axum-extra",
  "base64 0.23.1",
@@ -2291,6 +2298,7 @@ dependencies = [
  "serde_json",
  "sha2",
  "sqlx",
+ "thiserror",
  "time",
  "tokio",
  "tower-http",

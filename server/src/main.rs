@@ -2,6 +2,7 @@ mod ai;
 mod auth;
 mod comments;
 mod crypto;
+mod db;
 mod docs;
 mod email;
 mod events;
@@ -13,7 +14,8 @@ mod sync;
 mod text;
 mod tokens;
 
-use axum::extract::Request;
+use axum::Json;
+use axum::extract::{Request, State};
 use axum::{
     Router,
     extract::DefaultBodyLimit,
@@ -79,9 +81,18 @@ fn env(name: &str) -> Option<String> {
     return std::env::var(name).ok().filter(|v| !v.is_empty());
 }
 
+async fn health(
+    State(state): State<AppState>,
+) -> Result<Json<serde_json::Value>, axum::http::StatusCode> {
+    db::ping(&state.db)
+        .await
+        .map_err(|_| axum::http::StatusCode::SERVICE_UNAVAILABLE)?;
+    return Ok(Json(serde_json::json!({"status": "ok"})));
+}
+
 pub fn app(state: AppState) -> Router {
-    Router::new()
-        .route("/health", get(|| async { "ok" }))
+    return Router::new()
+        .route("/health", get(health))
         .route("/v1/auth/link", post(auth::request_link))
         .route("/v1/auth/verify", post(auth::verify))
         .route("/v1/auth/code", post(auth::verify_code))
@@ -130,7 +141,7 @@ pub fn app(state: AppState) -> Router {
             // path only: query strings can carry tokens
             tracing::info_span!("http", method = %req.method(), path = req.uri().path(), request_id = id)
         }).on_response(DefaultOnResponse::new().level(tracing::Level::INFO)))
-        .layer(SetRequestIdLayer::x_request_id(MakeRequestUuid))
+        .layer(SetRequestIdLayer::x_request_id(MakeRequestUuid));
 }
 
 /// FR-3.3 Knowledge Half-Life: archive unreviewed inbox items after 14 days; drop dead sessions, sign-in links and old telemetry.
@@ -156,11 +167,12 @@ async fn cleanup(db: PgPool) {
 }
 
 #[tokio::main]
-async fn main() {
+async fn main() -> anyhow::Result<()> {
     // RUST_LOG picks levels (default info); LOG_FORMAT=json for log shippers.
     let filter = tracing_subscriber::EnvFilter::try_from_default_env()
         .unwrap_or_else(|_| "info,tower_http=info".into());
     let logs = tracing_subscriber::fmt().with_env_filter(filter);
+
     if env("LOG_FORMAT").is_some_and(|v| v == "json") {
         logs.json().init()
     } else {
@@ -170,13 +182,9 @@ async fn main() {
     let db_url = env("DATABASE_URL").expect("DATABASE_URL is required");
     let secret = env("OPENNOTES_SECRET")
         .expect("OPENNOTES_SECRET is required (32 bytes, base64: `openssl rand -base64 32`)");
-    let db = PgPool::connect(&db_url)
-        .await
-        .expect("cannot connect to Postgres");
-    sqlx::migrate!("./migrations")
-        .run(&db)
-        .await
-        .expect("migrations failed");
+
+    let database = db::connect(&db_url).await?;
+    db::migrate(&database).await?;
 
     let cfg = Config {
         cookie_secure: env("COOKIE_SECURE").map_or(true, |v| v != "false"),
@@ -194,10 +202,11 @@ async fn main() {
             .map(|h| h.trim().to_string())
             .collect(),
     };
+
     let store = files::store_from_env(env);
-    files::move_legacy(&db, store.as_ref()).await;
+
     let state = AppState {
-        db: db.clone(),
+        db: database.clone(),
         http: reqwest::Client::new(),
         cipher: Arc::new(
             crypto::Cipher::from_base64(&secret)
@@ -209,12 +218,14 @@ async fn main() {
         email: Arc::new(email::EmailService::from_env(env)),
         store,
     };
-    tokio::spawn(cleanup(db));
+
+    tokio::spawn(cleanup(database));
 
     let bind = env("BIND").unwrap_or_else(|| "127.0.0.1:8080".into());
     let listener = tokio::net::TcpListener::bind(&bind).await.unwrap();
     tracing::info!("opennotes server on http://{bind}");
     let (stop_tx, mut stop_rx) = tokio::sync::watch::channel(());
+
     let server = tokio::spawn(
         axum::serve(listener, app(state.clone()))
             .with_graceful_shutdown(async move {
@@ -222,12 +233,16 @@ async fn main() {
             })
             .into_future(),
     );
+
     shutdown_signal().await;
     tracing::info!("shutting down: saving open documents");
     let _ = stop_tx.send(());
     sync::flush_all(&state).await;
+
     // Sync WebSockets never close on their own, so in-flight requests get a few seconds, not forever.
     let _ = tokio::time::timeout(Duration::from_secs(5), server).await;
+
+    return Ok(());
 }
 
 async fn shutdown_signal() {

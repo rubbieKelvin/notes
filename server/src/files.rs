@@ -1,21 +1,22 @@
 //! Uploaded files: note attachments, canvas images, and the storage page. Bytes live in an object store under
 //! `<id>`: a local folder (STORAGE_DRIVER=fs, FILES_DIR) or any S3-compatible bucket (STORAGE_DRIVER=s3, AWS_* vars);
 //! notes keep only the id, and `file_refs` (rebuilt from each note on save) records which notes show a file.
-use crate::{auth::User, docs, AppError, AppState, Res};
+use crate::{AppError, AppState, Res, auth::User, docs};
 use axum::{
+    Json,
     body::Body,
     extract::{Path, Query, Request, State},
-    http::{header, HeaderMap, HeaderValue, Method, StatusCode},
+    http::{HeaderMap, HeaderValue, Method, StatusCode, header},
     response::{IntoResponse, Response},
-    Json,
 };
 use chrono::{DateTime, Utc};
 use futures_util::StreamExt;
-use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
 use object_store::{
-    aws::AmazonS3Builder, local::LocalFileSystem, path::Path as Key, GetOptions, GetRange, ObjectStore, ObjectStoreExt, WriteMultipart,
+    GetOptions, GetRange, ObjectStore, ObjectStoreExt, WriteMultipart, aws::AmazonS3Builder,
+    local::LocalFileSystem, path::Path as Key,
 };
+use serde::{Deserialize, Serialize};
+use serde_json::{Value, json};
 use sqlx::PgPool;
 use std::sync::Arc;
 use uuid::Uuid;
@@ -40,8 +41,36 @@ fn sniff(b: &[u8]) -> &'static str {
         [0x89, b'P', b'N', b'G', ..] => "image/png",
         [0xFF, 0xD8, 0xFF, ..] => "image/jpeg",
         [b'G', b'I', b'F', b'8', ..] => "image/gif",
-        [b'R', b'I', b'F', b'F', _, _, _, _, b'W', b'E', b'B', b'P', ..] => "image/webp",
-        [b'R', b'I', b'F', b'F', _, _, _, _, b'W', b'A', b'V', b'E', ..] => "audio/wav",
+        [
+            b'R',
+            b'I',
+            b'F',
+            b'F',
+            _,
+            _,
+            _,
+            _,
+            b'W',
+            b'E',
+            b'B',
+            b'P',
+            ..,
+        ] => "image/webp",
+        [
+            b'R',
+            b'I',
+            b'F',
+            b'F',
+            _,
+            _,
+            _,
+            _,
+            b'W',
+            b'A',
+            b'V',
+            b'E',
+            ..,
+        ] => "audio/wav",
         [b'%', b'P', b'D', b'F', b'-', ..] => "application/pdf",
         [_, _, _, _, b'f', b't', b'y', b'p', b'q', b't', ..] => "video/quicktime",
         [_, _, _, _, b'f', b't', b'y', b'p', b'M', b'4', b'A', ..] => "audio/mp4",
@@ -65,16 +94,30 @@ fn human(bytes: u64) -> String {
 
 /// A display name from the client: no paths, no control characters, at most 200 characters.
 fn clean_name(raw: Option<&str>) -> String {
-    let base = raw.unwrap_or_default().rsplit(['/', '\\']).next().unwrap_or_default();
+    let base = raw
+        .unwrap_or_default()
+        .rsplit(['/', '\\'])
+        .next()
+        .unwrap_or_default();
     let name: String = base.chars().filter(|c| !c.is_control()).take(200).collect();
-    if name.trim().is_empty() { "file".into() } else { name.trim().to_string() }
+    if name.trim().is_empty() {
+        "file".into()
+    } else {
+        name.trim().to_string()
+    }
 }
 
 /// RFC 5987 `filename*` so any name survives the header.
 fn disposition(kind: &str, name: &str) -> String {
     let enc: String = name
         .bytes()
-        .map(|b| if b.is_ascii_alphanumeric() || b"-._~".contains(&b) { (b as char).to_string() } else { format!("%{b:02X}") })
+        .map(|b| {
+            if b.is_ascii_alphanumeric() || b"-._~".contains(&b) {
+                (b as char).to_string()
+            } else {
+                format!("%{b:02X}")
+            }
+        })
         .collect();
     format!("{kind}; filename*=UTF-8''{enc}")
 }
@@ -87,7 +130,11 @@ fn key(id: Uuid) -> Key {
 /// AWS_SECRET_ACCESS_KEY, and AWS_ENDPOINT for S3-compatible services (R2, MinIO, …). Otherwise files go in FILES_DIR.
 pub fn store_from_env(env: fn(&str) -> Option<String>) -> Arc<dyn ObjectStore> {
     match env("STORAGE_DRIVER").as_deref() {
-        Some("s3") => Arc::new(AmazonS3Builder::from_env().build().expect("STORAGE_DRIVER=s3 needs AWS_BUCKET and credentials")),
+        Some("s3") => Arc::new(
+            AmazonS3Builder::from_env()
+                .build()
+                .expect("STORAGE_DRIVER=s3 needs AWS_BUCKET and credentials"),
+        ),
         None | Some("fs") => {
             let dir = env("FILES_DIR").unwrap_or_else(|| "data/files".into());
             std::fs::create_dir_all(&dir).expect("cannot create FILES_DIR");
@@ -99,7 +146,10 @@ pub fn store_from_env(env: fn(&str) -> Option<String>) -> Arc<dyn ObjectStore> {
 
 fn store_err(e: object_store::Error) -> AppError {
     tracing::error!(error = %e, "file storage error");
-    AppError::new(StatusCode::INTERNAL_SERVER_ERROR, "couldn't reach file storage")
+    AppError::new(
+        StatusCode::INTERNAL_SERVER_ERROR,
+        "couldn't reach file storage",
+    )
 }
 
 #[derive(Serialize, sqlx::FromRow)]
@@ -132,27 +182,54 @@ fn too_big(msg: String) -> AppError {
 }
 
 async fn used(db: impl sqlx::PgExecutor<'_>, user: Uuid) -> Res<u64> {
-    let n: i64 = sqlx::query_scalar("SELECT COALESCE(SUM(size), 0)::BIGINT FROM files WHERE user_id = $1").bind(user).fetch_one(db).await?;
+    let n: i64 =
+        sqlx::query_scalar("SELECT COALESCE(SUM(size), 0)::BIGINT FROM files WHERE user_id = $1")
+            .bind(user)
+            .fetch_one(db)
+            .await?;
     Ok(n as u64)
 }
 
 /// Streams the body to disk, so a 100 MB video never sits in memory, and stops as soon as a limit is passed.
-pub async fn upload(State(s): State<AppState>, user: User, Query(q): Query<UploadTo>, headers: HeaderMap, body: Body) -> Res<(StatusCode, Json<FileInfo>)> {
+pub async fn upload(
+    State(s): State<AppState>,
+    user: User,
+    Query(q): Query<UploadTo>,
+    headers: HeaderMap,
+    body: Body,
+) -> Res<(StatusCode, Json<FileInfo>)> {
     if let Some(doc) = q.doc {
-        if !matches!(docs::access(&s, user.id, doc).await?.as_deref(), Some("owner" | "edit")) {
-            return Err(AppError::new(StatusCode::FORBIDDEN, "you can't add files to this note"));
+        if !matches!(
+            docs::access(&s, user.id, doc).await?.as_deref(),
+            Some("owner" | "edit")
+        ) {
+            return Err(AppError::new(
+                StatusCode::FORBIDDEN,
+                "you can't add files to this note",
+            ));
         }
     }
     let room = QUOTA.saturating_sub(used(&s.db, user.id).await?);
-    let full = || too_big(format!("Not enough storage: this needs more than the {} you have left of {}", human(room), human(QUOTA)));
-    let declared = headers.get(header::CONTENT_LENGTH).and_then(|v| v.to_str().ok()?.parse::<u64>().ok());
+    let full = || {
+        too_big(format!(
+            "Not enough storage: this needs more than the {} you have left of {}",
+            human(room),
+            human(QUOTA)
+        ))
+    };
+    let declared = headers
+        .get(header::CONTENT_LENGTH)
+        .and_then(|v| v.to_str().ok()?.parse::<u64>().ok());
     if declared.is_some_and(|n| n > room) {
         return Err(full());
     }
 
     let id = Uuid::new_v4();
     // A multipart upload: parts go out as they fill, and nothing is visible under the key until it finishes.
-    let mut out = WriteMultipart::new_with_chunk_size(s.store.put_multipart(&key(id)).await.map_err(store_err)?, (8 * MB) as usize);
+    let mut out = WriteMultipart::new_with_chunk_size(
+        s.store.put_multipart(&key(id)).await.map_err(store_err)?,
+        (8 * MB) as usize,
+    );
     let mut stream = body.into_data_stream();
     let (mime, size) = match receive(&mut stream, &mut out, room, full).await {
         Ok(v) => v,
@@ -176,10 +253,16 @@ pub async fn upload(State(s): State<AppState>, user: User, Query(q): Query<Uploa
     }
 }
 
-async fn receive(stream: &mut axum::body::BodyDataStream, out: &mut WriteMultipart, room: u64, full: impl Fn() -> AppError) -> Res<(&'static str, u64)> {
+async fn receive(
+    stream: &mut axum::body::BodyDataStream,
+    out: &mut WriteMultipart,
+    room: u64,
+    full: impl Fn() -> AppError,
+) -> Res<(&'static str, u64)> {
     let (mut head, mut size, mut mime) = (Vec::with_capacity(16), 0u64, None::<&str>);
     while let Some(chunk) = stream.next().await {
-        let chunk = chunk.map_err(|_| AppError::new(StatusCode::BAD_REQUEST, "upload interrupted"))?;
+        let chunk =
+            chunk.map_err(|_| AppError::new(StatusCode::BAD_REQUEST, "upload interrupted"))?;
         if head.len() < 16 {
             head.extend(chunk.iter().take(16 - head.len()));
         }
@@ -218,12 +301,25 @@ fn check(mime: Option<&str>, size: u64, room: u64, full: &impl Fn() -> AppError)
     Ok(())
 }
 
-async fn save(s: &AppState, user: Uuid, id: Uuid, q: &UploadTo, mime: &str, size: u64) -> Res<FileInfo> {
+async fn save(
+    s: &AppState,
+    user: Uuid,
+    id: Uuid,
+    q: &UploadTo,
+    mime: &str,
+    size: u64,
+) -> Res<FileInfo> {
     let mut tx = s.db.begin().await?;
     // Serializes one person's uploads, so two at once can't both squeeze under the quota.
-    sqlx::query("SELECT 1 FROM users WHERE id = $1 FOR UPDATE").bind(user).execute(&mut *tx).await?;
+    sqlx::query("SELECT 1 FROM users WHERE id = $1 FOR UPDATE")
+        .bind(user)
+        .execute(&mut *tx)
+        .await?;
     if used(&mut *tx, user).await? + size > QUOTA {
-        return Err(too_big(format!("Not enough storage: you've used your {}", human(QUOTA))));
+        return Err(too_big(format!(
+            "Not enough storage: you've used your {}",
+            human(QUOTA)
+        )));
     }
     let info: FileInfo = sqlx::query_as("INSERT INTO files (id, user_id, mime, name, size) VALUES ($1, $2, $3, $4, $5) RETURNING id, name, mime, size, created_at")
         .bind(id)
@@ -234,7 +330,11 @@ async fn save(s: &AppState, user: Uuid, id: Uuid, q: &UploadTo, mime: &str, size
         .fetch_one(&mut *tx)
         .await?;
     if let Some(doc) = q.doc {
-        sqlx::query("INSERT INTO file_refs (file_id, doc_id) VALUES ($1, $2)").bind(id).bind(doc).execute(&mut *tx).await?;
+        sqlx::query("INSERT INTO file_refs (file_id, doc_id) VALUES ($1, $2)")
+            .bind(id)
+            .bind(doc)
+            .execute(&mut *tx)
+            .await?;
     }
     tx.commit().await?;
     Ok(info)
@@ -242,7 +342,12 @@ async fn save(s: &AppState, user: Uuid, id: Uuid, q: &UploadTo, mime: &str, size
 
 /// Served to the uploader, anyone who can open a note it sits in, and everyone if one of those notes is public.
 /// Streamed through the server (no bucket CORS or public URLs needed); Range requests work, so videos seek.
-pub async fn get(State(s): State<AppState>, user: Option<User>, Path(id): Path<Uuid>, req: Request) -> Res<Response> {
+pub async fn get(
+    State(s): State<AppState>,
+    user: Option<User>,
+    Path(id): Path<Uuid>,
+    req: Request,
+) -> Res<Response> {
     let row: Option<(String, String, i64, bool)> = sqlx::query_as(
         "SELECT f.mime, f.name, f.size, (f.user_id = $2 OR EXISTS (
              SELECT 1 FROM file_refs r JOIN documents d ON d.id = r.doc_id
@@ -261,9 +366,18 @@ pub async fn get(State(s): State<AppState>, user: Option<User>, Path(id): Path<U
     }
     let size = size as u64;
     let value = |v: String| HeaderValue::from_str(&v).map_err(|_| missing());
-    let range = match req.headers().get(header::RANGE).and_then(|v| v.to_str().ok()).map(|r| parse_range(r, size)) {
+    let range = match req
+        .headers()
+        .get(header::RANGE)
+        .and_then(|v| v.to_str().ok())
+        .map(|r| parse_range(r, size))
+    {
         Some(Err(())) => {
-            return Ok((StatusCode::RANGE_NOT_SATISFIABLE, [(header::CONTENT_RANGE, format!("bytes */{size}"))]).into_response());
+            return Ok((
+                StatusCode::RANGE_NOT_SATISFIABLE,
+                [(header::CONTENT_RANGE, format!("bytes */{size}"))],
+            )
+                .into_response());
         }
         Some(Ok(r)) => r,
         None => None,
@@ -272,38 +386,75 @@ pub async fn get(State(s): State<AppState>, user: Option<User>, Path(id): Path<U
     let mut res = if req.method() == Method::HEAD {
         Response::new(Body::empty())
     } else {
-        let opts = GetOptions { range: range.map(|(a, b)| GetRange::Bounded(a..b + 1)), ..Default::default() };
-        let got = s.store.get_opts(&key(id), opts).await.map_err(|e| match e {
-            object_store::Error::NotFound { .. } => missing(),
-            e => store_err(e),
-        })?;
+        let opts = GetOptions {
+            range: range.map(|(a, b)| GetRange::Bounded(a..b + 1)),
+            ..Default::default()
+        };
+        let got = s
+            .store
+            .get_opts(&key(id), opts)
+            .await
+            .map_err(|e| match e {
+                object_store::Error::NotFound { .. } => missing(),
+                e => store_err(e),
+            })?;
         Response::new(Body::from_stream(got.into_stream()))
     };
     let h = res.headers_mut();
     h.insert(header::ACCEPT_RANGES, HeaderValue::from_static("bytes"));
-    h.insert(header::CONTENT_LENGTH, value((end + 1 - start).to_string())?);
+    h.insert(
+        header::CONTENT_LENGTH,
+        value((end + 1 - start).to_string())?,
+    );
     if range.is_some() {
         *res.status_mut() = StatusCode::PARTIAL_CONTENT;
-        res.headers_mut().insert(header::CONTENT_RANGE, value(format!("bytes {start}-{end}/{size}"))?);
+        res.headers_mut().insert(
+            header::CONTENT_RANGE,
+            value(format!("bytes {start}-{end}/{size}"))?,
+        );
     }
     let h = res.headers_mut();
     h.insert(header::CONTENT_TYPE, value(mime.clone())?);
-    h.insert(header::CONTENT_DISPOSITION, value(disposition(if inline(&mime) { "inline" } else { "attachment" }, &name))?);
+    h.insert(
+        header::CONTENT_DISPOSITION,
+        value(disposition(
+            if inline(&mime) {
+                "inline"
+            } else {
+                "attachment"
+            },
+            &name,
+        ))?,
+    );
     // Files never change once uploaded; nosniff keeps a browser from reinterpreting the bytes.
-    h.insert(header::CACHE_CONTROL, HeaderValue::from_static("private, max-age=31536000, immutable"));
-    h.insert(header::X_CONTENT_TYPE_OPTIONS, HeaderValue::from_static("nosniff"));
+    h.insert(
+        header::CACHE_CONTROL,
+        HeaderValue::from_static("private, max-age=31536000, immutable"),
+    );
+    h.insert(
+        header::X_CONTENT_TYPE_OPTIONS,
+        HeaderValue::from_static("nosniff"),
+    );
     Ok(res)
 }
 
 /// One `bytes=a-b`, `bytes=a-` or `bytes=-n` range as inclusive (start, end). Ok(None): serve it all
 /// (no range we handle, e.g. several ranges). Err: nothing of the file is in the range (416).
 fn parse_range(h: &str, size: u64) -> Result<Option<(u64, u64)>, ()> {
-    let Some((a, b)) = h.strip_prefix("bytes=").filter(|r| !r.contains(',')).and_then(|r| r.split_once('-')) else { return Ok(None) };
+    let Some((a, b)) = h
+        .strip_prefix("bytes=")
+        .filter(|r| !r.contains(','))
+        .and_then(|r| r.split_once('-'))
+    else {
+        return Ok(None);
+    };
     let (a, b) = (a.trim(), b.trim());
     let r = match (a.parse::<u64>(), b.parse::<u64>()) {
         (Ok(a), Ok(b)) if a <= b => (a, b.min(size.saturating_sub(1))),
         (Ok(a), Err(_)) if b.is_empty() => (a, size.saturating_sub(1)),
-        (Err(_), Ok(n)) if a.is_empty() && n > 0 => (size.saturating_sub(n), size.saturating_sub(1)),
+        (Err(_), Ok(n)) if a.is_empty() && n > 0 => {
+            (size.saturating_sub(n), size.saturating_sub(1))
+        }
         _ => return Ok(None),
     };
     if r.0 >= size { Err(()) } else { Ok(Some(r)) }
@@ -341,12 +492,22 @@ pub async fn list(State(s): State<AppState>, user: User) -> Res<Json<Value>> {
             json!({ "id": id, "name": name, "mime": mime, "size": size, "created_at": created_at, "url": format!("/v1/files/{id}"), "notes": notes, "hidden_notes": hidden })
         })
         .collect();
-    Ok(Json(json!({ "used": used, "quota": QUOTA, "files": files })))
+    Ok(Json(
+        json!({ "used": used, "quota": QUOTA, "files": files }),
+    ))
 }
 
 /// Removes the file for good; notes that showed it say it's gone.
-pub async fn delete(State(s): State<AppState>, user: User, Path(id): Path<Uuid>) -> Res<StatusCode> {
-    let r = sqlx::query("DELETE FROM files WHERE id = $1 AND user_id = $2").bind(id).bind(user.id).execute(&s.db).await?;
+pub async fn delete(
+    State(s): State<AppState>,
+    user: User,
+    Path(id): Path<Uuid>,
+) -> Res<StatusCode> {
+    let r = sqlx::query("DELETE FROM files WHERE id = $1 AND user_id = $2")
+        .bind(id)
+        .bind(user.id)
+        .execute(&s.db)
+        .await?;
     if r.rows_affected() == 0 {
         return Err(AppError::new(StatusCode::NOT_FOUND, "no such file"));
     }
@@ -366,28 +527,18 @@ pub async fn remove(s: &AppState, ids: &[Uuid]) {
 /// Makes `file_refs` for a note match the files its content shows. Called on every save.
 pub async fn sync_refs(db: &PgPool, doc: Uuid, ids: &[Uuid]) -> Res<()> {
     let mut tx = db.begin().await?;
-    sqlx::query("DELETE FROM file_refs WHERE doc_id = $1 AND NOT (file_id = ANY($2))").bind(doc).bind(ids).execute(&mut *tx).await?;
+    sqlx::query("DELETE FROM file_refs WHERE doc_id = $1 AND NOT (file_id = ANY($2))")
+        .bind(doc)
+        .bind(ids)
+        .execute(&mut *tx)
+        .await?;
     sqlx::query("INSERT INTO file_refs (file_id, doc_id) SELECT id, $1 FROM files WHERE id = ANY($2) ON CONFLICT DO NOTHING")
         .bind(doc)
         .bind(ids)
         .execute(&mut *tx)
         .await?;
     tx.commit().await?;
-    Ok(())
-}
-
-/// Moves canvas images stored in Postgres before the file store existed. Runs at startup until none are left.
-pub async fn move_legacy(db: &PgPool, store: &dyn ObjectStore) {
-    loop {
-        let row: Result<Option<(Uuid, Vec<u8>)>, _> = sqlx::query_as("SELECT id, bytes FROM files WHERE bytes IS NOT NULL LIMIT 1").fetch_optional(db).await;
-        let Ok(Some((id, bytes))) = row else { return };
-        if let Err(e) = store.put(&key(id), bytes.into()).await {
-            return tracing::error!(file = %id, error = %e, "couldn't move file to storage");
-        }
-        if sqlx::query("UPDATE files SET bytes = NULL WHERE id = $1").bind(id).execute(db).await.is_err() {
-            return;
-        }
-    }
+    return Ok(());
 }
 
 #[cfg(test)]
@@ -417,9 +568,19 @@ mod tests {
         assert_eq!(limit("audio/mpeg"), 10 * MB);
         assert_eq!(limit("application/pdf"), 15 * MB);
         assert_eq!(limit("application/octet-stream"), 5 * MB);
-        assert!(check(Some("image/png"), 11 * MB, QUOTA, &|| too_big("full".into())).is_err());
+        assert!(
+            check(Some("image/png"), 11 * MB, QUOTA, &|| too_big(
+                "full".into()
+            ))
+            .is_err()
+        );
         assert!(check(None, 50 * MB, QUOTA, &|| too_big("full".into())).is_ok());
-        assert!(check(Some("video/mp4"), 50 * MB, 40 * MB, &|| too_big("full".into())).is_err());
+        assert!(
+            check(Some("video/mp4"), 50 * MB, 40 * MB, &|| too_big(
+                "full".into()
+            ))
+            .is_err()
+        );
     }
 
     #[test]
@@ -439,6 +600,9 @@ mod tests {
         assert_eq!(clean_name(Some("../../etc/passwd")), "passwd");
         assert_eq!(clean_name(Some("a\nb.txt")), "ab.txt");
         assert_eq!(clean_name(None), "file");
-        assert_eq!(disposition("inline", "rapport é.pdf"), "inline; filename*=UTF-8''rapport%20%C3%A9.pdf");
+        assert_eq!(
+            disposition("inline", "rapport é.pdf"),
+            "inline; filename*=UTF-8''rapport%20%C3%A9.pdf"
+        );
     }
 }
