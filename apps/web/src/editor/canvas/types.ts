@@ -36,7 +36,7 @@ export interface Shape {
 export type Tool = 'select' | 'hand' | 'draw' | 'rect' | 'ellipse' | 'line' | 'arrow' | 'text' | 'eraser' | 'frame'
 
 export const COLORS = [
-  { value: '#1c1917', label: 'Black' },
+  { value: '#171717', label: 'Black' },
   { value: '#78716c', label: 'Grey' },
   { value: '#dc2626', label: 'Red' },
   { value: '#ea580c', label: 'Orange' },

@@ -20,6 +20,7 @@ import { Separator } from '@/components/ui/separator'
 import BlockToolbar from './editor/BlockToolbar.vue'
 import { confirmDialog, toast } from './ui/feedback'
 import ShareDialog from './ShareDialog.vue'
+import CommentsPanel from './CommentsPanel.vue'
 
 const props = defineProps<{ me: Me; doc: DocInfo; docs: DocInfo[] }>()
 const owner = props.doc.role === 'owner'
@@ -89,6 +90,7 @@ const marks = [
     </div>
     <div class="flex items-center gap-2">
       <InboxPill v-if="editor && !readOnly" :editor="editor" />
+      <CommentsPanel :doc-id="doc.id" />
       <template v-if="owner">
       <ShareDialog :doc="doc" :me="me" :title="title" />
       <McpPill :doc="doc" />

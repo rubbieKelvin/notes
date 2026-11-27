@@ -20,7 +20,7 @@ api<Profile>(`/v1/public/@${props.username}`)
   <header class="flex justify-end px-4 py-3"><Button as="a" href="/" variant="ghost" size="sm">opennotes</Button></header>
   <main v-if="profile" class="mx-auto max-w-5xl px-6 pb-24">
     <section class="flex items-center gap-5 py-10">
-      <span class="grid size-20 shrink-0 place-items-center rounded-full bg-ai-100 text-3xl uppercase text-ai-700">{{ profile.name[0] }}</span>
+      <span class="grid size-20 shrink-0 place-items-center rounded-full bg-primary/10 text-3xl uppercase text-primary">{{ profile.name[0] }}</span>
       <div>
         <h1 class="text-3xl tracking-tight">{{ profile.name }}</h1>
         <p class="text-muted-foreground">@{{ profile.username }} · {{ profile.notes.length }} public {{ profile.notes.length === 1 ? 'note' : 'notes' }}</p>

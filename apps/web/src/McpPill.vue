@@ -104,10 +104,10 @@ function openSettings() {
                 >{{ name }}</button>
               </div>
             </div>
-            <div class="relative rounded-md bg-primary p-3 pr-10 font-mono text-[11px] leading-relaxed text-primary-foreground">
+            <div class="relative rounded-md bg-stone-900 p-3 pr-10 font-mono text-[11px] leading-relaxed text-white">
               <pre class="overflow-x-auto whitespace-pre-wrap break-all">{{ clients[client].value }}</pre>
               <Button
-                variant="ghost" size="icon-xs" class="absolute top-2 right-2 text-primary-foreground/60 hover:bg-white/10 hover:text-primary-foreground"
+                variant="ghost" size="icon-xs" class="absolute top-2 right-2 text-white/60 hover:bg-white/10 hover:text-white"
                 :aria-label="copied === 'cmd' ? 'Copied' : 'Copy command'" @click="copy('cmd', clients[client].value)"
               ><Check v-if="copied === 'cmd'" /><Copy v-else /></Button>
             </div>

@@ -10,7 +10,7 @@ const props = defineProps<{ shape: Shape; shapes?: Shapes; editing?: boolean; er
 const emit = defineEmits<{ commit: [text: string]; autosize: [size: { w: number; h: number }] }>()
 
 const s = computed(() => props.shape)
-const color = computed(() => s.value.color ?? '#1c1917')
+const color = computed(() => s.value.color ?? '#171717')
 const box = computed(() => localBox(s.value, props.shapes ?? new Map()))
 const transform = computed(() => {
   const c = center(box.value)
@@ -80,7 +80,7 @@ const commit = () => emit('commit', editor.value?.textContent ?? '')
           display: s.type === 'note' ? 'block' : 'inline-block', width: s.type === 'note' ? `${s.w ?? 200}px` : 'auto', boxSizing: 'border-box',
           padding: s.type === 'note' ? '12px' : '2px', background: s.type === 'note' ? '#fef08a' : 'transparent',
           boxShadow: s.type === 'note' ? '0 1px 3px rgba(0,0,0,.15)' : 'none', borderRadius: s.type === 'note' ? '4px' : '0',
-          color: s.type === 'note' ? '#1c1917' : color, fontFamily: 'Inter Variable, system-ui, sans-serif',
+          color: s.type === 'note' ? '#171717' : color, fontFamily: 'Inter Variable, system-ui, sans-serif',
           fontSize: `${s.type === 'note' ? 14 : (s.fontSize ?? 20)}px`, lineHeight: 1.35,
           whiteSpace: s.type === 'note' ? 'pre-wrap' : 'pre', overflowWrap: 'anywhere', minWidth: '1ch', minHeight: '1lh',
         }"

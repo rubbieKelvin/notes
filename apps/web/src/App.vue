@@ -19,6 +19,12 @@ const linkError = ref('')
 // /public/@username[/<note id>] is readable without an account.
 const publicRoute = location.pathname.match(/^\/public\/@([a-z0-9_]{2,30})(?:\/([0-9a-f-]{36}))?\/?$/)
 const here = location.pathname
+// /signin?next=<path>: a public reader signing in to react, then going back.
+const signinNext = (() => {
+  if (location.pathname !== '/signin') return ''
+  const n = new URLSearchParams(location.search).get('next') ?? '/'
+  return n.startsWith('/') && !n.startsWith('//') && !n.includes('\\') ? n : '/'
+})()
 const wanted = location.pathname.match(/^\/d\/([0-9a-f-]{36})$/)?.[1]
 
 /** An emailed sign-in link lands as <path>#signin=<token>: trade it for a session cookie. */
@@ -43,6 +49,7 @@ async function boot() {
     error.value = errorText(e)
     return void (state.value = 'error')
   }
+  if (signinNext) return void location.assign(signinNext)
   docs.value = await api<DocInfo[]>('/v1/docs')
   if (location.pathname === '/notes') return void (state.value = 'notes')
   if (wanted) {
@@ -74,7 +81,7 @@ onMounted(boot)
 <template>
   <PublicNote v-if="state === 'public-note' && publicRoute" :username="publicRoute[1]" :id="publicRoute[2]" />
   <PublicProfile v-else-if="state === 'public-profile' && publicRoute" :username="publicRoute[1]" />
-  <AuthView v-else-if="state === 'signed-out'" :link-error="linkError" :next="here" :invited="!!wanted" @signed-in="boot" />
+  <AuthView v-else-if="state === 'signed-out'" :link-error="linkError" :next="signinNext || here" :invited="!!wanted" @signed-in="boot" />
   <NotesPage v-else-if="state === 'notes' && me" :me="me" :docs="docs" />
   <DocPage v-else-if="state === 'ready' && me && doc" :key="doc.id" :me="me" :doc="doc" :docs="docs" />
   <main v-else-if="state === 'no-access' && me" class="grid min-h-screen place-items-center px-6">

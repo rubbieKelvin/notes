@@ -96,7 +96,7 @@ const roleLabel = (r: string) => ROLES.find((x) => x.id === r)?.label ?? r
         <p class="text-xs text-muted-foreground">People with access</p>
         <ul class="grid gap-0.5">
           <li class="flex items-center gap-3 rounded-md px-1 py-1.5">
-            <span class="grid size-8 shrink-0 place-items-center rounded-full bg-ai-100 text-sm uppercase text-ai-700">{{ displayName(me)[0] }}</span>
+            <span class="grid size-8 shrink-0 place-items-center rounded-full bg-primary/10 text-sm uppercase text-primary">{{ displayName(me)[0] }}</span>
             <span class="grid min-w-0 flex-1 text-sm"><span class="truncate">{{ displayName(me) }} (you)</span><span class="truncate text-xs text-muted-foreground">{{ me.email }}</span></span>
             <span class="pr-2 text-xs text-muted-foreground">Owner</span>
           </li>

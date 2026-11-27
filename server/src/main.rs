@@ -1,4 +1,5 @@
 mod ai;
+mod comments;
 mod assets;
 mod auth;
 mod crypto;
@@ -91,6 +92,11 @@ pub fn app(state: AppState) -> Router {
         .route("/v1/docs/{id}/shares", get(share::list).post(share::invite))
         .route("/v1/docs/{id}/shares/{email}", delete(share::revoke))
         .route("/v1/docs/{id}/public", put(share::set_public))
+        .route("/v1/docs/{id}/comments", get(comments::list).post(comments::post))
+        .route("/v1/docs/{id}/comments-enabled", put(comments::set_enabled))
+        .route("/v1/docs/{id}/reactions", get(comments::note_reactions).post(comments::react_note))
+        .route("/v1/comments/{id}", delete(comments::delete))
+        .route("/v1/comments/{id}/reactions", post(comments::react_comment))
         .route("/v1/public/{handle}", get(share::profile))
         .route("/v1/public/{handle}/{id}", get(share::note))
         .route("/v1/sync/{id}", get(sync::connect))

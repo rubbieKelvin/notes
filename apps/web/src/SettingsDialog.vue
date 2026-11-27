@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { confirmDialog, promptDialog, toast } from './ui/feedback'
+import ModelPicker from './ModelPicker.vue'
 
 type Token = { id: string; name: string; scopes: string[]; last_used_at: string | null; created_at: string }
 const props = defineProps<{ me: Me }>()
@@ -35,6 +36,7 @@ const aiBusy = ref(false)
 const keepsSavedKey = computed(() => !!ai.value?.key_hint && ai.value.provider === provider.value)
 const body = () => ({ provider: provider.value, base_url: provider.value === 'custom' ? baseUrl.value : undefined, key: keyInput.value || undefined, model: model.value })
 
+watch([keyInput, baseUrl], () => (models.value = []))
 watch(provider, () => { models.value = []; model.value = provider.value === ai.value?.provider ? ai.value.model : ''; aiError.value = '' })
 
 async function run(fn: () => Promise<void>) {
@@ -182,7 +184,7 @@ const origin = location.origin
               <p class="text-sm text-muted-foreground">How you appear on your avatar and to people drawing on a canvas with you.</p>
             </header>
             <div class="flex items-center gap-4">
-              <span class="grid size-16 place-items-center rounded-full bg-ai-100 text-2xl uppercase text-ai-700">{{ (name.trim() || displayName(me))[0] }}</span>
+              <span class="grid size-16 place-items-center rounded-full bg-primary/10 text-2xl uppercase text-primary">{{ (name.trim() || displayName(me))[0] }}</span>
               <div class="grid">
                 <span class="text-base">{{ name.trim() || displayName(me) }}</span>
                 <span class="text-sm text-muted-foreground">{{ me.email }}</span>
@@ -233,12 +235,9 @@ const origin = location.origin
                 :placeholder="keepsSavedKey ? 'Leave blank to keep your saved key' : provider === 'custom' ? 'API key (optional for local servers)' : 'API key'"
               />
               <div class="flex gap-2">
-                <Input v-model="model" list="ai-models" placeholder="Model" aria-label="Model" />
-                <datalist id="ai-models"><option v-for="m in models" :key="m" :value="m" /></datalist>
-                <Button type="button" variant="outline" :disabled="aiBusy" @click="loadModels">Load models</Button>
+                <ModelPicker v-model="model" :models="models" :loading="aiBusy" @load="loadModels" />
                 <Button type="submit" :disabled="aiBusy || !model">{{ aiBusy ? 'Checking…' : 'Save' }}</Button>
               </div>
-              <p v-if="models.length" class="text-xs text-muted-foreground">{{ models.length }} models available. Pick one above.</p>
             </form>
             <p v-if="aiError" role="alert" class="rounded-md border border-destructive/20 bg-destructive/5 px-3 py-2 text-xs text-destructive">{{ aiError }}</p>
           </TabsContent>

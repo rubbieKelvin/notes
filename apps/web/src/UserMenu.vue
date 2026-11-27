@@ -28,12 +28,12 @@ async function signOut() {
   <DropdownMenu :modal="false">
     <DropdownMenuTrigger as-child>
       <Button variant="ghost" size="icon-sm" class="rounded-full p-0" aria-label="Account" :title="me.email">
-        <span class="grid size-7 place-items-center rounded-full bg-ai-100 text-xs font-medium uppercase text-ai-700">{{ displayName(me)[0] }}</span>
+        <span class="grid size-7 place-items-center rounded-full bg-primary/10 text-xs font-medium uppercase text-primary">{{ displayName(me)[0] }}</span>
       </Button>
     </DropdownMenuTrigger>
     <DropdownMenuContent align="start" class="w-64">
       <DropdownMenuLabel class="flex items-center gap-2 font-normal">
-        <span class="grid size-8 shrink-0 place-items-center rounded-full bg-ai-100 text-sm font-medium uppercase text-ai-700">{{ displayName(me)[0] }}</span>
+        <span class="grid size-8 shrink-0 place-items-center rounded-full bg-primary/10 text-sm font-medium uppercase text-primary">{{ displayName(me)[0] }}</span>
         <span class="grid min-w-0">
           <span class="truncate text-sm font-medium">{{ displayName(me) }}</span>
           <span class="truncate text-xs text-muted-foreground">{{ me.email }}</span>

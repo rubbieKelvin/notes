@@ -7,6 +7,8 @@ import { noteExtensions } from './editor/extensions'
 import { canvasesOf } from './editor/canvas/store'
 import { ago } from './noteArt'
 import { Button } from '@/components/ui/button'
+import CommentsPanel from './CommentsPanel.vue'
+import NoteReactions from './NoteReactions.vue'
 
 /** A public note, read-only, for anyone (no account needed). */
 const props = defineProps<{ username: string; id: string }>()
@@ -33,17 +35,21 @@ onBeforeUnmount(() => { editor.value?.destroy(); ydoc.destroy() })
 <template>
   <header class="flex items-center justify-between px-4 py-3 text-sm">
     <a v-if="data" :href="`/public/@${data.owner.username}`" class="flex items-center gap-2 rounded-full py-0.5 pr-3 pl-0.5 hover:bg-accent">
-      <span class="grid size-7 place-items-center rounded-full bg-ai-100 text-xs uppercase text-ai-700">{{ data.owner.name[0] }}</span>
+      <span class="grid size-7 place-items-center rounded-full bg-primary/10 text-xs uppercase text-primary">{{ data.owner.name[0] }}</span>
       <span>{{ data.owner.name }}</span><span class="text-muted-foreground">@{{ data.owner.username }}</span>
     </a>
     <span v-else />
-    <Button as="a" href="/" variant="ghost" size="sm">opennotes</Button>
+    <div class="flex items-center gap-2">
+      <CommentsPanel v-if="data" :doc-id="id" />
+      <Button as="a" href="/" variant="ghost" size="sm">opennotes</Button>
+    </div>
   </header>
 
   <main v-if="data" class="mx-auto max-w-[44rem] px-6 pt-12 pb-24">
     <h1 class="text-4xl tracking-tight">{{ data.note.title || 'Untitled' }}</h1>
     <p v-if="data.note.description" class="mt-3 text-lg text-muted-foreground">{{ data.note.description }}</p>
-    <p class="mt-4 mb-10 text-xs text-muted-foreground">Updated {{ ago(data.note.updated_at) }}</p>
+    <p class="mt-4 text-xs text-muted-foreground">Updated {{ ago(data.note.updated_at) }}</p>
+    <NoteReactions class="mt-4 mb-10" :doc-id="id" />
     <EditorContent :editor="editor" />
   </main>
   <main v-else-if="missing" class="grid min-h-[70vh] place-items-center px-6 text-center" role="alert">
