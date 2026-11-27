@@ -154,3 +154,24 @@ test('AI Annotate sends the selection as an image and pins a note beside it', as
   const sent = (await mockRequests()).filter((r) => r.path === '/v1/chat/completions' && JSON.stringify(r.body).includes('image_url'))
   expect(sent.at(-1)!.body.messages[1].content[1].image_url.url).toMatch(/^data:image\/jpeg;base64,/)
 })
+
+test('inline toolbar folds shapes, color and size into labelled popovers', async ({ page, user: _ }) => {
+  await openEditor(page)
+  const box = await addCanvas(page)
+  await expect(page.getByRole('button', { name: 'Rectangle' })).toHaveCount(0) // folded while inline
+
+  await page.getByRole('button', { name: /^Color:/ }).click()
+  await page.getByRole('button', { name: 'Red' }).click()
+  await page.getByRole('button', { name: /^Size:/ }).click()
+  await page.getByRole('button', { name: 'Thick' }).click()
+  await page.keyboard.press('Escape')
+  await page.getByRole('button', { name: 'Shapes' }).click()
+  await page.getByRole('button', { name: /Ellipse/ }).click()
+  await drag(page, { x: box.x + 100, y: box.y + 100 }, { x: box.x + 220, y: box.y + 200 })
+  const ellipse = shapes(page, 'ellipse').locator('ellipse')
+  await expect(ellipse).toHaveAttribute('stroke', '#dc2626')
+  await expect(ellipse).toHaveAttribute('stroke-width', '10')
+
+  await page.keyboard.press('Meta+Shift+E')
+  await expect(page.getByRole('button', { name: 'Rectangle' })).toBeVisible() // full toolbar when expanded
+})

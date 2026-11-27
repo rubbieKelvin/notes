@@ -35,8 +35,28 @@ export interface Shape {
 
 export type Tool = 'select' | 'hand' | 'draw' | 'rect' | 'ellipse' | 'line' | 'arrow' | 'text' | 'eraser' | 'frame'
 
-export const COLORS = ['#1c1917', '#dc2626', '#ea580c', '#16a34a', '#2563eb', '#7c3aed'] as const
-export const SIZES = [2, 4, 8] as const
+export const COLORS = [
+  { value: '#1c1917', label: 'Black' },
+  { value: '#78716c', label: 'Grey' },
+  { value: '#dc2626', label: 'Red' },
+  { value: '#ea580c', label: 'Orange' },
+  { value: '#ca8a04', label: 'Yellow' },
+  { value: '#16a34a', label: 'Green' },
+  { value: '#2563eb', label: 'Blue' },
+  { value: '#7c3aed', label: 'Violet' },
+] as const
+
+/** Stroke width in page px, picked on a slider marked in these bands. */
+export const SIZE_MIN = 1
+export const SIZE_MAX = 12
+export const SIZE_BANDS = [
+  { label: 'Thin', from: 1, to: 3 },
+  { label: 'Medium', from: 4, to: 6 },
+  { label: 'Thick', from: 7, to: 12 },
+] as const
+export const sizeLabel = (size: number) => SIZE_BANDS.find((b) => size <= b.to)?.label ?? 'Thick'
+/** Text follows stroke size: 2 → 16px, 4 → 21px, 8 → 32px. */
+export const fontSizeFor = (size: number) => Math.round(11 + size * 2.6)
 
 /** Shapes an arrow can attach to. */
 export const BINDABLE = new Set<ShapeType>(['rect', 'ellipse', 'text', 'image', 'math', 'frame', 'note', 'draw'])

@@ -3,7 +3,7 @@ import {
   bindTarget, center, contains, dist, hitTest, inBox, intersects, outline, pageBounds, pointInPolygon, rotated, scaled, translated, union,
 } from './geometry'
 import { newId, type Store } from './store'
-import type { Box, Pt, Shape, Tool } from './types'
+import { fontSizeFor, type Box, type Pt, type Shape, type Tool } from './types'
 
 export interface Ctx {
   store: Store
@@ -26,7 +26,6 @@ export interface Gesture {
   cancel(): void
 }
 
-export const FONT_SIZES: Record<number, number> = { 2: 16, 4: 22, 8: 32 }
 const round = (n: number) => Math.round(n * 100) / 100
 
 /** Topmost shape under `p`. */
@@ -140,7 +139,7 @@ function eraser(ctx: Ctx, p: Pt): Gesture {
 }
 
 export function createText(ctx: Ctx, p: Pt) {
-  const fontSize = FONT_SIZES[ctx.style.size] ?? 22
+  const fontSize = fontSizeFor(ctx.style.size)
   const s = base(ctx, 'text', { x: p.x, y: p.y - fontSize * 0.7 }, { text: '', fontSize, fill: undefined, size: undefined, w: 4, h: fontSize * 1.35 })
   ctx.store.create([s])
   ctx.selected.value = new Set([s.id])

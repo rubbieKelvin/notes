@@ -10,7 +10,7 @@ import ShapeView from './ShapeView.vue'
 import { createStore, newId, QUIET, type ShapeMap } from './store'
 import Toolbar from './Toolbar.vue'
 import { begin, createText, pan as panGesture, selectionBounds, topHit, transform, type Ctx, type Gesture } from './tools'
-import { COLORS, SIZES, type Box, type Pt, type Shape, type Tool } from './types'
+import { COLORS, fontSizeFor, type Box, type Pt, type Shape, type Tool } from './types'
 
 const props = defineProps<{ ydoc: Y.Doc; map: ShapeMap; canvasId: string; awareness?: Awareness; expanded: boolean; pure: boolean }>()
 const emit = defineEmits<{ toggleExpand: []; togglePure: []; collapse: []; selection: [count: number] }>()
@@ -61,7 +61,7 @@ const centerOn = (p: Pt) => { cam.x = size.w / 2 - p.x * cam.z; cam.y = size.h /
 
 // ── state shared with the tools ──
 const tool = ref<Tool>('select')
-const style = reactive({ color: COLORS[0] as string, size: SIZES[1] as number, fill: false })
+const style = reactive({ color: COLORS[0].value as string, size: 4, fill: false })
 const selected = shallowRef(new Set<string>())
 const draft = shallowRef<Shape | null>(null)
 const marquee = shallowRef<Box | null>(null)
@@ -88,7 +88,7 @@ function setStyle<K extends 'color' | 'size' | 'fill'>(k: K, v: (typeof style)[K
   if (!selected.value.size) return
   store.update(Object.fromEntries([...selected.value].map((id) => {
     const s = store.shapes.value.get(id)!
-    if (k === 'size' && s.type === 'text') return [id, { fontSize: { 2: 16, 4: 22, 8: 32 }[v as number] }]
+    if (k === 'size' && s.type === 'text') return [id, { fontSize: fontSizeFor(v as number) }]
     return [id, { [k]: v }]
   })))
 }
@@ -490,7 +490,7 @@ defineExpose({
 
     <div v-if="!pure" data-chrome class="absolute bottom-3 left-1/2 -translate-x-1/2">
       <Toolbar
-        :tool="tool" :style="style" @tool="tool = $event" @color="setStyle('color', $event)" @size="setStyle('size', $event)"
+        :tool="tool" :style="style" :compact="!expanded" @tool="tool = $event" @color="setStyle('color', $event)" @size="setStyle('size', $event)"
         @fill="setStyle('fill', $event)" @image="fileInput?.click()" @undo="store.undo.undo()" @redo="store.undo.redo()"
       />
     </div>
