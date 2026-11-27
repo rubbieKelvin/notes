@@ -1,4 +1,4 @@
-import { createToken, expect, openEditor, selectText, test, typeInEditor, useMockProvider } from '../support/fixtures'
+import { createToken, expect, setNoteDetails, openEditor, selectText, test, typeInEditor, useMockProvider } from '../support/fixtures'
 
 /** Minimal MCP Streamable HTTP client. */
 function mcpClient(base: string, token: string) {
@@ -36,7 +36,7 @@ test('agents read exposed pages (with margin notes) and push to the inbox', asyn
   const origin = test.info().project.use.baseURL!
   await useMockProvider(page.request)
   const docId = await openEditor(page)
-  await page.getByLabel('Page title').fill('Box Geometry')
+  await setNoteDetails(page, 'Box Geometry')
   await typeInEditor(page, 'Boxes share a height.')
   await selectText(page, 'height')
   await page.keyboard.press('Meta+k')
@@ -50,6 +50,8 @@ test('agents read exposed pages (with margin notes) and push to the inbox', asyn
 
   await page.getByRole('button', { name: /^MCP/ }).click()
   await page.getByText('Let my agents read this page').click()
+  await expect(page.getByRole('dialog', { name: 'Agent access' })).toContainText('Add the server to your agent')
+  await page.keyboard.press('Escape')
   await expect(page.getByRole('button', { name: 'MCP: Live' })).toBeVisible()
   const slug = (await (await page.request.get('/v1/docs')).json()).find((d: { id: string }) => d.id === docId).mcp_exposed_slug
   await page.waitForTimeout(2500) // text cache is written with the next persist

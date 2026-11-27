@@ -1,4 +1,4 @@
-import { answerPrompt, expect, openEditor, slash, test, typeInEditor } from '../support/fixtures'
+import { answerPrompt, expect, setNoteDetails, openEditor, slash, test, typeInEditor } from '../support/fixtures'
 
 test('slash menu inserts headings and math', async ({ page, user: _ }) => {
   await openEditor(page)
@@ -46,12 +46,12 @@ test('epistemic callouts, clips and runbooks', async ({ page, user: _ }) => {
 test('writing and title persist on the server and sync live across tabs', async ({ page, context, user: _ }) => {
   await openEditor(page)
   await typeInEditor(page, 'I like boxes.')
-  await page.getByLabel('Page title').fill('Box Geometry')
+  await setNoteDetails(page, 'Box Geometry')
 
   const second = await context.newPage()
   await second.goto(page.url())
   await expect(second.locator('.ProseMirror')).toContainText('I like boxes.')
-  await expect(second.getByLabel('Page title')).toHaveValue('Box Geometry')
+  await expect(second.getByRole('button', { name: 'Switch note' })).toHaveText('Box Geometry')
   await second.locator('.ProseMirror').click()
   await second.keyboard.press('End')
   await second.keyboard.type(' From tab two.')
@@ -64,15 +64,42 @@ test('writing and title persist on the server and sync live across tabs', async 
   await expect(page).toHaveTitle('Box Geometry · opennotes')
 })
 
-test('pages menu creates and switches pages', async ({ page, user: _ }) => {
+test('the note switcher searches, switches, and creates notes', async ({ page, user: _ }) => {
   const first = await openEditor(page)
   await typeInEditor(page, 'first page')
-  await page.getByRole('button', { name: 'Menu' }).click()
-  await page.getByRole('menuitem', { name: 'New page' }).click()
+  await setNoteDetails(page, 'Box Geometry', 'Volumes and nets')
+  await page.getByRole('button', { name: 'Switch note' }).click()
+  await page.getByRole('button', { name: 'New page' }).click()
   await expect(page).not.toHaveURL(new RegExp(first))
   await expect(page.locator('.ProseMirror')).not.toContainText('first page')
-  await page.goto(`/d/${first}`)
+
+  // search by description, then Enter opens the match
+  await page.getByRole('button', { name: 'Switch note' }).click()
+  await page.getByRole('combobox', { name: 'Search notes' }).fill('nets')
+  await expect(page.getByRole('option')).toHaveCount(1)
+  await page.keyboard.press('Enter')
+  await expect(page).toHaveURL(new RegExp(first))
   await expect(page.locator('.ProseMirror')).toContainText('first page')
+
+  // no match: the footer offers to create a note with that title
+  await page.getByRole('button', { name: 'Switch note' }).click()
+  await page.getByRole('combobox', { name: 'Search notes' }).fill('Prisms')
+  await page.getByRole('button', { name: 'Create “Prisms”' }).click()
+  await expect(page.getByRole('button', { name: 'Switch note' })).toHaveText('Prisms')
+  await expect(page).toHaveTitle('Prisms · opennotes')
+})
+
+test('all notes page shows every note as a card', async ({ page, user: _ }) => {
+  await openEditor(page)
+  await setNoteDetails(page, 'Box Geometry', 'Volumes and nets')
+  await page.waitForTimeout(2500) // the list reads what the server last persisted
+  await page.getByRole('button', { name: 'Switch note' }).click()
+  await page.getByRole('link', { name: 'See all notes' }).click()
+  await expect(page).toHaveURL(/\/notes$/)
+  const card = page.locator('[data-note-card]', { hasText: 'Box Geometry' })
+  await expect(card).toContainText('Volumes and nets')
+  await card.click()
+  await expect(page).toHaveURL(/\/d\//)
 })
 
 test('note blocks get their own toolbar: switch callout kind, unwrap, delete', async ({ page, user: _ }) => {

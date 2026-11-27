@@ -14,7 +14,7 @@ test('without a provider, the margin note points to Settings', async ({ page, us
 
 test('set up a custom OpenAI-compatible provider in Settings, then get margin notes', async ({ page, user: _ }) => {
   await openEditor(page)
-  await page.getByRole('button', { name: 'Menu' }).click()
+  await page.getByRole('button', { name: 'Account' }).click()
   await page.getByRole('menuitem', { name: 'Settings' }).click()
   await page.getByRole('combobox', { name: 'Provider' }).click()
   await page.getByRole('option', { name: /^Custom/ }).click()

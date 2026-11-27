@@ -6,16 +6,22 @@ use yrs::{
     Any, Doc, Map, MapRef, Out, ReadTxn, Text, Transact, Xml,
 };
 
-/// Returns (title, text).
-pub fn serialize(doc: &Doc) -> (String, String) {
-    let frag = doc.get_or_insert_xml_fragment("default");
+/// A trimmed string from the document's `meta` map (title, description), or "".
+pub fn meta(doc: &Doc, key: &str) -> String {
     let meta = doc.get_or_insert_map("meta");
-    let canvases = doc.get_or_insert_map("canvases");
     let txn = doc.transact();
-    let title = match meta.get(&txn, "title") {
+    match meta.get(&txn, key) {
         Some(Out::Any(Any::String(s))) => s.trim().to_string(),
         _ => String::new(),
-    };
+    }
+}
+
+/// Returns (title, text).
+pub fn serialize(doc: &Doc) -> (String, String) {
+    let title = meta(doc, "title");
+    let frag = doc.get_or_insert_xml_fragment("default");
+    let canvases = doc.get_or_insert_map("canvases");
+    let txn = doc.transact();
     let mut out = String::new();
     for child in frag.children(&txn) {
         node(&txn, &canvases, child, &mut out);

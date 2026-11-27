@@ -44,17 +44,16 @@ test('rejects bad addresses and throttles sign-in emails per address', async ({ 
 
 test('sign out ends the session', async ({ page, user }) => {
   await openEditor(page)
-  await page.getByRole('button', { name: 'Menu' }).click()
-  await expect(page.getByText(user)).toBeVisible()
-  await page.getByRole('button', { name: 'Sign out' }).click()
+  await page.getByRole('button', { name: 'Account' }).click()
+  await expect(page.getByRole('menu').getByText(user)).toBeVisible()
+  await page.getByRole('menuitem', { name: 'Sign out' }).click()
   await expect(page.getByRole('button', { name: 'Email me a sign-in link' })).toBeVisible()
   expect((await page.request.get('/v1/me')).status()).toBe(401)
 })
 
 test('deleting a page asks first, in the app', async ({ page, user: _ }) => {
   await openEditor(page)
-  await page.getByRole('button', { name: 'Menu' }).click()
-  await page.getByRole('menuitem', { name: 'Delete this page' }).click()
+  await page.getByRole('button', { name: 'Delete this page' }).click()
   const dialog = page.getByRole('alertdialog', { name: /^Delete/ })
   await expect(dialog).toBeVisible()
   await dialog.getByRole('button', { name: 'Cancel' }).click()

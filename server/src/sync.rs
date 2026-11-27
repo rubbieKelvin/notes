@@ -36,12 +36,13 @@ async fn persist(s: &AppState, id: Uuid, room: &Room) -> Res<()> {
     let state = room.doc.transact().encode_state_as_update_v1(&StateVector::default());
     let (title, plain) = text::serialize(&room.doc);
     sqlx::query(
-        "UPDATE documents SET yjs_state = $2, plain_text_cache = $3, title = COALESCE(NULLIF($4, ''), 'Untitled'), updated_at = NOW() WHERE id = $1",
+        "UPDATE documents SET yjs_state = $2, plain_text_cache = $3, title = COALESCE(NULLIF($4, ''), 'Untitled'), description = $5, updated_at = NOW() WHERE id = $1",
     )
     .bind(id)
     .bind(state)
     .bind(plain)
     .bind(title)
+    .bind(text::meta(&room.doc, "description"))
     .execute(&s.db)
     .await?;
     Ok(())

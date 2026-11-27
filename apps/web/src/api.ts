@@ -8,7 +8,7 @@ export class ApiError extends Error {
 
 export type AiSettings = { provider: string; base_url: string | null; model: string; key_hint: string | null }
 export type Me = { email: string; ai: AiSettings | null }
-export type DocInfo = { id: string; title: string; mcp_exposed_slug: string | null; updated_at: string }
+export type DocInfo = { id: string; title: string; description: string; mcp_exposed_slug: string | null; updated_at: string }
 
 /** JSON fetch against our server; throws ApiError with the server's message. */
 export async function api<T = void>(path: string, init: { method?: string; body?: unknown } = {}): Promise<T> {

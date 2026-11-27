@@ -1,0 +1,81 @@
+<script setup lang="ts">
+import { BookOpen, Brain, FileText, Lightbulb, Notebook, PenTool, Plus, Search, Shapes, Sigma } from '@lucide/vue'
+import { computed, ref } from 'vue'
+import { api, errorText, type DocInfo, type Me } from './api'
+import UserMenu from './UserMenu.vue'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { toast } from './ui/feedback'
+
+const props = defineProps<{ me: Me; docs: DocInfo[] }>()
+document.title = 'All notes · opennotes'
+
+const query = ref('')
+const shown = computed(() => {
+  const q = query.value.trim().toLowerCase()
+  return q ? props.docs.filter((d) => d.title.toLowerCase().includes(q) || d.description.toLowerCase().includes(q)) : props.docs
+})
+
+// shortcut: placeholder thumbnails (a stable color and icon per note) until thumbnails are generated from content.
+const ICONS = [FileText, Notebook, Lightbulb, BookOpen, PenTool, Shapes, Sigma, Brain]
+function placeholder(id: string) {
+  const h = [...id].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7)
+  const hue = h % 360
+  return { icon: ICONS[(h >>> 9) % ICONS.length], bg: `hsl(${hue} 70% 93%)`, fg: `hsl(${hue} 45% 38%)` }
+}
+
+const rtf = new Intl.RelativeTimeFormat(undefined, { numeric: 'auto' })
+function ago(iso: string) {
+  const s = (new Date(iso).getTime() - Date.now()) / 1000
+  for (const [unit, n] of [['year', 31536000], ['month', 2592000], ['week', 604800], ['day', 86400], ['hour', 3600], ['minute', 60]] as const) {
+    if (Math.abs(s) >= n) return rtf.format(Math.round(s / n), unit)
+  }
+  return 'just now'
+}
+
+async function create() {
+  try {
+    const { id } = await api<{ id: string }>('/v1/docs', { body: { title: query.value.trim() && !shown.value.length ? query.value.trim() : '' } })
+    location.assign(`/d/${id}`)
+  } catch (e) {
+    toast(errorText(e), 'error')
+  }
+}
+</script>
+
+<template>
+  <header class="sticky top-0 z-40 flex items-center gap-3 border-b bg-background/85 px-4 py-3 backdrop-blur">
+    <UserMenu :me="me" />
+    <h1 class="text-sm font-medium">All notes</h1>
+    <div class="ml-auto flex items-center gap-2">
+      <label class="flex h-8 items-center gap-2 rounded-md border bg-background px-2.5 text-sm focus-within:ring-2 focus-within:ring-ring/40">
+        <Search class="size-4 text-muted-foreground" />
+        <input v-model="query" placeholder="Search notes…" aria-label="Search notes" class="w-48 bg-transparent outline-none placeholder:text-muted-foreground" />
+      </label>
+      <Button size="sm" @click="create"><Plus />{{ query.trim() && !shown.length ? `Create “${query.trim()}”` : 'New note' }}</Button>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-6xl p-6">
+    <p v-if="!shown.length" class="py-20 text-center text-sm text-muted-foreground">
+      {{ query.trim() ? `No notes match “${query.trim()}”.` : 'No notes yet.' }}
+    </p>
+    <ul class="grid grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] gap-4" aria-label="Notes">
+      <li v-for="d in shown" :key="d.id">
+        <a :href="`/d/${d.id}`" class="group block overflow-hidden rounded-lg border bg-card transition-shadow hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none" data-note-card>
+          <div class="grid h-32 place-items-center" :style="{ background: placeholder(d.id).bg }" aria-hidden="true">
+            <component :is="placeholder(d.id).icon" class="size-10 transition-transform group-hover:scale-110" :style="{ color: placeholder(d.id).fg }" :stroke-width="1.5" />
+          </div>
+          <div class="grid gap-1 p-3">
+            <div class="flex items-center gap-2">
+              <h2 class="flex-1 truncate text-sm font-medium">{{ d.title || 'Untitled' }}</h2>
+              <Badge v-if="d.mcp_exposed_slug" variant="secondary" class="text-emerald-700">MCP</Badge>
+            </div>
+            <p class="line-clamp-2 min-h-8 text-xs" :class="d.description ? 'text-muted-foreground' : 'text-muted-foreground/50 italic'">{{ d.description || 'No description' }}</p>
+            <p class="text-[11px] text-muted-foreground">Edited {{ ago(d.updated_at) }}</p>
+          </div>
+        </a>
+      </li>
+    </ul>
+  </main>
+</template>

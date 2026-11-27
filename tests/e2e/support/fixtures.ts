@@ -61,6 +61,16 @@ export async function openEditor(page: Page, path = '/') {
   return new URL(page.url()).pathname.split('/')[2]
 }
 
+/** Sets the open note's title (and description) through the pencil dialog. */
+export async function setNoteDetails(page: Page, title: string, description?: string) {
+  await page.getByRole('button', { name: 'Edit title and description' }).click()
+  const dialog = page.getByRole('dialog', { name: 'Note details' })
+  await dialog.getByLabel('Title').fill(title)
+  if (description !== undefined) await dialog.getByLabel('Description').fill(description)
+  await dialog.getByRole('button', { name: 'Save' }).click()
+  await expect(dialog).toBeHidden()
+}
+
 export async function typeInEditor(page: Page, text: string) {
   await page.locator('.ProseMirror').click()
   await page.keyboard.type(text)

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Bold, Code, Italic, Sparkles, Strikethrough } from '@lucide/vue'
+import { Bold, Code, Italic, Pencil, Sparkles, Strikethrough, Trash2 } from '@lucide/vue'
 import { CodeBlockLowlight } from '@tiptap/extension-code-block-lowlight'
 import { Collaboration } from '@tiptap/extension-collaboration'
 import { TaskItem, TaskList } from '@tiptap/extension-list'
@@ -12,8 +12,10 @@ import { common, createLowlight } from 'lowlight'
 import { markRaw, onBeforeUnmount, ref } from 'vue'
 import { WebsocketProvider } from 'y-websocket'
 import * as Y from 'yjs'
-import type { DocInfo, Me } from './api'
-import DocsMenu from './DocsMenu.vue'
+import { api, errorText, type DocInfo, type Me } from './api'
+import NoteDetailsDialog from './NoteDetailsDialog.vue'
+import NoteSwitcher from './NoteSwitcher.vue'
+import UserMenu from './UserMenu.vue'
 import InboxPill from './InboxPill.vue'
 import McpPill from './McpPill.vue'
 import { AiMargin, requestWhisper } from './editor/AiMargin'
@@ -26,7 +28,7 @@ import { SlashCommand } from './editor/SlashCommand'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import BlockToolbar from './editor/BlockToolbar.vue'
-import { askLatex } from './ui/feedback'
+import { askLatex, confirmDialog, toast } from './ui/feedback'
 
 const props = defineProps<{ me: Me; doc: DocInfo; docs: DocInfo[] }>()
 
@@ -44,7 +46,17 @@ provider.on('status', (e: { status: 'connecting' | 'connected' | 'disconnected' 
 const meta = ydoc.getMap<string>('meta')
 const title = ref(meta.get('title') ?? '')
 meta.observe(() => (title.value = meta.get('title') ?? ''))
-const setTitle = (t: string) => meta.set('title', t)
+const details = ref<InstanceType<typeof NoteDetailsDialog>>()
+
+async function deletePage() {
+  if (!(await confirmDialog({ title: `Delete “${title.value || 'Untitled'}”?`, body: "The page, its canvases and margin notes are deleted for good. This can't be undone.", confirmLabel: 'Delete page', danger: true }))) return
+  try {
+    await api(`/v1/docs/${props.doc.id}`, { method: 'DELETE' })
+    location.assign('/')
+  } catch (e) {
+    toast(errorText(e), 'error')
+  }
+}
 const syncTabTitle = () => (document.title = title.value ? `${title.value} · opennotes` : 'opennotes')
 meta.observe(syncTabTitle)
 syncTabTitle()
@@ -91,16 +103,18 @@ const marks = [
 
 <template>
   <header class="pointer-events-none fixed inset-x-0 top-0 z-40 flex items-center justify-between px-4 py-3 text-sm [&>*]:pointer-events-auto">
-    <div class="flex items-center gap-1 rounded-full border bg-background/85 py-0.5 pr-3 pl-0.5 text-sm backdrop-blur">
-      <DocsMenu :me="me" :doc="doc" :docs="docs" />
-      <span class="font-medium text-muted-foreground">opennotes</span><span class="text-stone-300">/</span>
-      <input :value="title" placeholder="Untitled" aria-label="Page title" class="w-48 bg-transparent font-medium outline-none placeholder:text-muted-foreground" @input="setTitle(($event.target as HTMLInputElement).value)" />
-      <span v-if="status === 'disconnected'" class="ml-1 rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-700" title="Edits are kept and sync when the connection returns">Offline</span>
+    <div class="flex items-center gap-0.5 rounded-full border bg-background/85 p-0.5 text-sm backdrop-blur">
+      <UserMenu :me="me" />
+      <NoteSwitcher :doc="doc" :docs="docs" :title="title" />
+      <Button variant="ghost" size="icon-sm" class="rounded-full text-muted-foreground" aria-label="Edit title and description" title="Edit title and description" @click="details?.show()"><Pencil /></Button>
+      <span v-if="status === 'disconnected'" class="mr-1 rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-700" title="Edits are kept and sync when the connection returns">Offline</span>
     </div>
     <div class="flex items-center gap-2">
       <InboxPill v-if="editor" :editor="editor" />
       <McpPill :doc="doc" />
+      <Button variant="outline" size="icon-sm" class="rounded-full bg-background/85 text-muted-foreground backdrop-blur hover:bg-destructive/10 hover:text-destructive" aria-label="Delete this page" title="Delete this page" @click="deletePage"><Trash2 /></Button>
     </div>
+    <NoteDetailsDialog ref="details" :meta="meta" />
   </header>
 
   <main class="mx-auto max-w-[44rem] px-6 pt-28">

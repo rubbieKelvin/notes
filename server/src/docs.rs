@@ -8,26 +8,48 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use uuid::Uuid;
+use yrs::{Map, ReadTxn, Transact};
 
 #[derive(Serialize, sqlx::FromRow)]
 pub struct DocInfo {
     id: Uuid,
     title: String,
+    description: String,
     mcp_exposed_slug: Option<String>,
     updated_at: DateTime<Utc>,
 }
 
 pub async fn list(State(s): State<AppState>, user: User) -> Res<Json<Vec<DocInfo>>> {
-    let rows = sqlx::query_as("SELECT id, title, mcp_exposed_slug, updated_at FROM documents WHERE user_id = $1 ORDER BY updated_at DESC")
+    let rows = sqlx::query_as("SELECT id, title, description, mcp_exposed_slug, updated_at FROM documents WHERE user_id = $1 ORDER BY updated_at DESC")
         .bind(user.id)
         .fetch_all(&s.db)
         .await?;
     Ok(Json(rows))
 }
 
-pub async fn create(State(s): State<AppState>, user: User) -> Res<(StatusCode, Json<Value>)> {
-    let id: Uuid = sqlx::query_scalar("INSERT INTO documents (user_id) VALUES ($1) RETURNING id").bind(user.id).fetch_one(&s.db).await?;
-    Ok((StatusCode::CREATED, Json(json!({ "id": id }))))
+#[derive(Deserialize, Default)]
+pub struct CreateDoc {
+    #[serde(default)]
+    title: String,
+}
+
+/// A new page, optionally already titled (the switcher's "Create “…”"). The title goes into the
+/// Y.Doc's meta map, where the editor reads it, as well as the title column.
+pub async fn create(State(s): State<AppState>, user: User, body: Option<Json<CreateDoc>>) -> Res<(StatusCode, Json<Value>)> {
+    let title: String = body.map(|b| b.0.title).unwrap_or_default().trim().chars().take(200).collect();
+    let state = (!title.is_empty()).then(|| {
+        let doc = yrs::Doc::new();
+        let meta = doc.get_or_insert_map("meta");
+        meta.insert(&mut doc.transact_mut(), "title", title.as_str());
+        doc.transact().encode_state_as_update_v1(&yrs::StateVector::default())
+    });
+    let id: Uuid = sqlx::query_scalar("INSERT INTO documents (user_id, title, yjs_state) VALUES ($1, COALESCE(NULLIF($2, ''), 'Untitled'), $3) RETURNING id")
+        .bind(user.id)
+        .bind(&title)
+        .bind(state)
+        .fetch_one(&s.db)
+        .await?;
+    Ok((StatusCode::CREATED, Json(json!({ "id": id, "title": if title.is_empty() { "Untitled" } else { &title } }))))
 }
 
 pub async fn remove(State(s): State<AppState>, user: User, Path(id): Path<Uuid>) -> Res<StatusCode> {
