@@ -157,19 +157,7 @@ async fn main() {
 
     let db_url = env("DATABASE_URL").expect("DATABASE_URL is required");
     let secret = env("OPENNOTES_SECRET").expect("OPENNOTES_SECRET is required (32 bytes, base64: `openssl rand -base64 32`)");
-    // Retry for ~30s: on a fresh container the database (or the platform's private network) can lag behind us.
-    let mut attempt = 1;
-    let db = loop {
-        match PgPool::connect(&db_url).await {
-            Ok(db) => break db,
-            Err(e) if attempt < 10 => {
-                tracing::warn!(attempt, error = %e, "cannot connect to Postgres yet; retrying in 3s");
-                tokio::time::sleep(Duration::from_secs(3)).await;
-                attempt += 1;
-            }
-            Err(e) => panic!("cannot connect to Postgres: {e:?}"),
-        }
-    };
+    let db = PgPool::connect(&db_url).await.expect("cannot connect to Postgres");
     sqlx::migrate!("./migrations").run(&db).await.expect("migrations failed");
 
     let cfg = Config {
