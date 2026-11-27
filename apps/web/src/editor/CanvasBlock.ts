@@ -1,22 +1,46 @@
 import { Node, VueNodeViewRenderer, mergeAttributes } from '@tiptap/vue-3'
+import type { WebsocketProvider } from 'y-websocket'
+import * as Y from 'yjs'
 import CanvasBlockView from './CanvasBlockView.vue'
+import { canvasesOf } from './canvas/store'
 
-// FR-2.4: the tldraw document snapshot lives in the node attrs, so prose + diagrams stay one document.
-export const CanvasBlock = Node.create({
+declare module '@tiptap/core' {
+  interface Commands<ReturnType> {
+    canvasBlock: { insertCanvas: () => ReturnType }
+  }
+}
+
+export type CanvasBlockOptions = { ydoc: Y.Doc | null; provider: WebsocketProvider | null }
+
+// FR-2.4: shapes live in the same Y.Doc (`canvases[canvasId]`), so prose and diagrams stay one document
+// while each shape syncs and merges on its own.
+export const CanvasBlock = Node.create<CanvasBlockOptions>({
   name: 'canvasBlock',
   group: 'block',
   atom: true,
+  addOptions: () => ({ ydoc: null, provider: null }),
   addAttributes() {
     return {
-      snapshot: {
+      canvasId: {
         default: null,
-        parseHTML: (el) => JSON.parse(el.getAttribute('data-snapshot') ?? 'null'),
-        renderHTML: (attrs) => ({ 'data-snapshot': JSON.stringify(attrs.snapshot) }),
+        parseHTML: (el) => el.getAttribute('data-canvas-id'),
+        renderHTML: (attrs) => ({ 'data-canvas-id': attrs.canvasId }),
+      },
+    }
+  },
+  addCommands() {
+    return {
+      // The inserting client creates the shape map up front, so no two clients race to create it.
+      insertCanvas: () => ({ commands }) => {
+        const canvasId = crypto.randomUUID()
+        const ydoc = this.options.ydoc
+        if (ydoc) ydoc.transact(() => canvasesOf(ydoc).set(canvasId, new Y.Map<Y.Map<unknown>>()))
+        return commands.insertContent({ type: this.name, attrs: { canvasId } })
       },
     }
   },
   parseHTML: () => [{ tag: 'div[data-type="canvas-block"]' }],
   renderHTML: ({ HTMLAttributes }) => ['div', mergeAttributes(HTMLAttributes, { 'data-type': 'canvas-block' })],
-  // tldraw owns every event inside the block; ProseMirror must not intercept them.
+  // The canvas owns every event inside the block; ProseMirror must not intercept them.
   addNodeView: () => VueNodeViewRenderer(CanvasBlockView, { stopEvent: () => true }),
 })

@@ -50,7 +50,7 @@ export const slashItems: SlashItem[] = ([
   { group: 'Thinking', title: 'Contradicts', description: 'Counter-evidence', icon: Scale, keywords: ['against', 'counter', 'callout'], run: (e, r) => e.chain().focus().deleteRange(r).wrapIn('callout', { kind: 'contradicts' }).run() },
   { group: 'Thinking', title: 'Runbook', description: 'Shell, SQL or HTTP snippet with a status', icon: SquareTerminal, keywords: ['command', 'sql', 'http', 'shell', 'ops'], run: (e, r) => e.chain().focus().deleteRange(r).setNode('runbook', { lang: 'cmd' }).run() },
 
-  { group: 'Media & math', title: 'Canvas', description: 'Inline whiteboard you can expand', icon: PenTool, keywords: ['tldraw', 'draw', 'sketch', 'diagram', 'whiteboard'], run: (e, r) => e.chain().focus().deleteRange(r).insertContent({ type: 'canvasBlock' }).run() },
+  { group: 'Media & math', title: 'Canvas', description: 'Inline whiteboard you can expand', icon: PenTool, keywords: ['draw', 'sketch', 'diagram', 'whiteboard', 'pen'], run: (e, r) => e.chain().focus().deleteRange(r).insertCanvas().run() },
   { group: 'Media & math', title: 'Math', description: 'Block LaTeX equation', icon: Sigma, keywords: ['latex', 'equation', 'katex', '$$'], run: (e, r) => insertMath(e, r, true) },
   { group: 'Media & math', title: 'Inline math', description: 'LaTeX inside a sentence', icon: Radical, keywords: ['latex', 'equation', 'formula', '$'], run: (e, r) => insertMath(e, r, false) },
   {

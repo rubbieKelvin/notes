@@ -9,7 +9,7 @@ import { StarterKit } from '@tiptap/starter-kit'
 import { EditorContent, useEditor } from '@tiptap/vue-3'
 import { BubbleMenu } from '@tiptap/vue-3/menus'
 import { common, createLowlight } from 'lowlight'
-import { onBeforeUnmount, ref } from 'vue'
+import { markRaw, onBeforeUnmount, ref } from 'vue'
 import { WebsocketProvider } from 'y-websocket'
 import * as Y from 'yjs'
 import type { DocInfo, Me } from './api'
@@ -20,6 +20,7 @@ import { AiMargin, requestWhisper } from './editor/AiMargin'
 import { AiSource } from './editor/AiSource'
 import { Callout, Clip, Runbook } from './editor/Blocks'
 import { CanvasBlock } from './editor/CanvasBlock'
+import { canvasesOf } from './editor/canvas/store'
 import MarginWhispers from './editor/MarginWhispers.vue'
 import { SlashCommand } from './editor/SlashCommand'
 import { Button } from '@/components/ui/button'
@@ -31,9 +32,13 @@ const props = defineProps<{ me: Me; doc: DocInfo; docs: DocInfo[] }>()
 
 // The yrs server owns the document; every tab of it stays in sync over this socket.
 const ydoc = new Y.Doc()
+canvasesOf(ydoc) // define root types before the first update arrives; defining one mid-sync breaks re-encoding that update
 const wsBase = `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/v1/sync`
 const provider = new WebsocketProvider(wsBase, props.doc.id, ydoc)
 const status = ref<'connecting' | 'connected' | 'disconnected'>('connecting')
+// Shown to others on shared canvases (cursor label and color).
+const hue = [...props.me.email].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 360, 0)
+provider.awareness.setLocalStateField('user', { name: props.me.email.split('@')[0], color: `hsl(${hue} 70% 45%)` })
 provider.on('status', (e: { status: 'connecting' | 'connected' | 'disconnected' }) => (status.value = e.status))
 
 const meta = ydoc.getMap<string>('meta')
@@ -60,7 +65,7 @@ const editor = useEditor({
       inlineOptions: { onClick: async (node, pos) => { const latex = await askLatex(node.attrs.latex); if (latex) editor.value?.chain().setNodeSelection(pos).updateInlineMath({ latex }).focus().run() } },
       blockOptions: { onClick: async (node, pos) => { const latex = await askLatex(node.attrs.latex); if (latex) editor.value?.chain().setNodeSelection(pos).updateBlockMath({ latex }).focus().run() } },
     }),
-    CanvasBlock,
+    CanvasBlock.configure({ ydoc: markRaw(ydoc), provider: markRaw(provider) }), // raw: Yjs compares types by identity, a Vue proxy breaks that
     AiMargin,
     AiSource,
     Callout,

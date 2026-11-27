@@ -26,5 +26,6 @@ build:
     cargo build --release --manifest-path server/Cargo.toml
 
 check:
-    cargo check --manifest-path server/Cargo.toml
+    cargo test --manifest-path server/Cargo.toml
     pnpm --filter web exec vue-tsc -b
+    pnpm --filter web test

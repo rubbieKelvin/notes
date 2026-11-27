@@ -1,4 +1,5 @@
 mod ai;
+mod assets;
 mod auth;
 mod crypto;
 mod docs;
@@ -77,6 +78,8 @@ pub fn app(state: AppState) -> Router {
         .route("/v1/settings/ai/models", post(ai::models))
         .route("/v1/whisper", post(ai::whisper))
         .route("/v1/annotate", post(ai::annotate).layer(DefaultBodyLimit::max(ai::MAX_IMAGE_B64 + 4096)))
+        .route("/v1/assets", post(assets::upload).layer(DefaultBodyLimit::max(assets::MAX_BYTES)))
+        .route("/v1/assets/{id}", get(assets::get))
         .route("/v1/tokens", get(tokens::list).post(tokens::create))
         .route("/v1/tokens/{id}", delete(tokens::revoke))
         .route("/v1/docs", get(docs::list).post(docs::create))

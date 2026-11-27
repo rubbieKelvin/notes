@@ -3,13 +3,14 @@ use serde_json::Value;
 use yrs::{
     types::text::YChange,
     types::xml::{XmlFragment, XmlOut},
-    Any, Doc, Map, Out, ReadTxn, Text, Transact, Xml,
+    Any, Doc, Map, MapRef, Out, ReadTxn, Text, Transact, Xml,
 };
 
 /// Returns (title, text).
 pub fn serialize(doc: &Doc) -> (String, String) {
     let frag = doc.get_or_insert_xml_fragment("default");
     let meta = doc.get_or_insert_map("meta");
+    let canvases = doc.get_or_insert_map("canvases");
     let txn = doc.transact();
     let title = match meta.get(&txn, "title") {
         Some(Out::Any(Any::String(s))) => s.trim().to_string(),
@@ -17,7 +18,7 @@ pub fn serialize(doc: &Doc) -> (String, String) {
     };
     let mut out = String::new();
     for child in frag.children(&txn) {
-        node(&txn, child, &mut out);
+        node(&txn, &canvases, child, &mut out);
     }
     (title, out.trim().to_string())
 }
@@ -41,24 +42,39 @@ fn str_attr(v: &Value) -> String {
     }
 }
 
-/// Every string stored under a "text" key: plain text shapes and tldraw's richText (TipTap JSON).
-fn collect_text(v: &Value, out: &mut Vec<String>) {
-    match v {
-        Value::Object(m) => {
-            for (k, v) in m {
-                match (k.as_str(), v) {
-                    ("text", Value::String(s)) if !s.trim().is_empty() => out.push(s.trim().to_string()),
-                    ("latex", Value::String(s)) if !s.trim().is_empty() => out.push(format!("${}$", s.trim())),
-                    _ => collect_text(v, out),
+/// Text, LaTeX and sticky-note text from one canvas (`canvases[id]`, a map of shape maps), in z-order.
+fn canvas_text<T: ReadTxn>(txn: &T, canvases: &MapRef, id: &str) -> Vec<String> {
+    let Some(Out::YMap(shapes)) = canvases.get(txn, id) else { return Vec::new() };
+    let mut found: Vec<(f64, String)> = shapes
+        .iter(txn)
+        .filter_map(|(_, v)| match v {
+            Out::YMap(shape) => {
+                let get = |k: &str| match shape.get(txn, k) {
+                    Some(Out::Any(Any::String(s))) => s.trim().to_string(),
+                    _ => String::new(),
+                };
+                let index = match shape.get(txn, "index") {
+                    Some(Out::Any(Any::Number(yrs::Number::Float(n)))) => n,
+                    Some(Out::Any(Any::Number(yrs::Number::Int(n)))) => n as f64,
+                    _ => 0.0,
+                };
+                let (text, latex) = (get("text"), get("latex"));
+                if !text.is_empty() {
+                    Some((index, text))
+                } else if !latex.is_empty() {
+                    Some((index, format!("${latex}$")))
+                } else {
+                    None
                 }
             }
-        }
-        Value::Array(a) => a.iter().for_each(|v| collect_text(v, out)),
-        _ => {}
-    }
+            _ => None,
+        })
+        .collect();
+    found.sort_by(|a, b| a.0.total_cmp(&b.0));
+    found.into_iter().map(|(_, t)| t).collect()
 }
 
-fn node<T: ReadTxn>(txn: &T, n: XmlOut, out: &mut String) {
+fn node<T: ReadTxn>(txn: &T, canvases: &MapRef, n: XmlOut, out: &mut String) {
     match n {
         XmlOut::Text(t) => {
             for d in t.diff(txn, YChange::identity) {
@@ -75,18 +91,17 @@ fn node<T: ReadTxn>(txn: &T, n: XmlOut, out: &mut String) {
                 }
             }
         }
-        XmlOut::Fragment(f) => f.children(txn).for_each(|c| node(txn, c, out)),
+        XmlOut::Fragment(f) => f.children(txn).for_each(|c| node(txn, canvases, c, out)),
         XmlOut::Element(e) => {
             let attr = |k: &str| to_json(e.get_attribute(txn, k));
-            let children = |out: &mut String| e.children(txn).for_each(|c| node(txn, c, out));
+            let children = |out: &mut String| e.children(txn).for_each(|c| node(txn, canvases, c, out));
             match e.tag().as_ref() {
                 "inlineMath" => out.push_str(&format!("${}$", str_attr(&attr("latex")))),
                 "blockMath" => out.push_str(&format!("$${}$$\n\n", str_attr(&attr("latex")))),
                 "hardBreak" => out.push('\n'),
                 "horizontalRule" => out.push_str("---\n\n"),
                 "canvasBlock" => {
-                    let mut texts = Vec::new();
-                    collect_text(&attr("snapshot"), &mut texts);
+                    let texts = canvas_text(txn, canvases, &str_attr(&attr("canvasId")));
                     out.push_str(&format!("[Canvas: {}]\n\n", if texts.is_empty() { "drawing".into() } else { texts.join(" · ") }));
                 }
                 "heading" => {
@@ -160,13 +175,14 @@ fn node<T: ReadTxn>(txn: &T, n: XmlOut, out: &mut String) {
 mod tests {
     use super::*;
     use std::collections::HashMap;
-    use yrs::{types::Attrs, XmlElementPrelim, XmlTextPrelim};
+    use yrs::{types::Attrs, MapPrelim, XmlElementPrelim, XmlTextPrelim};
 
     #[test]
     fn serializes_prose_marks_math_and_canvas() {
         let doc = Doc::new();
         let frag = doc.get_or_insert_xml_fragment("default");
         let meta = doc.get_or_insert_map("meta");
+        let canvases = doc.get_or_insert_map("canvases");
         {
             let mut txn = doc.transact_mut();
             meta.insert(&mut txn, "title", "Box Geometry");
@@ -185,8 +201,13 @@ mod tests {
             m.insert_attribute(&mut txn, "latex", "E=mc^2");
 
             let c = frag.push_back(&mut txn, XmlElementPrelim::empty("canvasBlock"));
-            let snap: Any = serde_json::from_str::<Any>(r#"{"store":{"shape:1":{"typeName":"shape","props":{"richText":{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"V=s³"}]}]}}},"shape:2":{"typeName":"shape","props":{"latex":"A=6s^2"}}}}"#).unwrap();
-            c.insert_attribute(&mut txn, "snapshot", snap);
+            c.insert_attribute(&mut txn, "canvasId", "c1");
+            let shapes = canvases.insert(&mut txn, "c1", MapPrelim::default());
+            for (id, index, key, value) in [("b", 2.0, "latex", "A=6s^2"), ("a", 1.0, "text", "V=s³"), ("s", 0.5, "points", "")] {
+                let shape = shapes.insert(&mut txn, id, MapPrelim::default());
+                shape.insert(&mut txn, "index", index);
+                shape.insert(&mut txn, key, value);
+            }
 
             let k = frag.push_back(&mut txn, XmlElementPrelim::empty("callout"));
             k.insert_attribute(&mut txn, "kind", "contradicts");

@@ -1,89 +1,125 @@
 <script setup lang="ts">
+import { Download, Maximize2, Minimize2, Sigma, Sparkles, Trash2 } from '@lucide/vue'
 import { NodeViewWrapper, nodeViewProps } from '@tiptap/vue-3'
-import { createElement } from 'react'
-import { createRoot, type Root } from 'react-dom/client'
-import { Box, Tldraw, createShapeId, getSnapshot, loadSnapshot, toRichText, type Editor as TLEditor } from 'tldraw'
-import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { nextTick, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
+import * as Y from 'yjs'
 import { api, errorText } from '../api'
-import { Maximize2, Minimize2, Sigma, Sparkles, Trash2 } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
-import { askLatex, confirmDialog } from '../ui/feedback'
-import { shapeUtils } from './MathShape'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { confirmDialog } from '../ui/feedback'
+import type { CanvasBlockOptions } from './CanvasBlock'
+import Canvas from './canvas/Canvas.vue'
+import { download, toSvg } from './canvas/export'
+import { contains, union } from './canvas/geometry'
+import { canvasesOf, cloneCanvas, type ShapeMap } from './canvas/store'
 
 const props = defineProps(nodeViewProps)
-const host = ref<HTMLDivElement>()
+const opts = props.extension.options as CanvasBlockOptions
+const ydoc = opts.ydoc!
+const root = canvasesOf(ydoc)
+
+const canvas = ref<InstanceType<typeof Canvas>>()
+const map = shallowRef<ShapeMap | null>(null)
+const canvasId = ref('')
 const expanded = ref(false)
 const pure = ref(false)
-const vtName = 'canvas-' + crypto.randomUUID().slice(0, 8)
-const initial = props.node.attrs.snapshot ?? undefined
-const hasSelection = ref(false)
+const selectionCount = ref(0)
 const annotating = ref(false)
 const annotateError = ref('')
-let lastSynced = JSON.stringify(initial ?? null)
+const vtName = 'canvas-' + crypto.randomUUID().slice(0, 8)
+const mapVersion = ref(0) // remounts the canvas when its shape map is replaced
 
-let root: Root | undefined
-let tl: TLEditor | undefined
-let stopListen: (() => void) | undefined
-let stopSelection: (() => void) | undefined
-let saveTimer: ReturnType<typeof setTimeout> | undefined
-
-function save() {
-  saveTimer = undefined
-  if (!tl || typeof props.getPos() !== 'number') return
-  const snapshot = getSnapshot(tl.store).document
-  lastSynced = JSON.stringify(snapshot)
-  props.updateAttributes({ snapshot })
-}
-
-// Another tab or device changed this canvas: load it, marked remote so it isn't saved straight back.
-watch(() => props.node.attrs.snapshot, (snap) => {
-  if (!tl || !snap) return
-  const json = JSON.stringify(snap)
-  if (json === lastSynced) return
-  lastSynced = json
-  clearTimeout(saveTimer)
-  tl.store.mergeRemoteChanges(() => loadSnapshot(tl!.store, { document: snap }))
+const synced = () => new Promise<void>((res) => {
+  const p = opts.provider
+  if (!p || p.synced) return res()
+  p.once('sync', () => res())
 })
 
-function onMount(editor: TLEditor) {
-  tl = editor
-  editor.setCameraOptions({ wheelBehavior: 'none' }) // inline: let the page scroll past the block
-  stopListen = editor.store.listen(() => {
-    clearTimeout(saveTimer)
-    saveTimer = setTimeout(save, 400)
-  }, { source: 'user', scope: 'document' })
-  stopSelection = editor.store.listen(() => (hasSelection.value = editor.getSelectedShapeIds().length > 0), { scope: 'session' })
+/** Another canvas block earlier in the doc with the same id: this one is a paste or duplicate. */
+function isCopy(id: string) {
+  const mine = props.getPos()
+  let copy = false
+  props.editor.state.doc.descendants((n, pos) => {
+    if (n.type.name === 'canvasBlock' && n.attrs.canvasId === id && pos < (mine ?? -1)) copy = true
+    return !copy
+  })
+  return copy
 }
 
-async function insertMath() {
-  if (!tl) return
-  const latex = await askLatex()
-  if (!latex || !tl) return
-  const c = tl.getViewportPageBounds().center
-  tl.createShape({ type: 'math', x: c.x - 130, y: c.y - 45, props: { latex } })
+async function resolve() {
+  let id: string | null = props.node.attrs.canvasId
+  if (id && isCopy(id)) {
+    const fresh = crypto.randomUUID()
+    cloneCanvas(ydoc, id, fresh)
+    props.updateAttributes({ canvasId: fresh })
+    return // the attribute watch resolves again
+  }
+  if (!id) {
+    // shortcut: blocks from before the custom canvas (tldraw snapshots) start empty; pre-launch data was dropped on purpose.
+    id = crypto.randomUUID()
+    ydoc.transact(() => root.set(id!, new Y.Map<Y.Map<unknown>>()))
+    props.updateAttributes({ canvasId: id })
+    return
+  }
+  if (!root.get(id)) {
+    await synced() // it may just not have arrived yet; only create it once we know it doesn't exist
+    if (!root.get(id)) ydoc.transact(() => root.set(id!, new Y.Map<Y.Map<unknown>>()))
+  }
+  canvasId.value = id
+  map.value = root.get(id)!
+}
+watch(() => props.node.attrs.canvasId, resolve, { immediate: true })
+watch(map, () => mapVersion.value++)
+
+// Two clients that created the same canvas map at once: Yjs keeps one, so follow whichever won.
+const onRoot = (e: Y.YMapEvent<Y.Map<Y.Map<unknown>>>) => {
+  if (canvasId.value && e.keysChanged.has(canvasId.value) && root.get(canvasId.value) !== map.value) map.value = root.get(canvasId.value) ?? null
+}
+root.observe(onRoot)
+
+function setExpanded(v: boolean) {
+  const apply = async () => {
+    expanded.value = v
+    if (!v) pure.value = false
+    document.body.style.overflow = v ? 'hidden' : ''
+    await nextTick()
+    canvas.value?.focus()
+  }
+  if (document.startViewTransition) document.startViewTransition(apply)
+  else apply()
 }
 
-// FR-1.4: send a picture of the selection to Claude; its note goes beside the drawing, strokes untouched.
+// FR-1.4: send a picture of the selection to the AI; its note goes beside the drawing, strokes untouched.
 async function annotate() {
-  const ids = tl?.getSelectedShapeIds() ?? []
-  const bounds = tl?.getSelectionPageBounds()
-  if (!tl || !ids.length || !bounds) return
+  const c = canvas.value, bounds = c?.selectionBounds()
+  if (!c || !bounds) return
   annotating.value = true
   annotateError.value = ''
   try {
-    const scale = Math.min(1, 1568 / Math.max(bounds.w, bounds.h)) // Claude's useful image size
-    const { url } = await tl.toImageDataUrl(ids, { format: 'jpeg', quality: 0.85, background: true, padding: 16, scale })
-    const { note } = await api<{ note: string }>('/v1/annotate', { body: { image_jpeg_base64: url.slice(url.indexOf(',') + 1) } })
-    const id = createShapeId()
-    tl.createShape({ id, type: 'note', x: bounds.maxX + 40, y: bounds.minY, props: { richText: toRichText(note), color: 'yellow', size: 's' } })
-    const noteBounds = tl.getShapePageBounds(id)
-    if (noteBounds && !tl.getViewportPageBounds().contains(noteBounds)) {
-      tl.zoomToBounds(Box.Common([bounds, noteBounds]), { animation: { duration: 300 }, inset: 32 })
-    }
+    const img = await c.exportImage(c.selectedShapes(), { type: 'image/jpeg', quality: 0.85, maxSize: 1568 }) // a vision model's useful size
+    if (!img) return
+    const { note } = await api<{ note: string }>('/v1/annotate', { body: { image_jpeg_base64: img.url.slice(img.url.indexOf(',') + 1) } })
+    const at = { x: bounds.x + bounds.w + 40, y: bounds.y }
+    c.addNote(note, at)
+    const both = union([bounds, { ...at, w: 200, h: 120 }])!
+    if (!contains(c.viewport, both)) c.zoomToBounds(both)
   } catch (e) {
     annotateError.value = errorText(e)
   } finally {
     annotating.value = false
+  }
+}
+
+async function exportAs(kind: 'png' | 'svg') {
+  const c = canvas.value
+  if (!c) return
+  const list = c.selectedShapes().length ? c.selectedShapes() : c.all()
+  if (kind === 'png') {
+    const img = await c.exportImage(list)
+    if (img) download(img.url, 'canvas.png')
+  } else {
+    const out = await toSvg(list, c.store.shapes.value, { background: true })
+    if (out) download(URL.createObjectURL(new Blob([out.svg], { type: 'image/svg+xml' })), 'canvas.svg')
   }
 }
 
@@ -93,58 +129,8 @@ async function remove() {
   props.deleteNode()
 }
 
-const render = () => root?.render(createElement(Tldraw, { snapshot: initial, shapeUtils, autoFocus: false, hideUi: pure.value, onMount }))
-
-function setExpanded(v: boolean) {
-  const apply = async () => {
-    expanded.value = v
-    if (!v) pure.value = false
-    render()
-    document.body.style.overflow = v ? 'hidden' : ''
-    tl?.setCameraOptions({ wheelBehavior: v ? 'pan' : 'none' })
-    await nextTick()
-    if (v) tl?.focus()
-  }
-  if (document.startViewTransition) document.startViewTransition(apply)
-  else apply()
-}
-
-// 1–9 jump between frames (left→right), our camera-region bookmarks.
-function goToBookmark(n: number) {
-  if (!tl) return
-  const frames = tl.getCurrentPageShapesSorted()
-    .filter((s) => s.type === 'frame')
-    .map((s) => tl!.getShapePageBounds(s)!)
-    .sort((a, b) => a.x - b.x)
-  if (frames[n - 1]) tl.zoomToBounds(frames[n - 1], { animation: { duration: 400 }, inset: 32 })
-}
-
-function onKey(e: KeyboardEvent) {
-  if (!tl?.getIsFocused() || (e.target as Element).closest?.('dialog')) return // typing in a prompt isn't a canvas shortcut
-  const mod = e.metaKey || e.ctrlKey
-  const idle = !tl.getEditingShapeId()
-  let handled = true
-  if (mod && e.shiftKey && e.key.toLowerCase() === 'e') setExpanded(!expanded.value)
-  else if (!expanded.value) handled = false
-  else if (mod && e.key === '\\') { pure.value = !pure.value; render() }
-  else if (e.key === 'Escape' && idle && tl.getCurrentToolId() === 'select' && !tl.getSelectedShapeIds().length) setExpanded(false)
-  else if (!mod && !e.shiftKey && !e.altKey && idle && /^[1-9]$/.test(e.key)) goToBookmark(+e.key)
-  else handled = false
-  if (handled) { e.preventDefault(); e.stopPropagation() }
-}
-
-onMounted(() => {
-  root = createRoot(host.value!)
-  render()
-  window.addEventListener('keydown', onKey, true)
-})
-
 onBeforeUnmount(() => {
-  window.removeEventListener('keydown', onKey, true)
-  if (saveTimer) { clearTimeout(saveTimer); try { save() } catch { /* node already gone */ } }
-  stopListen?.()
-  stopSelection?.()
-  root?.unmount()
+  root.unobserve(onRoot)
   if (expanded.value) document.body.style.overflow = ''
 })
 </script>
@@ -156,8 +142,13 @@ onBeforeUnmount(() => {
     :class="expanded ? 'fixed inset-0 z-50 bg-background' : 'relative my-6'"
     :style="{ viewTransitionName: vtName }"
   >
-    <!-- clicks inside a contenteditable host would otherwise leave focus on ProseMirror -->
-    <div ref="host" class="w-full" @pointerdown="tl?.getIsFocused() || tl?.focus()" :class="expanded ? 'h-full' : 'h-96 overflow-hidden rounded-md border'" />
+    <div class="w-full" :class="expanded ? 'h-full' : 'h-96 overflow-hidden rounded-md border'">
+      <Canvas
+        v-if="map" :key="mapVersion" ref="canvas" :ydoc="ydoc" :map="map" :canvas-id="canvasId"
+        :awareness="opts.provider?.awareness" :expanded="expanded" :pure="pure"
+        @toggle-expand="setExpanded(!expanded)" @toggle-pure="pure = !pure" @collapse="setExpanded(false)" @selection="selectionCount = $event"
+      />
+    </div>
     <div
       v-if="!pure"
       class="absolute z-[1000] flex gap-1"
@@ -166,12 +157,21 @@ onBeforeUnmount(() => {
       <Button variant="outline" size="xs" class="justify-start bg-background" :title="expanded ? 'Collapse (Esc)' : 'Expand (⌘⇧E)'" @click="setExpanded(!expanded)">
         <Minimize2 v-if="expanded" /><Maximize2 v-else />{{ expanded ? 'Collapse' : 'Expand' }}
       </Button>
-      <Button variant="outline" size="xs" class="justify-start bg-background" title="Add a LaTeX equation" @click="insertMath"><Sigma />Math</Button>
+      <Button variant="outline" size="xs" class="justify-start bg-background" title="Add a LaTeX equation" @click="canvas?.insertMath()"><Sigma />Math</Button>
       <Button
-        variant="outline" size="xs" class="justify-start bg-background text-ai-500 hover:text-ai-700" :disabled="!hasSelection || annotating"
-        :title="hasSelection ? 'Ask AI to annotate the selected drawing' : 'Select or lasso part of the drawing first'"
+        variant="outline" size="xs" class="justify-start bg-background text-ai-500 hover:text-ai-700" :disabled="!selectionCount || annotating"
+        :title="selectionCount ? 'Ask AI to annotate the selected drawing' : 'Select or lasso (⌥-drag) part of the drawing first'"
         @click="annotate"
       ><Sparkles />{{ annotating ? 'Annotating…' : 'AI Annotate' }}</Button>
+      <DropdownMenu :modal="false">
+        <DropdownMenuTrigger as-child>
+          <Button variant="outline" size="xs" class="justify-start bg-background" :title="selectionCount ? 'Export the selection' : 'Export the whole canvas'"><Download />Export</Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" class="z-[1001]">
+          <DropdownMenuItem @select="exportAs('png')">PNG image</DropdownMenuItem>
+          <DropdownMenuItem @select="exportAs('svg')">SVG vector</DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
       <Button variant="outline" size="xs" class="justify-start bg-background hover:bg-destructive/10 hover:text-destructive" title="Delete this canvas" @click="remove"><Trash2 />Delete</Button>
       <p v-if="annotateError" role="alert" class="max-w-56 rounded-md border bg-background px-2 py-1 text-xs text-amber-700">{{ annotateError }}</p>
     </div>
