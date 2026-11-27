@@ -20,7 +20,7 @@ health = "/"
 API_UPSTREAM = "opennotes-api.service.brimble.internal:8080"
 
 [services.opennotes-web.network]
-# domains = ["notes.example.com"]  # add yours; then set PUBLIC_URL and OPENNOTES_HOSTS on the API to match
+domains = ["opennotes.rubbietheone.com"]  # add yours; then set PUBLIC_URL and OPENNOTES_HOSTS on the API to match
 headers = { frame = "DENY", nosniff = true, hsts = true }
 
 # Rust server. Private: only the web service reaches it, so X-Real-IP always comes from our nginx.
@@ -60,7 +60,9 @@ STORAGE_DRIVER = "s3"
 EMAIL_DRIVER = "resend"
 
 # Set in the dashboard; deploys are blocked until each exists.
-# PUBLIC_URL = https://<your domain>, OPENNOTES_HOSTS = <your domain>, EMAIL_FROM = "opennotes <notes@your domain>"
+PUBLIC_URL = "https://notes.rubbietheone.com"
+OPENNOTES_HOSTS = "notes.rubbietheone.com"
+EMAIL_FROM = "OpenNotes <no-reply@notes.rubbietheone.com>"
 # Uploads go to an S3-compatible bucket via AWS_*. Also set AWS_ENDPOINT for non-AWS (e.g. R2; AWS_REGION = "auto").
 [services.opennotes-api.secrets]
 required = ["OPENNOTES_SECRET", "EMAIL_RESEND_API_KEY", "EMAIL_FROM", "PUBLIC_URL", "OPENNOTES_HOSTS",
